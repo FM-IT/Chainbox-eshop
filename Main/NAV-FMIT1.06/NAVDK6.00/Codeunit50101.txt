@@ -1,0 +1,289 @@
+OBJECT Codeunit 50101 NAS Request Handler
+{
+  OBJECT-PROPERTIES
+  {
+    Date=15-12-06;
+    Time=00:02:03;
+    Modified=Yes;
+    Version List=FMIT;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      BusinessLayer@1000000001 : Codeunit 50102;
+      NormalCaseMode@1000000000 : Boolean;
+
+    PROCEDURE AddElements@1(VAR DOMNode@1001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";Name@1002 : Text[250];Value@1003 : Text[250];NameSpace@1004 : Text[250];VAR CreatedDOMNode@1005 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode") Status@1000 : Integer;
+    VAR
+      TempElement@1006 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+    BEGIN
+      TempElement := DOMNode.ownerDocument.createNode('element', Name, NameSpace);
+      IF ISCLEAR(TempElement) THEN BEGIN
+        Status := 50;
+        EXIT(Status)
+      END;
+      IF Value <> '' THEN
+        TempElement.text := Value;
+      DOMNode.appendChild(TempElement);
+      CreatedDOMNode := TempElement;
+      CLEAR(TempElement);
+      Status := 0;
+    END;
+
+    PROCEDURE AddAttributes@2(VAR DOMNode@1001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";Name@1002 : Text[250];Value@1003 : Text[250]) Status@1000 : Integer;
+    VAR
+      TempAttribute@1004 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+    BEGIN
+      TempAttribute := DOMNode.ownerDocument.createAttribute(Name);
+      IF ISCLEAR(TempAttribute) THEN BEGIN
+        Status := 60;
+        EXIT(Status)
+      END;
+      IF Value <> '' THEN
+        TempAttribute.nodeValue := Value;
+      DOMNode.attributes.setNamedItem(TempAttribute);
+      CLEAR(TempAttribute);
+    END;
+
+    PROCEDURE FindNode@3(XMLRootNode@1000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";NodePath@1001 : Text[250];VAR FoundXMLNode@1002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode") : Boolean;
+    BEGIN
+      IF ISCLEAR(XMLRootNode) THEN
+        EXIT(FALSE);
+
+      IF NOT NormalCaseMode THEN
+        NodePath := UPPERCASE(NodePath);
+      FoundXMLNode := XMLRootNode.selectSingleNode(NodePath);
+
+      IF ISCLEAR(FoundXMLNode) THEN
+        EXIT(FALSE)
+      ELSE
+        EXIT(TRUE);
+    END;
+
+    PROCEDURE FindNodeText@5(XMLRootNode@1000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";NodePath@1001 : Text[250]) : Text[260];
+    VAR
+      FoundXMLNode@1002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+    BEGIN
+      IF ISCLEAR(XMLRootNode) THEN
+        EXIT('');
+
+      IF NOT NormalCaseMode THEN
+        NodePath := UPPERCASE(NodePath);
+      FoundXMLNode := XMLRootNode.selectSingleNode(NodePath);
+
+      IF ISCLEAR(FoundXMLNode) THEN
+        EXIT('')
+      ELSE
+        EXIT(FoundXMLNode.text);
+    END;
+
+    PROCEDURE FindNodes@4(XMLRootNode@1000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";NodePath@1001 : Text[250];VAR ReturnedXMLNodeList@1002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF82-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNodeList") : Boolean;
+    BEGIN
+      IF NOT NormalCaseMode THEN
+        NodePath := UPPERCASE(NodePath);
+      ReturnedXMLNodeList := XMLRootNode.selectNodes(NodePath);
+
+      IF ISCLEAR(ReturnedXMLNodeList) THEN
+        EXIT(FALSE)
+      ELSE
+        EXIT(TRUE);
+    END;
+
+    PROCEDURE SetNormalCase@6();
+    BEGIN
+      NormalCaseMode := TRUE;
+    END;
+
+    PROCEDURE ParseXMLDocument@1000000003(VAR XMLDoc@1000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument";ProcessType@1011 : Code[30]);
+    VAR
+      XMLNode@1002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNodeReturn@1003 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNodeCurr@1004 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      RequestType@1005 : Text[30];
+      GUID@1006 : Text[50];
+      DocNameSpace@1007 : Text[50];
+      ReturnMsg@1008 : Text[250];
+      Amounts@1009 : ARRAY [5] OF Decimal;
+      ReturnCode@1010 : Boolean;
+    BEGIN
+      BusinessLayer.SetProcessStartTime;
+
+      XMLNodeCurr := XMLDoc.documentElement;
+
+      CASE ProcessType OF
+        'JUST_TESTING':
+          BEGIN
+          END;
+        'CreateWebPortalUser':
+          ReturnCode := BusinessLayer.CreateWebPortalUser(XMLDoc);
+        'UpdateWebPortalUser':
+          ReturnCode := BusinessLayer.UpdateWebPortalUser(XMLDoc);
+        'UpdateCustomerContact':
+          ReturnCode := BusinessLayer.UpdateCustomerContact(XMLDoc);
+        'ReadSalesOrderList':
+          ReturnCode := BusinessLayer.ReadSalesOrderList(XMLDoc);
+        'ReadSalesOrder':
+          ReturnCode := BusinessLayer.ReadSalesOrder(XMLDoc);
+        'ReadCustomerContact':
+          ReturnCode := BusinessLayer.ReadCustomerContact(XMLDoc);
+        'ReadCustomerContactStats':
+          ReturnCode := BusinessLayer.ReadCustomerContactStats(XMLDoc);
+        'CreateCustShipToAddress':
+          ReturnCode := BusinessLayer.CreateCustShipToAddress(XMLDoc);
+        'ReadCustShipToAddress':
+          ReturnCode := BusinessLayer.ReadCustShipToAddress(XMLDoc);
+        'UpdateCustShipToAddress':
+          ReturnCode := BusinessLayer.UpdateCustShipToAddress(XMLDoc);
+        'CreateSalesQuote':
+          ReturnCode := BusinessLayer.CreateSalesQuote(XMLDoc);
+        'CreateSalesOrder':
+          ReturnCode := BusinessLayer.CreateSalesOrder(XMLDoc);
+        'ReadPostedSalesShipmentList':
+          ReturnCode := BusinessLayer.ReadPostedSalesShipmentList(XMLDoc);
+        'ReadPostedSalesShipment':
+          ReturnCode := BusinessLayer.ReadPostedSalesShipment(XMLDoc);
+        'ReadPostedSalesInvoiceList':
+          ReturnCode := BusinessLayer.ReadPostedSalesInvoiceList(XMLDoc);
+        'ReadPostedSalesInvoice':
+          ReturnCode := BusinessLayer.ReadPostedSalesInvoice(XMLDoc);
+        'ReadPostedSalesCreditMemoList':
+          ReturnCode := BusinessLayer.ReadPostedSalesCreditMemoList(XMLDoc);
+        'ReadPostedSalesCreditMemo':
+          ReturnCode := BusinessLayer.ReadPostedSalesCreditMemo(XMLDoc);
+        'ReadCustLedgerEntries':
+          ReturnCode := BusinessLayer.ReadCustLedgerEntries(XMLDoc);
+        'ReadItemList':
+          ReturnCode := BusinessLayer.ReadItemList(XMLDoc);
+        'ReadItem':
+          ReturnCode := BusinessLayer.ReadItem(XMLDoc);
+        'ReadItemVariants':
+          ReturnCode := BusinessLayer.ReadItemVariants(XMLDoc);
+        'ItemAvailabilityPrLocation':
+          ReturnCode := BusinessLayer.ItemAvailabilityPrLocation(XMLDoc);
+        'ReadSalesDiscAndPrice':
+          ReturnCode := BusinessLayer.ReadSalesDiscAndPrice(XMLDoc);
+        'ReadInvoiceDiscountSetup':
+          ReturnCode := BusinessLayer.ReadInvoiceDiscountSetup(XMLDoc);
+        'ReadLanguageCodeList':
+          ReturnCode := BusinessLayer.ReadLanguageCodeList(XMLDoc);
+        'SendBinaryFile2Navi':
+          ReturnCode := BusinessLayer.SendBinaryFile2Navi(XMLDoc);
+        // NyDan Methods
+        'Nydan_SendBinaryFile2Navi':
+          ReturnCode := BusinessLayer.Nydan_SendBinaryFile2Navi(XMLDoc);
+        'Nydan_ReadWebCategoryItemList':
+          ReturnCode := BusinessLayer.Nydan_ReadWebCategoryItemList(XMLDoc);
+        'Nydan_ReadItem':
+          ReturnCode := BusinessLayer.Nydan_ReadItem(XMLDoc);
+        'Nydan_ReadCustomerContact':
+          ReturnCode := BusinessLayer.Nydan_ReadCustomerContact(XMLDoc);
+        'Nydan_ReadWebCategoriesList':
+          ReturnCode := BusinessLayer.Nydan_ReadWebCategoriesList(XMLDoc);
+        'Nydan_ReadItemWebCategoryLink':
+          ReturnCode := BusinessLayer.Nydan_ReadItemWebCategoryLink(XMLDoc);
+        'Nydan_ReadItemWebCatInclSubCat':
+          ReturnCode := BusinessLayer.Nydan_ReadItemWebCatInclSubCat(XMLDoc);
+        'Nydan_ReadWebTemplateList':
+          ReturnCode := BusinessLayer.Nydan_ReadWebTemplateList(XMLDoc);
+        'Nydan_ReadWebOrder':
+          ReturnCode := BusinessLayer.Nydan_ReadWebOrder(XMLDoc);
+        'Nydan_ReadCustomerList':
+          ReturnCode := BusinessLayer.Nydan_ReadCustomerList(XMLDoc);
+        'Nydan_ReadCustomer':
+          ReturnCode := BusinessLayer.Nydan_ReadCustomer(XMLDoc);
+        'Nydan_ReadCustomerPassword':
+          ReturnCode := BusinessLayer.Nydan_ReadCustomerPassword(XMLDoc);
+        'NyDan_ReadItemDiscountPct' :
+          ReturnCode := BusinessLayer.NyDan_ReadItemDiscountPct(XMLDoc);
+      END;
+
+      IF NOT ReturnCode THEN
+        SetReturnStatus('FAILED', XMLDoc);
+    END;
+
+    LOCAL PROCEDURE SetReturnStatus@1000000000(ReturnStatus@1000 : Text[30];VAR XMLDoc@1002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument");
+    VAR
+      XMLCurrNode@1003 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNewChild@1004 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLReturnedNode@1005 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      Guid@1006 : Text[50];
+      SiteCode@1007 : Code[20];
+      FrontUserType@1008 : Code[20];
+      ProcessType@1009 : Text[30];
+      DocNameSpace@1010 : Text[50];
+    BEGIN
+      XMLCurrNode := XMLDoc.documentElement;
+
+      WITH XMLDoc DO BEGIN
+
+        IF FindNode(XMLCurrNode,'string',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            ProcessType := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'PROCESS_TYPE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            ProcessType := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'GUID',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            Guid := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'WEB_SITE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            SiteCode := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'FRONT_USER_TYPE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            FrontUserType := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'PROCESS_TYPE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            ProcessType := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'GUID',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            Guid := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'WEB_SITE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            SiteCode := XMLReturnedNode.text;
+
+        IF FindNode(XMLCurrNode,'FRONT_USER_TYPE',XMLReturnedNode) THEN
+          IF STRLEN(XMLReturnedNode.text) > 0 THEN
+            FrontUserType := XMLReturnedNode.text;
+      END;
+
+      // Encode optional XML declaration
+      IF ISCLEAR(XMLDoc) THEN
+        CREATE(XMLDoc);
+      XMLDoc.loadXML := '<FRONT_USER_MANAGEMENT xmlns="urn:FrontUserManagement.xml"/>';
+      XMLCurrNode := XMLDoc.documentElement;
+      DocNameSpace := XMLCurrNode.namespaceURI;
+
+      WITH XMLDoc DO BEGIN
+        IF AddElements(XMLCurrNode,'PROCESS_TYPE', ProcessType,DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+        IF AddElements(XMLCurrNode,'PROCESS_STATUS','1',DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+        IF AddElements(XMLCurrNode,'PROCESS_STATUS_MSG',ReturnStatus,DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+        IF AddElements(XMLCurrNode,'GUID',Guid,DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+        IF AddElements(XMLCurrNode,'WEB_SITE', SiteCode,DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+        IF AddElements(XMLCurrNode,'FRONT_USER_TYPE',FrontUserType,DocNameSpace,XMLNewChild) > 0 THEN
+          EXIT;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

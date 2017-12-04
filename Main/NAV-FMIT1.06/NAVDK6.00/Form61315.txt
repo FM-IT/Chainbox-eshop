@@ -1,0 +1,119 @@
+OBJECT Form 61315 eSales Order Card Subform
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16060;
+    Height=3300;
+    CaptionML=[DAN=Salgs Ordre Subform;
+               ENU=Sales Order Subform];
+    MultipleNewLines=Yes;
+    TableBoxID=1000000000;
+    SourceTable=Table61308;
+    AutoSplitKey=Yes;
+    DelayedInsert=Yes;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;TableBox;0   ;0    ;16060;3300 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1000000001;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=DATASET }
+    { 1000000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000001;
+                                                 InColumnHeading=Yes }
+    { 1000000003;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ROWNUMBER }
+    { 1000000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000003;
+                                                 InColumnHeading=Yes }
+    { 1000000005;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LASTCHANGED }
+    { 1000000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000005;
+                                                 InColumnHeading=Yes }
+    { 1000000007;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ESALESNUMBER }
+    { 1000000008;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000007;
+                                                 InColumnHeading=Yes }
+    { 1000000009;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LINENUMBER }
+    { 1000000010;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000009;
+                                                 InColumnHeading=Yes }
+    { 1000000011;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ITEMNUMBER }
+    { 1000000012;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000011;
+                                                 InColumnHeading=Yes }
+    { 1000000013;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=QUANTITY }
+    { 1000000014;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000013;
+                                                 InColumnHeading=Yes }
+    { 1000000015;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=SALESPRICE }
+    { 1000000016;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000015;
+                                                 InColumnHeading=Yes }
+    { 1000000017;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=DELIVERYDATE }
+    { 1000000018;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000017;
+                                                 InColumnHeading=Yes }
+    { 1000000019;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=VARIANT }
+    { 1000000020;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000019;
+                                                 InColumnHeading=Yes }
+    { 1000000021;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1000000022;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000021;
+                                                 InColumnHeading=Yes }
+    { 1000000023;TextBox;0    ;0    ;550  ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Process Result" }
+    { 1000000024;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000023;
+                                                 InColumnHeading=Yes }
+    { 1000000025;TextBox;0    ;0    ;550  ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Sales Document Type" }
+    { 1000000026;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000025;
+                                                 InColumnHeading=Yes }
+    { 1000000027;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Sales Document No." }
+    { 1000000028;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000027;
+                                                 InColumnHeading=Yes }
+    { 1000000029;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1000000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Sales Document Line No." }
+    { 1000000030;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000029;
+                                                 InColumnHeading=Yes }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

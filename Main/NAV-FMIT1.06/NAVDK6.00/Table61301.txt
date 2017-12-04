@@ -1,0 +1,48 @@
+OBJECT Table 61301 eTranslation
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    DataCaptionFields=Code,Language Code;
+    CaptionML=[DAN=Overs�ttelse;
+               ENU=Translation];
+  }
+  FIELDS
+  {
+    { 1   ;   ;Table No.           ;Option        ;CaptionML=ENU=Table No.;
+                                                   OptionString=eCategory,eItem,Standard Text }
+    { 2   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup"."Web Site";
+                                                   CaptionML=ENU=Web Site }
+    { 3   ;   ;Code                ;Code20        ;CaptionML=[DAN=Kode;
+                                                              ENU=Code] }
+    { 4   ;   ;Language Code       ;Code10        ;TableRelation=eLanguage.Code WHERE (Web Site=FIELD(Web Site));
+                                                   CaptionML=[DAN=Sprogkode;
+                                                              ENU=Language Code];
+                                                   NotBlank=Yes }
+    { 5   ;   ;Type                ;Option        ;CaptionML=ENU=Type;
+                                                   OptionString=Description,Short Description,Long Description }
+    { 6   ;   ;Line No.            ;Integer       ;CaptionML=ENU=Line No. }
+    { 7   ;   ;Text                ;Text250       ;CaptionML=[DAN=Beskrivelse;
+                                                              ENU=Description] }
+  }
+  KEYS
+  {
+    {    ;Table No.,Web Site,Code,Language Code,Type,Line No.;
+                                                   Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

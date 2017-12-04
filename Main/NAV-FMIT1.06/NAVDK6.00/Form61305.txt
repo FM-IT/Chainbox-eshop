@@ -1,0 +1,123 @@
+OBJECT Form 61305 eItem List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=10-09-09;
+    Time=20:06:16;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16500;
+    Height=6710;
+    Editable=No;
+    CaptionML=[DAN=Vare Liste;
+               ENU=Item List];
+    TableBoxID=1106000000;
+    SourceTable=Table61304;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;16060;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000025;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1106000026;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000025;
+                                                 InColumnHeading=Yes }
+    { 1106000007;TextBox;0    ;0    ;4400 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ITEMNUMBER }
+    { 1106000008;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000007;
+                                                 InColumnHeading=Yes }
+    { 1106000027;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Item No." }
+    { 1106000028;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000027;
+                                                 InColumnHeading=Yes }
+    { 1106000009;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=PRICEGROUP }
+    { 1106000010;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000009;
+                                                 InColumnHeading=Yes }
+    { 1106000013;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=EINVENTORY }
+    { 1106000014;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000013;
+                                                 InColumnHeading=Yes }
+    { 1106000021;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=DELIVERYDATE }
+    { 1106000022;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000021;
+                                                 InColumnHeading=Yes }
+    { 1106000029;CommandButton;6820;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000030;CommandButton;9240;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000031;CommandButton;14080;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1000000000;MenuButton;11660;5940;2200;550 ;CaptionML=[DAN=Vare;
+                                                            ENU=Item];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000001;
+                                                     ShortCutKey=Shift+F5;
+                                                     CaptionML=[DAN=Kort;
+                                                                ENU=Card];
+                                                     OnPush=VAR
+                                                              eItemCard@1000000000 : Form 61304;
+                                                            BEGIN
+                                                              eItemCard.SETRECORD(Rec);
+                                                              eItemCard.SETTABLEVIEW(Rec);
+                                                              eItemCard.RUN;
+                                                            END;
+                                                             }
+                                                   { ID=1000000002;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Kategorier;
+                                                                ENU=Categories];
+                                                     RunObject=Form 61310;
+                                                     RunFormView=SORTING(ITEMNUMBER,Web Site,CATEGORY);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ITEMNUMBER=FIELD(ITEMNUMBER) }
+                                                   { ID=1000000003;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Overs�ttelser;
+                                                                ENU=Translations];
+                                                     RunObject=Form 61311;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Table No.=FILTER(eItem),
+                                                                 Web Site=FIELD(Web Site),
+                                                                 Code=FIELD(Item No.) }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

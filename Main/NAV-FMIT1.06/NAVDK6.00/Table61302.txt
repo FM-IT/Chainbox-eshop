@@ -1,0 +1,51 @@
+OBJECT Table 61302 eStandard Text
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16-06-09;
+    Time=20:00:00;
+    Version List=FMIT1.01;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               eTranslation@1000000000 : Record 61301;
+             BEGIN
+               // Delete translations
+               eTranslation.SETRANGE("Table No.",eTranslation."Table No."::"Standard Text");
+               eTranslation.SETRANGE("Web Site","Web Site");
+               eTranslation.SETRANGE(Code,Code);
+               eTranslation.DELETEALL;
+             END;
+
+    CaptionML=[DAN=Tekst;
+               ENU=Standard Text];
+    LookupFormID=Form61302;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Code                ;Code10        ;CaptionML=[DAN=Kode;
+                                                              ENU=Code];
+                                                   NotBlank=Yes }
+    { 3   ;   ;Description         ;Text50        ;CaptionML=[DAN=Beskrivelse;
+                                                              ENU=Description] }
+  }
+  KEYS
+  {
+    {    ;Web Site,Code                           ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

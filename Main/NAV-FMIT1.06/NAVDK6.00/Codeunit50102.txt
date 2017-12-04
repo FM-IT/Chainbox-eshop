@@ -1,0 +1,3725 @@
+OBJECT Codeunit 50102 NAS Business Layer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=12-12-07;
+    Time=21:38:14;
+    Modified=Yes;
+    Version List=FMIT;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      XMLRoot@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNode@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNode2@1000000004 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNode3@1000000013 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNodeFound@1000000003 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNodeAdded@1000000005 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      RequestHandler@1000000002 : Codeunit 50101;
+      DateFilterCalc@1000000010 : Codeunit 358;
+      CurrentFunctionName@1000000009 : Text[30];
+      ResponsSchemaName@1000000008 : Text[250];
+      ResponsNodeName@1000000007 : Text[250];
+      ResultNodeName@1000000006 : Text[250];
+      ProcessStartTime@1000000012 : Time;
+      TimeSpanInMilliSeconds@1000000011 : Integer;
+
+    PROCEDURE CreateWebPortalUser@1000000000(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000012 : Record 5050;
+      DocNameSpace@1000000011 : Text[200];
+      CompanyContactNo@1000000000 : Code[20];
+      LoginID@1000000002 : Code[20];
+      Name@1000000003 : Text[30];
+      ZipCode@1000000004 : Code[20];
+      Address@1000000005 : Text[30];
+      City@1000000006 : Text[30];
+      PhoneNo@1000000007 : Text[30];
+      EMail@1000000008 : Text[80];
+      Password@1000000009 : Text[32];
+      Role@1000000010 : Text[30];
+      LanguageCode@1000000013 : Code[10];
+      SuperUser@1000000014 : Boolean;
+      CreatedByWebUserID@1000000015 : Code[20];
+    BEGIN
+      CurrentFunctionName := 'CreateWebPortalUser';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'CompanyContactNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CompanyContactNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LoginID', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LoginID := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Name', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Name := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'ZipCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          ZipCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Address', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Address := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'City', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          City := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PhoneNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          PhoneNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'EMail', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          EMail := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Password', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Password := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Role', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Role := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LanguageCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LanguageCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'SuperUser', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          SuperUser := ConvertISOTxt2Boolean(XMLNodeFound.text);
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CreatedByWebUserID', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CreatedByWebUserID := XMLNodeFound.text;
+        END;
+
+      // Insert Functionality
+      IF Contact.INSERT(TRUE) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        Contact.VALIDATE(Type, Contact.Type::Person);
+        Contact.VALIDATE("Company No.", CompanyContactNo);
+        Contact.VALIDATE(Name, Name);
+        Contact.VALIDATE("Login ID", LoginID);
+        Contact.VALIDATE("Post Code", ZipCode);
+        Contact.VALIDATE(Address, Address);
+        Contact.VALIDATE(City, City);
+        Contact.VALIDATE("Phone No.", PhoneNo);
+        Contact.VALIDATE("E-Mail", EMail);
+        Contact.VALIDATE(Password, Password);
+        Contact.VALIDATE("Language Code", LanguageCode);
+        Contact.VALIDATE("Has Web Access",TRUE);
+        Contact.VALIDATE(Contact."Super User on Web", SuperUser);
+        Contact.MODIFY(TRUE);
+        TestIfTimeSpanExceeded;
+
+        // Reply functionality
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'WebPortalUser', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'ContactNumber', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CompanyContactNo', Contact."Company No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'LoginID', Contact."Login ID", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'ZipCode', Contact."Post Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Address', Contact.Address, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'City', Contact.City, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PhoneNo', Contact."Phone No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'EMail', Contact."E-Mail", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Password', Contact.Password, DocNameSpace, XMLNodeAdded);
+          // RequestHandler.AddElements(XMLNode, 'Role', FORMAT(Contact.Roles), DocNameSpace, XMLNodeAdded);
+        END;
+
+        TestIfTimeSpanExceeded;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE UpdateWebPortalUser@1000000001(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000014 : Record 5050;
+      xContact@1000000002 : Record 5050;
+      DocNameSpace@1000000013 : Text[200];
+      WebUserContactNo@1000000015 : Code[20];
+      CompanyContactNo@1000000012 : Code[20];
+      LoginID@1000000011 : Code[20];
+      Name@1000000010 : Text[30];
+      ZipCode@1000000009 : Code[20];
+      Address@1000000008 : Text[30];
+      City@1000000007 : Text[30];
+      PhoneNo@1000000006 : Text[30];
+      EMail@1000000005 : Text[80];
+      Password@1000000004 : Text[32];
+      Role@1000000003 : Text[30];
+      LanguageCode@1000000000 : Code[10];
+      HasWebAccess@1000000016 : Text[30];
+      SuperUser@1000000018 : Boolean;
+      UpdatedByWebUserID@1000000017 : Code[20];
+    BEGIN
+      CurrentFunctionName := 'UpdateWebPortalUser';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'WebUserContactNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          WebUserContactNo := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CompanyContactNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CompanyContactNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LoginID', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LoginID := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Name', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Name := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'ZipCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          ZipCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Address', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Address := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'City', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          City := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PhoneNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          PhoneNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'EMail', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          EMail := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Password', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Password := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Role', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Role := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LanguageCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LanguageCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'HasWebAccess', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          HasWebAccess := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'SuperUser', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          SuperUser := ConvertISOTxt2Boolean(XMLNodeFound.text);
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'UpdatedByWebUserID', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          UpdatedByWebUserID := XMLNodeFound.text;
+        END;
+
+      // Update Functionality
+      IF Contact.GET(WebUserContactNo) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        xContact := Contact;
+        Contact.VALIDATE("Company No.", CompanyContactNo);
+        Contact.VALIDATE(Name, Name);
+        Contact.VALIDATE("Login ID", LoginID);
+        Contact.VALIDATE("Post Code", ZipCode);
+        Contact.VALIDATE(Address, Address);
+        Contact.VALIDATE(City, City);
+        Contact.VALIDATE("Phone No.", PhoneNo);
+        Contact.VALIDATE("E-Mail", EMail);
+        Contact.VALIDATE(Password, Password);
+        Contact.VALIDATE("Language Code", LanguageCode);
+        Contact.VALIDATE("Has Web Access",ConvertISOTxt2Boolean(HasWebAccess));
+        Contact.OnModify(xContact);
+        Contact.MODIFY(TRUE);
+        TestIfTimeSpanExceeded;
+        // Contact.VALIDATE(Roles, Role);
+
+        // Reply functionality
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'WebPortalUser', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'ContactNumber', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CompanyContactNo', Contact."Company No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'LoginID', Contact."Login ID", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'ZipCode', Contact."Post Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Address', Contact.Address, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'City', Contact.City, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PhoneNo', Contact."Phone No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'EMail', Contact."E-Mail", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Password', Contact.Password, DocNameSpace, XMLNodeAdded);
+          // RequestHandler.AddElements(XMLNode, 'Role', FORMAT(Contact.Roles), DocNameSpace, XMLNodeAdded);
+        END;
+
+        TestIfTimeSpanExceeded;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE UpdateCustomerContact@1000000003(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000014 : Record 5050;
+      xContact@1000000002 : Record 5050;
+      DocNameSpace@1000000013 : Text[200];
+      CompanyContactNo@1000000012 : Code[20];
+      LoginID@1000000011 : Code[20];
+      Name@1000000010 : Text[30];
+      ZipCode@1000000009 : Code[20];
+      Address@1000000008 : Text[30];
+      City@1000000007 : Text[30];
+      PhoneNo@1000000006 : Text[30];
+      EMail@1000000005 : Text[80];
+      Password@1000000004 : Text[32];
+      Role@1000000003 : Text[30];
+      LanguageCode@1000000000 : Code[10];
+      CountryCode@1000000015 : Code[10];
+      CurrencyCode@1000000016 : Code[10];
+      VATRegistrationNo@1000000017 : Text[20];
+      FaxNo@1000000018 : Text[30];
+    BEGIN
+      CurrentFunctionName := 'UpdateCustomerContact';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'CompanyContactNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CompanyContactNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Name', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Name := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'ZipCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          ZipCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Address', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Address := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'City', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          City := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PhoneNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          PhoneNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'EMail', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          EMail := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LanguageCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LanguageCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CountryCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CountryCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'LanguageCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          LanguageCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CurrencyCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          CurrencyCode := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FaxNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          VATRegistrationNo := XMLNodeFound.text;
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'VATRegistrationNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          FaxNo := XMLNodeFound.text;
+        END;
+
+      // Update Functionality
+      IF Contact.GET(CompanyContactNo) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        xContact := Contact;
+
+        CASE Contact.Type OF
+          Contact.Type::Company :
+            BEGIN
+              Contact.VALIDATE("VAT Registration No.", VATRegistrationNo);
+            END;
+          Contact.Type::Person :
+            BEGIN
+              Contact.VALIDATE("Company No.", CompanyContactNo);
+              Contact.VALIDATE("Login ID", LoginID);
+              Contact.VALIDATE(Password, Password);
+            END;
+        END;
+
+        Contact.VALIDATE(Name, Name);
+        Contact.VALIDATE("Post Code", ZipCode);
+        Contact.VALIDATE(Address, Address);
+        Contact.VALIDATE(City, City);
+        Contact.VALIDATE("Phone No.", PhoneNo);
+        Contact.VALIDATE("E-Mail", EMail);
+        Contact.VALIDATE("Language Code", LanguageCode);
+        Contact.VALIDATE("Country/Region Code", CountryCode);
+        Contact.VALIDATE("Currency Code", CurrencyCode);
+        Contact.VALIDATE("Fax No.", FaxNo);
+        Contact.OnModify(xContact);
+        Contact.MODIFY(TRUE);
+        TestIfTimeSpanExceeded;
+        // Contact.VALIDATE(Roles, Role);
+
+        // Reply functionality
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'WebPortalUser', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'ContactNumber', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CompanyContactNo', Contact."Company No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'LoginID', Contact."Login ID", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'ZipCode', Contact."Post Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Address', Contact.Address, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'City', Contact.City, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PhoneNo', Contact."Phone No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'EMail', Contact."E-Mail", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Password', Contact.Password, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'LanguageCode', Contact."Language Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CountryCode', Contact."Country/Region Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CurrencyCode', Contact."Currency Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'VATRegistrationNo', Contact."VAT Registration No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'FaxNo', Contact."Fax No.", DocNameSpace, XMLNodeAdded);
+          // RequestHandler.AddElements(XMLNode, 'Role', FORMAT(Contact.Roles), DocNameSpace, XMLNodeAdded);
+        END;
+
+        TestIfTimeSpanExceeded;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadSalesOrderList@1000000004(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesHeader@1000000002 : Record 36;
+      StartDate@1000000003 : Date;
+      EndDate@1000000004 : Date;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadSalesOrderList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesHeader.SETCURRENTKEY("Document Type","Sell-to Contact No.");
+      SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesHeader.SETFILTER("Sell-to Contact No.",XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'StartDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          StartDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'EndDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EndDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF (StartDate <> 0D) THEN
+        SalesHeader.SETFILTER("Order Date",'%1..',StartDate);
+      IF (EndDate <> 0D) THEN
+        SalesHeader.SETFILTER("Order Date",'..%1',EndDate);
+      IF (StartDate <> 0D) AND (EndDate <> 0D) THEN
+        SalesHeader.SETFILTER("Order Date",'%1..%2',StartDate,EndDate);
+
+      IF SalesHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesOrder', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'DocumentType', FORMAT(SalesHeader."Document Type",0,'<Text>'),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'No', SalesHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesHeader."Sell-to Customer No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesHeader."Bill-to Customer No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesHeader."Order Date"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesHeader."Shipment Date"), DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL SalesHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadSalesOrder@1000000005(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesHeader@1000000002 : Record 36;
+      SalesLine@1000000003 : Record 37;
+      DocNameSpace@1000000000 : Text[200];
+      MyTest@1000000004 : Text[30];
+    BEGIN
+      CurrentFunctionName := 'ReadSalesOrder';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesHeader.SETCURRENTKEY("Document Type","No.");
+      SalesHeader.SETRANGE("Document Type",SalesHeader."Document Type"::Order);
+
+      IF RequestHandler.FindNode(XMLRoot,'DocNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesHeader.SETFILTER("No.",XMLNodeFound.text);
+
+      IF SalesHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            SalesHeader.CALCFIELDS(Amount,"Amount Including VAT");
+            RequestHandler.AddElements(XMLNodeFound, 'SalesOrder', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'DocumentType', FORMAT(SalesHeader."Document Type",0,'<Text>'),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'No', SalesHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesHeader."Sell-to Customer No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesHeader."Bill-to Customer No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesHeader."Order Date"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesHeader."Shipment Date"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerName', SalesHeader."Sell-to Customer Name", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoAddress', SalesHeader."Sell-to Address", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCity', SalesHeader."Sell-to City", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContact', SalesHeader."Sell-to Contact", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoPostCode', SalesHeader."Sell-to Post Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCountryCode', SalesHeader."Sell-to Country/Region Code", DocNameSpace, XMLNodeAdded
+      Wrong Expression
+            RequestHandler.AddElements(XMLNode, 'CompletelyShipped', ConvertBool2Txt(SalesHeader."Completely Shipped"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'PricesIncludingVAT', ConvertBool2Txt(SalesHeader."Prices Including VAT"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'CurrencyCode', SalesHeader."Currency Code", DocNameSpace, XMLNodeAdded);
+            // Sales Lines
+            SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
+            SalesLine.SETRANGE("Document No.",SalesHeader."No.");
+            IF SalesLine.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SalesOrderLine', '', DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineNo', ConvertInteger2Txt(SalesLine."Line No."), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Type', FORMAT(SalesLine.Type,0,'<Text>'),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'No', SalesLine."No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Description', SalesLine.Description, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UOM', SalesLine."Unit of Measure", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Quantity', ConvertDecimal2Txt(SalesLine.Quantity), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'OutstandingQuantity', ConvertDecimal2Txt(SalesLine."Outstanding Quantity"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UnitPrice', ConvertDecimal2Txt(SalesLine."Unit Price"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'VATpct', ConvertDecimal2Txt(SalesLine."VAT %"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountPct', ConvertDecimal2Txt(SalesLine."Line Discount %"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountAmount', ConvertDecimal2Txt(SalesLine."Line Discount Amount"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineAmount', ConvertDecimal2Txt(SalesLine."Line Amount"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'InvoiceDiscountAmount', ConvertDecimal2Txt(SalesLine."Inv. Discount Amount"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'TotalLineAmount',
+                  ConvertDecimal2Txt(SalesLine."Line Amount" - SalesLine."Inv. Discount Amount"), DocNameSpace, XMLNode2);
+              UNTIL SalesLine.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL SalesHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadCustomerContact@1000000019(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000003 : Record 5050;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadCustomerContact';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Contact.SETFILTER("No.",XMLNodeFound.text);
+
+      Contact.SETRANGE(Type,Contact.Type::Company);
+
+      IF Contact.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'CustomerContact', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Number', Contact."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Address', Contact.Address, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'City', Contact.City, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Zip', Contact."Post Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Country', Contact."Country/Region Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Contact."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL Contact.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadCustomerContactStats@1000000006(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000003 : Record 5050;
+      Customer@1000000002 : Record 18;
+      DocNameSpace@1000000000 : Text[200];
+      CustDateFilter@1000000005 : Text[30];
+      CustDateName@1000000004 : Text[30];
+    BEGIN
+      CurrentFunctionName := 'ReadCustomerContactStats';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Contact.SETFILTER("No.",XMLNodeFound.text);
+
+      Contact.SETRANGE(Type,Contact.Type::Company);
+
+      IF Contact.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            CLEAR(Customer);
+            IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+              Customer.SETRANGE("Date Filter",0D,TODAY);
+              Customer.CALCFIELDS(
+                Balance,"Balance (LCY)","Balance Due","Balance Due (LCY)",
+                "Outstanding Orders (LCY)","Shipped Not Invoiced (LCY)");
+
+              RequestHandler.AddElements(XMLNodeFound, 'CustomerContact', '', DocNameSpace, XMLNode);
+
+              RequestHandler.AddElements(XMLNode, 'ContactNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+
+              RequestHandler.AddElements(XMLNode, 'Balance', ConvertDecimal2Txt(Customer.Balance), DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'BalanceLCY', ConvertDecimal2Txt(Customer."Balance (LCY)"), DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'BalanceDue', ConvertDecimal2Txt(Customer."Balance Due"), DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'BalanceDueLCY', ConvertDecimal2Txt(Customer."Balance Due (LCY)"),
+                DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'OutstandingOrdersLCY', ConvertDecimal2Txt(Customer."Outstanding Orders (LCY)"),
+                DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'ShippedNotInvoicedLCY', ConvertDecimal2Txt(Customer."Shipped Not Invoiced (LCY)"),
+                DocNameSpace, XMLNodeAdded);
+
+              // This year
+              DateFilterCalc.CreateFiscalYearFilter(CustDateFilter,CustDateName,TODAY,0);
+              Customer.SETFILTER("Date Filter",CustDateFilter);
+              Customer.CALCFIELDS(
+                "Sales (LCY)","Inv. Discounts (LCY)","Inv. Amounts (LCY)","Pmt. Discounts (LCY)",
+                "Fin. Charge Memo Amounts (LCY)","Cr. Memo Amounts (LCY)","Payments (LCY)",
+                "Reminder Amounts (LCY)");
+              RequestHandler.AddElements(XMLNode, 'ThisFiscalYear', CustDateName, DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNodeAdded, 'SalesLCY', ConvertDecimal2Txt(Customer."Sales (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'InvDiscountsLCY', ConvertDecimal2Txt(Customer."Inv. Discounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'InvAmountsLCY', ConvertDecimal2Txt(Customer."Inv. Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PmtDiscountsLCY', ConvertDecimal2Txt(Customer."Pmt. Discounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'FinChargeMemoAmountsLCY',
+                ConvertDecimal2Txt(Customer."Fin. Charge Memo Amounts (LCY)"), DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'CrMemoAmountsLCY', ConvertDecimal2Txt(Customer."Cr. Memo Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PaymentsLCY', ConvertDecimal2Txt(Customer."Payments (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'ReminderAmountsLCY', ConvertDecimal2Txt(Customer."Reminder Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+
+              // Last year
+              DateFilterCalc.CreateFiscalYearFilter(CustDateFilter,CustDateName,TODAY,-1);
+              Customer.SETFILTER("Date Filter",CustDateFilter);
+              Customer.CALCFIELDS(
+                "Sales (LCY)","Inv. Discounts (LCY)","Inv. Amounts (LCY)","Pmt. Discounts (LCY)",
+                "Fin. Charge Memo Amounts (LCY)","Cr. Memo Amounts (LCY)","Payments (LCY)",
+                "Reminder Amounts (LCY)");
+              RequestHandler.AddElements(XMLNode, 'LastFiscalYear', CustDateName, DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNodeAdded, 'SalesLCY', ConvertDecimal2Txt(Customer."Sales (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'InvDiscountsLCY', ConvertDecimal2Txt(Customer."Inv. Discounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'InvAmountsLCY', ConvertDecimal2Txt(Customer."Inv. Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PmtDiscountsLCY', ConvertDecimal2Txt(Customer."Pmt. Discounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'FinChargeMemoAmountsLCY',
+                ConvertDecimal2Txt(Customer."Fin. Charge Memo Amounts (LCY)"), DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'CrMemoAmountsLCY', ConvertDecimal2Txt(Customer."Cr. Memo Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PaymentsLCY', ConvertDecimal2Txt(Customer."Payments (LCY)"),
+                DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'ReminderAmountsLCY', ConvertDecimal2Txt(Customer."Reminder Amounts (LCY)"),
+                DocNameSpace, XMLNode2);
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Contact.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE CreateCustShipToAddress@1000000008(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ShiptoAddress@1000000013 : Record 222;
+      Contact@1000000014 : Record 5050;
+      Customer@1000000015 : Record 18;
+      DocNameSpace@1000000000 : Text[200];
+      CustContNo@1000000012 : Code[20];
+      UniqueCode@1000000011 : Code[20];
+      Name@1000000010 : Text[30];
+      PostCode@1000000009 : Code[20];
+      Address@1000000008 : Text[30];
+      City@1000000007 : Text[30];
+      PhoneNo@1000000006 : Text[30];
+      FaxNo@1000000004 : Text[30];
+      EMail@1000000005 : Text[80];
+      ContactName@1000000002 : Text[30];
+      CountryCode@1000000003 : Code[20];
+    BEGIN
+      CurrentFunctionName := 'CreateCustShipToAddress';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'CustContNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          CustContNo := XMLNodeFound.text
+        ELSE
+          ERROR('CustContNo must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'UniqueCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          UniqueCode := XMLNodeFound.text
+        ELSE
+          ERROR('UniqueCode must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'Name', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Name := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Address', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Address := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'City', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          City := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'ContactName', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ContactName := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PhoneNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          PhoneNo := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CountryCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          CountryCode := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FaxNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          FaxNo := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PostCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          PostCode := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'EMail', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EMail := XMLNodeFound.text;
+
+      // Insert Functionality
+      Contact.GET(CustContNo);
+      IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        ShiptoAddress.VALIDATE("Customer No.",Customer."No.");
+        ShiptoAddress.VALIDATE(Code,UniqueCode);
+        ShiptoAddress.INSERT(TRUE);
+        ShiptoAddress.VALIDATE(Name,Name);
+        ShiptoAddress.VALIDATE("Post Code",PostCode);
+        ShiptoAddress.VALIDATE(Address,Address);
+        ShiptoAddress.VALIDATE(City,City);
+        ShiptoAddress.VALIDATE("Phone No.",PhoneNo);
+        ShiptoAddress.VALIDATE("Fax No.",FaxNo);
+        ShiptoAddress.VALIDATE("E-Mail",EMail);
+        ShiptoAddress.VALIDATE(Contact,ContactName);
+        ShiptoAddress.VALIDATE("Country/Region Code",CountryCode);
+        ShiptoAddress.MODIFY(TRUE);
+        TestIfTimeSpanExceeded;
+
+        // Reply functionality
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'ShiptoAddress', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'CustContNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', ShiptoAddress.Name, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Address', ShiptoAddress.Address, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'City', ShiptoAddress.City, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'ContactName', ShiptoAddress.Contact, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PhoneNo', ShiptoAddress."Phone No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CountryCode', ShiptoAddress."Country/Region Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'FaxNo', ShiptoAddress."Fax No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PostCode', ShiptoAddress."Post Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'EMail', ShiptoAddress."E-Mail", DocNameSpace, XMLNodeAdded);
+        END;
+        TestIfTimeSpanExceeded;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadCustShipToAddress@1000000047(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ShiptoAddress@1000000015 : Record 222;
+      Contact@1000000014 : Record 5050;
+      Customer@1000000013 : Record 18;
+      DocNameSpace@1000000012 : Text[200];
+      CustContNo@1000000011 : Code[20];
+      UniqueCode@1000000010 : Code[20];
+      Name@1000000009 : Text[30];
+      PostCode@1000000008 : Code[20];
+      Address@1000000007 : Text[30];
+      City@1000000006 : Text[30];
+      PhoneNo@1000000005 : Text[30];
+      FaxNo@1000000004 : Text[30];
+      EMail@1000000003 : Text[80];
+      ContactName@1000000002 : Text[30];
+      CountryCode@1000000000 : Code[20];
+    BEGIN
+      CurrentFunctionName := 'ReadCustShipToAddress';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'CustContNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          CustContNo := XMLNodeFound.text
+        ELSE
+          ERROR('CompanyContactNo must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'UniqueCodeFilter', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ShiptoAddress.SETFILTER(Code,XMLNodeFound.text);
+
+      Contact.GET(CustContNo);
+      IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'Contact', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'ContactNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+          // Ship to addresses
+          ShiptoAddress.SETRANGE("Customer No.",Customer."No.");
+          IF ShiptoAddress.FIND('-') THEN BEGIN
+            REPEAT
+              RequestHandler.AddElements(XMLNode, 'ShiptoAddress', '', DocNameSpace, XMLNodeAdded);
+
+              RequestHandler.AddElements(XMLNodeAdded, 'CustContNo', Contact."No.", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'CustomerNo', Customer."No.", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'UniqueCode', ShiptoAddress.Code, DocNameSpace, XMLNode2);
+
+              RequestHandler.AddElements(XMLNodeAdded, 'Name', ShiptoAddress.Name, DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'Address', ShiptoAddress.Address, DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'City', ShiptoAddress.City, DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'ContactName', ShiptoAddress.Contact, DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PhoneNo', ShiptoAddress."Phone No.", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'CountryCode', ShiptoAddress."Country/Region Code", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'FaxNo', ShiptoAddress."Fax No.", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'PostCode', ShiptoAddress."Post Code", DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'EMail', ShiptoAddress."E-Mail", DocNameSpace, XMLNode2);
+            UNTIL ShiptoAddress.NEXT = 0;
+          END;
+          TestIfTimeSpanExceeded;
+        END;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE UpdateCustShipToAddress@1000000009(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ShiptoAddress@1000000015 : Record 222;
+      Contact@1000000014 : Record 5050;
+      Customer@1000000013 : Record 18;
+      DocNameSpace@1000000012 : Text[200];
+      CustContNo@1000000011 : Code[20];
+      UniqueCode@1000000010 : Code[20];
+      Name@1000000009 : Text[30];
+      PostCode@1000000008 : Code[20];
+      Address@1000000007 : Text[30];
+      City@1000000006 : Text[30];
+      PhoneNo@1000000005 : Text[30];
+      FaxNo@1000000004 : Text[30];
+      EMail@1000000003 : Text[80];
+      ContactName@1000000002 : Text[30];
+      CountryCode@1000000000 : Code[20];
+    BEGIN
+      CurrentFunctionName := 'UpdateCustShipToAddress';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'CustContNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          CustContNo := XMLNodeFound.text
+        ELSE
+          ERROR('CompanyContactNo must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'UniqueCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          UniqueCode := XMLNodeFound.text
+        ELSE
+          ERROR('UniqueCode must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'Name', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Name := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Address', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Address := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'City', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          City := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'ContactName', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ContactName := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PhoneNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          PhoneNo := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'CountryCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          CountryCode := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FaxNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          FaxNo := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'PostCode', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          PostCode := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'EMail', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EMail := XMLNodeFound.text;
+
+      // Modify Functionality
+      Contact.GET(CustContNo);
+      IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+        TestIfTimeSpanExceeded;
+        ShiptoAddress.GET(Customer."No.",UniqueCode);
+        ShiptoAddress.VALIDATE(Name,Name);
+        ShiptoAddress.VALIDATE("Post Code",PostCode);
+        ShiptoAddress.VALIDATE(Address,Address);
+        ShiptoAddress.VALIDATE(City,City);
+        ShiptoAddress.VALIDATE("Phone No.",PhoneNo);
+        ShiptoAddress.VALIDATE("Fax No.",FaxNo);
+        ShiptoAddress.VALIDATE("E-Mail",EMail);
+        ShiptoAddress.VALIDATE(Contact,ContactName);
+        ShiptoAddress.VALIDATE("Country/Region Code",CountryCode);
+        ShiptoAddress.MODIFY(TRUE);
+        TestIfTimeSpanExceeded;
+
+        // Reply functionality
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'ShiptoAddress', '', DocNameSpace, XMLNode);
+
+          RequestHandler.AddElements(XMLNode, 'CustContNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Name', ShiptoAddress.Name, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'Address', ShiptoAddress.Address, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'City', ShiptoAddress.City, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'ContactName', ShiptoAddress.Contact, DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PhoneNo', ShiptoAddress."Phone No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'CountryCode', ShiptoAddress."Country/Region Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'FaxNo', ShiptoAddress."Fax No.", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'PostCode', ShiptoAddress."Post Code", DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'EMail', ShiptoAddress."E-Mail", DocNameSpace, XMLNodeAdded);
+        END;
+        TestIfTimeSpanExceeded;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE CreateSalesQuote@1000000011(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      // Nothing coded yet
+      CurrentFunctionName := 'CreateSalesQuote';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      loadNewXMLDoc(XMLDoc,
+                    ResponsSchemaName,
+                    ResponsNodeName,
+                    ResultNodeName);
+      XMLRoot := XMLDoc.documentElement;
+      IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+        RequestHandler.AddElements(XMLNodeFound, 'Status', 'This method is not coded yet', DocNameSpace, XMLNode);
+      END;
+      TestIfTimeSpanExceeded;
+      ReturnCode := TRUE;
+    END;
+
+    PROCEDURE CreateSalesOrder@1000000012(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      // Nothing coded yet
+      CurrentFunctionName := 'CreateSalesOrder';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      loadNewXMLDoc(XMLDoc,
+                    ResponsSchemaName,
+                    ResponsNodeName,
+                    ResultNodeName);
+      XMLRoot := XMLDoc.documentElement;
+      IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+        RequestHandler.AddElements(XMLNodeFound, 'Status', 'This method is not coded yet', DocNameSpace, XMLNode);
+      END;
+      TestIfTimeSpanExceeded;
+      ReturnCode := TRUE;
+    END;
+
+    PROCEDURE ReadPostedSalesShipmentList@1000000034(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesShipmentHeader@1000000002 : Record 110;
+      Contact@1000000003 : Record 5050;
+      Customer@1000000004 : Record 18;
+      DocNameSpace@1000000000 : Text[200];
+      StartDate@1000000006 : Date;
+      EndDate@1000000007 : Date;
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesShipmentList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesShipmentHeader.SETCURRENTKEY("Sell-to Customer No.","No.");
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Contact.GET(XMLNodeFound.text);
+          IF FindCustomerFromContact(Contact,Customer) THEN
+            SalesShipmentHeader.SETFILTER("Sell-to Customer No.",Customer."No.")
+          ELSE
+            ERROR('Contact %1 is not a Customer',Customer."No.");
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot,'StartDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          StartDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'EndDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EndDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF (StartDate <> 0D) THEN
+        SalesShipmentHeader.SETFILTER("Shipment Date",'%1..',StartDate);
+      IF (EndDate <> 0D) THEN
+        SalesShipmentHeader.SETFILTER("Shipment Date",'..%1',EndDate);
+      IF (StartDate <> 0D) AND (EndDate <> 0D) THEN
+        SalesShipmentHeader.SETFILTER("Shipment Date",'%1..%2',StartDate,EndDate);
+
+      IF SalesShipmentHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesShipmentHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesShipmentHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesShipmentHeader."Sell-to Contact No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesShipmentHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesShipmentHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesShipmentHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesShipmentHeader."Order Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesShipmentHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL SalesShipmentHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadPostedSalesShipment@1000000014(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesShipmentHeader@1000000002 : Record 110;
+      SalesShipmentLine@1000000003 : Record 111;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesShipment';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'DocNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesShipmentHeader.SETFILTER("No.",XMLNodeFound.text);
+
+      IF SalesShipmentHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesShipmentHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesShipmentHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesShipmentHeader."Sell-to Contact No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesShipmentHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesShipmentHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesShipmentHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesShipmentHeader."Order Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesShipmentHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderNo', SalesShipmentHeader."Order No.", DocNameSpace, XMLNodeAdded);
+
+            // Sales Shipment Lines
+            SalesShipmentLine.SETRANGE("Document No.",SalesShipmentHeader."No.");
+            IF SalesShipmentLine.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SalesShipmentLine', '', DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineNo', ConvertInteger2Txt(SalesShipmentLine."Line No."),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Type', FORMAT(SalesShipmentLine.Type,0,'<Text>'),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'No', SalesShipmentLine."No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Description', SalesShipmentLine.Description, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UOM', SalesShipmentLine."Unit of Measure", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Quantity', ConvertDecimal2Txt(SalesShipmentLine.Quantity),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'OrderNo', SalesShipmentLine."Order No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'OrderLineNo',
+                  ConvertInteger2Txt(SalesShipmentLine."Order Line No."), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UnitPrice',
+                  ConvertDecimal2Txt(SalesShipmentLine."Unit Price"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'VATpct',
+                  ConvertDecimal2Txt(SalesShipmentLine."VAT %"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountPct', ConvertDecimal2Txt(SalesShipmentLine."Line Discount %"),
+                  DocNameSpace, XMLNode2);
+              UNTIL SalesShipmentLine.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL SalesShipmentHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadPostedSalesInvoiceList@1000000033(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000003 : Record 5050;
+      Customer@1000000004 : Record 18;
+      SalesInvoiceHeader@1000000002 : Record 112;
+      DocNameSpace@1000000000 : Text[200];
+      StartDate@1000000005 : Date;
+      EndDate@1000000006 : Date;
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesInvoiceList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesInvoiceHeader.SETCURRENTKEY("Sell-to Customer No.","No.");
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Contact.GET(XMLNodeFound.text);
+          IF FindCustomerFromContact(Contact,Customer) THEN
+            SalesInvoiceHeader.SETFILTER("Sell-to Customer No.",Customer."No.")
+          ELSE
+            ERROR('Contact %1 is not a Customer',Customer."No.");
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot,'StartDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          StartDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'EndDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EndDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF (StartDate <> 0D) THEN
+        SalesInvoiceHeader.SETFILTER("Shipment Date",'%1..',StartDate);
+      IF (EndDate <> 0D) THEN
+        SalesInvoiceHeader.SETFILTER("Shipment Date",'..%1',EndDate);
+      IF (StartDate <> 0D) AND (EndDate <> 0D) THEN
+        SalesInvoiceHeader.SETFILTER("Shipment Date",'%1..%2',StartDate,EndDate);
+
+      IF SalesInvoiceHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesInvoiceHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesInvoiceHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesInvoiceHeader."Sell-to Contact No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesInvoiceHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesInvoiceHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesInvoiceHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesInvoiceHeader."Order Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesInvoiceHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL SalesInvoiceHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadPostedSalesInvoice@1000000015(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesInvoiceHeader@1000000002 : Record 112;
+      SalesInvoiceLine@1000000003 : Record 113;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesInvoice';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'DocNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesInvoiceHeader.SETFILTER("No.",XMLNodeFound.text);
+
+      IF SalesInvoiceHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesInvoiceHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesInvoiceHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesInvoiceHeader."Sell-to Contact No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesInvoiceHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesInvoiceHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesInvoiceHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesInvoiceHeader."Order Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesInvoiceHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderNo', SalesInvoiceHeader."Order No.", DocNameSpace, XMLNodeAdded);
+
+            // Sales Invoice Lines
+            SalesInvoiceLine.SETRANGE("Document No.",SalesInvoiceHeader."No.");
+            IF SalesInvoiceLine.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SalesInvoiceLine', '', DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineNo', ConvertInteger2Txt(SalesInvoiceLine."Line No."),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Type', FORMAT(SalesInvoiceLine.Type,0,'<Text>'),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'No', SalesInvoiceLine."No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Description', SalesInvoiceLine.Description, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UOM', SalesInvoiceLine."Unit of Measure", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Quantity', ConvertDecimal2Txt(SalesInvoiceLine.Quantity),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UnitPrice',
+                  ConvertDecimal2Txt(SalesInvoiceLine."Unit Price"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'VATpct',
+                  ConvertDecimal2Txt(SalesInvoiceLine."VAT %"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountPct', ConvertDecimal2Txt(SalesInvoiceLine."Line Discount %"),
+                  DocNameSpace, XMLNode2);
+              UNTIL SalesInvoiceLine.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL SalesInvoiceHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadPostedSalesCreditMemoList@1000000030(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000003 : Record 5050;
+      Customer@1000000004 : Record 18;
+      SalesCreditMemoHeader@1000000002 : Record 114;
+      DocNameSpace@1000000000 : Text[200];
+      StartDate@1000000005 : Date;
+      EndDate@1000000006 : Date;
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesCreditMemoList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesCreditMemoHeader.SETCURRENTKEY("Sell-to Customer No.","No.");
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Contact.GET(XMLNodeFound.text);
+          IF FindCustomerFromContact(Contact,Customer) THEN
+            SalesCreditMemoHeader.SETFILTER("Sell-to Customer No.",Customer."No.")
+          ELSE
+            ERROR('Contact %1 is not a Customer',Customer."No.");
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot,'StartDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          StartDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'EndDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EndDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF (StartDate <> 0D) THEN
+        SalesCreditMemoHeader.SETFILTER("Shipment Date",'%1..',StartDate);
+      IF (EndDate <> 0D) THEN
+        SalesCreditMemoHeader.SETFILTER("Shipment Date",'..%1',EndDate);
+      IF (StartDate <> 0D) AND (EndDate <> 0D) THEN
+        SalesCreditMemoHeader.SETFILTER("Shipment Date",'%1..%2',StartDate,EndDate);
+
+      IF SalesCreditMemoHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesCreditMemoHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesCreditMemoHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesCreditMemoHeader."Sell-to Contact No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesCreditMemoHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesCreditMemoHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesCreditMemoHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesCreditMemoHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL SalesCreditMemoHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadPostedSalesCreditMemo@1000000016(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesCreditMemoHeader@1000000002 : Record 114;
+      SalesCreditMemoLine@1000000003 : Record 115;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadPostedSalesCreditMemo';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'DocNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesCreditMemoHeader.SETFILTER("No.",XMLNodeFound.text);
+
+      IF SalesCreditMemoHeader.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'SalesCreditMemoHeader', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', SalesCreditMemoHeader."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContactNo', SalesCreditMemoHeader."Sell-to Contact No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesCreditMemoHeader."Sell-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesCreditMemoHeader."Bill-to Customer No.",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesCreditMemoHeader."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesCreditMemoHeader."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+
+            // Sales Credit Memo Lines
+            SalesCreditMemoLine.SETRANGE("Document No.",SalesCreditMemoHeader."No.");
+            IF SalesCreditMemoLine.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SalesCreditMemoLine', '', DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineNo', ConvertInteger2Txt(SalesCreditMemoLine."Line No."),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Type', FORMAT(SalesCreditMemoLine.Type,0,'<Text>'),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'No', SalesCreditMemoLine."No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Description', SalesCreditMemoLine.Description, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UOM', SalesCreditMemoLine."Unit of Measure", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Quantity', ConvertDecimal2Txt(SalesCreditMemoLine.Quantity),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UnitPrice',
+                  ConvertDecimal2Txt(SalesCreditMemoLine."Unit Price"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'VATpct',
+                  ConvertDecimal2Txt(SalesCreditMemoLine."VAT %"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountPct', ConvertDecimal2Txt(SalesCreditMemoLine."Line Discount %"),
+                  DocNameSpace, XMLNode2);
+              UNTIL SalesCreditMemoLine.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL SalesCreditMemoHeader.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadCustLedgerEntries@1000000017(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000006 : Record 5050;
+      Customer@1000000005 : Record 18;
+      CustLedgerEntry@1000000002 : Record 21;
+      StartDate@1000000003 : Date;
+      EndDate@1000000004 : Date;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadCustLedgerEntries';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      CustLedgerEntry.SETCURRENTKEY("Customer No.","Posting Date","Currency Code");
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Contact.SETFILTER("No.",XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'StartDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          StartDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'EndDate',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          EndDate := ConvertISOTxt2Date(XMLNodeFound.text);
+
+      IF (StartDate <> 0D) THEN
+        CustLedgerEntry.SETFILTER("Posting Date",'%1..',StartDate);
+      IF (EndDate <> 0D) THEN
+        CustLedgerEntry.SETFILTER("Posting Date",'..%1',EndDate);
+      IF (StartDate <> 0D) AND (EndDate <> 0D) THEN
+        CustLedgerEntry.SETFILTER("Posting Date",'%1..%2',StartDate,EndDate);
+
+      IF Contact.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+              RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+              RequestHandler.AddElements(XMLNode, 'ContactNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Name', Customer.Name, DocNameSpace, XMLNodeAdded);
+              CustLedgerEntry.SETRANGE("Customer No.",Customer."No.");
+                IF CustLedgerEntry.FIND('-') THEN BEGIN
+                  REPEAT
+                    CustLedgerEntry.CALCFIELDS(Amount,"Remaining Amount");
+                    RequestHandler.AddElements(XMLNode, 'CustLedgerEntry', '', DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNodeAdded, 'EntryNo', ConvertInteger2Txt(CustLedgerEntry."Entry No."),
+                      DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'PostingDate', ConvertDate2Txt(CustLedgerEntry."Posting Date"),
+                      DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'DocumentType', FORMAT(CustLedgerEntry."Document Type",0,'<Text>'),
+                       DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'DocumentNo', CustLedgerEntry."Document No.", DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'Description', CustLedgerEntry.Description, DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'Amount', ConvertDecimal2Txt(CustLedgerEntry.Amount),
+                      DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'RemainingAmount', ConvertDecimal2Txt(CustLedgerEntry."Remaining Amount"),
+                      DocNameSpace, XMLNode2);
+                    RequestHandler.AddElements(XMLNodeAdded, 'Open', ConvertBool2Txt(CustLedgerEntry.Open), DocNameSpace, XMLNode2);
+                  UNTIL CustLedgerEntry.NEXT = 0;
+                END;
+              ReturnCode := TRUE;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL (Contact.NEXT = 0);
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadItemList@1000000036(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000001 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+      ItemNo@1000000004 : Text[250];
+    BEGIN
+      CurrentFunctionName := 'ReadItemList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitCost',
+              ConvertDecimal2Txt(Item."Unit Cost"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitPrice',
+              ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+            Item.CALCFIELDS (Inventory);
+            RequestHandler.AddElements(XMLNode, 'Inventory',
+              ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProfitPercent',
+              ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProductPostGr',
+              Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadItem@1000000023(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000001 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadItem';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.", XMLNodeFound.text);
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitCost',
+              ConvertDecimal2Txt(Item."Unit Cost"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitPrice',
+              ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+            Item.CALCFIELDS (Inventory);
+            RequestHandler.AddElements(XMLNode, 'Inventory',
+              ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProfitPercent',
+              ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProductPostGr',
+              Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'GrossWeight',
+              ConvertDecimal2Txt(Item."Gross Weight"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'NetWeight',
+              ConvertDecimal2Txt(Item."Net Weight"), DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadItemVariants@1000000037(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ItemVariant@1000000001 : Record 5401;
+      Item@1000000003 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+      XMLNodeFoundTxt@1000000005 : Text[250];
+      XMLNodeTxt@1000000006 : Text[250];
+    BEGIN
+      CurrentFunctionName := 'ReadItemVariants';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ItemVariant.SETFILTER("Item No.",XMLNodeFound.text);
+
+      IF ItemVariant.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            IF Item.GET(ItemVariant."Item No.") THEN BEGIN
+              RequestHandler.AddElements(XMLNodeFound, 'ItemVariant', '', DocNameSpace, XMLNode);
+
+              RequestHandler.AddElements(XMLNode, 'ItemNo', ItemVariant."Item No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Code', ItemVariant.Code, DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Description', ItemVariant.Description, DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Description2', ItemVariant."Description 2", DocNameSpace, XMLNodeAdded);
+              Item.SETRANGE("Variant Filter", ItemVariant.Code);
+              Item.CALCFIELDS (Inventory);
+              RequestHandler.AddElements(XMLNode, 'Inventory',
+                ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL ItemVariant.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ItemAvailabilityPrLocation@1000000018(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000002 : Record 27;
+      Location@1000000003 : Record 14;
+      DocNameSpace@1000000000 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ItemAvailabilityPrLocation';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'LocationFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Location.SETFILTER(Location.Code, XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.", XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'VariantCodeFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("Variant Filter", XMLNodeFound.text);
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitCost',
+              ConvertDecimal2Txt(Item."Unit Cost"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitPrice',
+              ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+            Item.SETRANGE("Location Filter");
+            Item.CALCFIELDS(Inventory);
+            RequestHandler.AddElements(XMLNode, 'Inventory',
+              ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProfitPercent',
+              ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProductPostGr',
+              Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'GrossWeight',
+              ConvertDecimal2Txt(Item."Gross Weight"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'NetWeight',
+              ConvertDecimal2Txt(Item."Net Weight"), DocNameSpace, XMLNodeAdded);
+
+            IF Location.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'Location', '', DocNameSpace, XMLNodeAdded);
+                Item.SETRANGE("Location Filter",Location.Code);
+                Item.CALCFIELDS(Inventory);
+                RequestHandler.AddElements(XMLNodeAdded, 'Code', Location.Code, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Name', Location.Name, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Inventory', ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNode2);
+              UNTIL Location.NEXT = 0;
+              // Adding inventory from blank location:
+              RequestHandler.AddElements(XMLNode, 'Location', '', DocNameSpace, XMLNodeAdded);
+              Item.SETRANGE("Location Filter",'');
+              Item.CALCFIELDS(Inventory);
+              RequestHandler.AddElements(XMLNodeAdded, 'Code', 'BLANK', DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'Name', 'Location blank', DocNameSpace, XMLNode2);
+              RequestHandler.AddElements(XMLNodeAdded, 'Inventory', ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNode2);
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadSalesDiscAndPrice@1000000022(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000016 : Record 5050;
+      Customer@1000000017 : Record 18;
+      TmpSalesHeader@1000000012 : TEMPORARY Record 36;
+      TmpSalesLine@1000000013 : TEMPORARY Record 37;
+      Item@1000000002 : Record 27;
+      Currency@1000000004 : Record 4;
+      SalesPriceCalcMgt@1000000000 : Codeunit 7000;
+      DateReq@1000000010 : Date;
+      Type@1000000011 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';
+      CustNo@1000000003 : Text[30];
+      DateTxt@1000000005 : Text[30];
+      DocNameSpace@1000000006 : Text[200];
+      CampaignNo@1000000009 : Code[20];
+      No@1000000008 : Code[20];
+      UOM@1000000007 : Code[20];
+      CurrCode@1000000014 : Code[20];
+      Qty@1000000015 : Decimal;
+    BEGIN
+      CurrentFunctionName := 'ReadSalesDiscAndPrice';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'ItemNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Type := Type::Item;
+          No := XMLNodeFound.text;
+          Item.GET(No);
+        END ELSE
+          ERROR('Node ItemNo must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'CustContNo', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Contact.GET(XMLNodeFound.text);
+          IF FindCustomerFromContact(Contact,Customer) THEN
+            CustNo := Customer."No.";
+        END ELSE
+          ERROR('Node CustContNo must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'CurrencyCode', XMLNodeFound) THEN
+        CurrCode := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Date', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          DateTxt := XMLNodeFound.text;
+          DateReq := ConvertISOTxt2Date(DateTxt);
+        END ELSE
+          ERROR('Node Date must not be blank');
+
+      IF RequestHandler.FindNode(XMLRoot, 'UOM', XMLNodeFound) THEN
+        UOM := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'Quantity', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Qty := ConvertISOTxt2Decimal(XMLNodeFound.text);
+        END ELSE
+          ERROR('Node Quantity must not be blank');
+
+      // Functionality:
+      FillSalesHeader(TmpSalesHeader, CustNo, Contact, CurrCode, DateReq);
+      FillSalesLine(TmpSalesHeader, TmpSalesLine, Type, No, UOM, Qty);
+      SalesPriceCalcMgt.FindSalesLinePrice(TmpSalesHeader, TmpSalesLine, 0);
+      SalesPriceCalcMgt.FindSalesLineLineDisc(TmpSalesHeader, TmpSalesLine);
+      UpdateSalesLine(TmpSalesLine);
+
+      loadNewXMLDoc(XMLDoc,
+                    ResponsSchemaName,
+                    ResponsNodeName,
+                    ResultNodeName);
+
+      XMLRoot := XMLDoc.documentElement;
+      IF RequestHandler.FindNode(XMLRoot,'ReadSalesDiscAndPriceResult',XMLNodeFound) THEN BEGIN
+        RequestHandler.AddElements(XMLNodeFound, 'SalesDiscAndPrice', '', DocNameSpace, XMLNode);
+
+        RequestHandler.AddElements(XMLNode, 'ItemNo', TmpSalesLine."No.", DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'CustContNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'CurrencyCode', TmpSalesHeader."Currency Code", DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'Date', ConvertDate2Txt(DateReq), DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'UOM', TmpSalesLine."Unit of Measure", DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'Quantity', ConvertDecimal2Txt(TmpSalesLine.Quantity), DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'Price', ConvertDecimal2Txt(TmpSalesLine."Unit Price"), DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'LineDisc', ConvertDecimal2Txt(TmpSalesLine."Line Discount %"), DocNameSpace
+          , XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'LineAmount', ConvertDecimal2Txt(TmpSalesLine."Line Amount"), DocNameSpace
+          , XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'PriceIncludesVAT',
+          ConvertBool2Txt(TmpSalesHeader."Prices Including VAT"), DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'AllowInvoiceDiscount',
+          ConvertBool2Txt(TmpSalesLine."Allow Invoice Disc."), DocNameSpace, XMLNodeAdded);
+        RequestHandler.AddElements(XMLNode, 'AllowLineDiscount',
+          ConvertBool2Txt(TmpSalesLine."Allow Line Disc."), DocNameSpace, XMLNodeAdded);
+      END;
+
+      TestIfTimeSpanExceeded;
+
+      IF TmpSalesLine."Unit Price" <> 0 THEN
+        ReturnCode := TRUE
+      ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadInvoiceDiscountSetup@1000000024(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000004 : Record 5050;
+      Customer@1000000003 : Record 18;
+      CustInvoiceDisc@1000000002 : Record 19;
+      DocNameSpace@1000000001 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadInvoiceDiscountSetup';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Contact.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Contact.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            IF FindCustomerFromContact(Contact,Customer) THEN BEGIN
+              RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+              RequestHandler.AddElements(XMLNode, 'ContactNo', Contact."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'CustomerNo', Customer."No.", DocNameSpace, XMLNodeAdded);
+              RequestHandler.AddElements(XMLNode, 'Name', Customer.Name, DocNameSpace, XMLNodeAdded);
+              IF Customer."Invoice Disc. Code" <> '' THEN BEGIN
+                CustInvoiceDisc.SETRANGE(Code,Customer."Invoice Disc. Code");
+                  IF CustInvoiceDisc.FIND('-') THEN BEGIN
+                    REPEAT
+                      RequestHandler.AddElements(XMLNode, 'CustInvoiceDisc', '', DocNameSpace, XMLNodeAdded);
+                      RequestHandler.AddElements(XMLNodeAdded, 'CurrencyCode', CustInvoiceDisc."Currency Code", DocNameSpace, XMLNode2);
+                      RequestHandler.AddElements(XMLNodeAdded, 'MinimumAmount', ConvertDecimal2Txt(CustInvoiceDisc."Minimum Amount"),
+                        DocNameSpace, XMLNode2);
+                      RequestHandler.AddElements(XMLNodeAdded, 'DiscountPct', ConvertDecimal2Txt(CustInvoiceDisc."Discount %"),
+                        DocNameSpace, XMLNode2);
+                      RequestHandler.AddElements(XMLNodeAdded, 'ServiceCharge', ConvertDecimal2Txt(CustInvoiceDisc."Service Charge"),
+                        DocNameSpace, XMLNode2);
+                      TestIfTimeSpanExceeded;
+                    UNTIL CustInvoiceDisc.NEXT = 0;
+                  END;
+              END;
+              ReturnCode := TRUE;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL (Contact.NEXT = 0);
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE ReadLanguageCodeList@1000000056(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Language@1000000005 : Record 8;
+      DocNameSpace@1000000001 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'ReadLanguageCodeList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF Language.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Language', '', DocNameSpace, XMLNode);
+
+            Language.CALCFIELDS("Windows Language Name");
+            RequestHandler.AddElements(XMLNode, 'LanguageCode', Language.Code, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'LanguageName', Language.Name, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WindowsLanguageID', ConvertInteger2Txt(Language."Windows Language ID"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WindowsLanguageName', Language."Windows Language Name", DocNameSpace, XMLNodeAdded);
+            ReturnCode := TRUE;
+            TestIfTimeSpanExceeded;
+          UNTIL (Language.NEXT = 0);
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE SendBinaryFile2Navi@1000000057(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Language@1000000005 : Record 8;
+      adoStream@1000000002 : Automation "{EF53050B-882E-4776-B643-EDA472E8E3F2} 2.7:{00000566-0000-0010-8000-00AA006D2EA4}:'Microsoft ActiveX Data Objects 2.7 Library'.Stream";
+      FileName@1000000004 : Text[250];
+      SaveFileToPathAndFileName@1000000003 : Text[250];
+      DocNameSpace@1000000001 : Text[200];
+      DateStamp@1000000007 : Date;
+      TimeStamp@1000000006 : Time;
+    BEGIN
+      CurrentFunctionName := 'SendBinaryFile2Navi';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileName', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          FileName := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileData', XMLNodeFound) THEN BEGIN
+        IF ISCLEAR(XMLNodeFound) THEN
+          ERROR('FileData node not found');
+
+        SaveFileToPathAndFileName := 'C:\Temp\' + FileName;
+
+        IF EXISTS(SaveFileToPathAndFileName) THEN
+          ERROR('%1 already exists. The file was not saved/replaced. Please rename the file and resend',SaveFileToPathAndFileName);
+
+        CREATE(adoStream);
+        adoStream.Type := 1; // Binary mode
+        adoStream.Open;
+        XMLNodeFound.dataType := 'bin.base64';
+        adoStream.Write := XMLNodeFound.nodeTypedValue;
+        TestIfTimeSpanExceeded;
+        adoStream.SaveToFile(SaveFileToPathAndFileName);
+        adoStream.Close;
+        CLEAR(adoStream);
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'File', '', DocNameSpace, XMLNode);
+
+          GETSTAMP(SaveFileToPathAndFileName, DateStamp, TimeStamp);
+          RequestHandler.AddElements(XMLNode, 'DateStamp', ConvertDate2Txt(DateStamp), DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'TimeStamp', ConvertTime2Txt(TimeStamp), DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'FilePathAndFileName', SaveFileToPathAndFileName, DocNameSpace, XMLNodeAdded);
+        END;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_SendBinaryFile2Navi@1000000058(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      adoStream@1000000002 : Automation "{EF53050B-882E-4776-B643-EDA472E8E3F2} 2.7:{00000566-0000-0010-8000-00AA006D2EA4}:'Microsoft ActiveX Data Objects 2.7 Library'.Stream";
+      EtradeSetup@1000000006 : Record 50004;
+      FileName@1000000003 : Text[250];
+      SaveFileToPathAndFileName@1000000007 : Text[250];
+      DocNameSpace@1000000001 : Text[200];
+      DateStamp@1000000008 : Date;
+      TimeStamp@1000000009 : Time;
+      FileIsOrderFile@1000000004 : Boolean;
+      FileIsStempelPic@1000000005 : Boolean;
+    BEGIN
+      CurrentFunctionName := 'Nydan_SendBinaryFile2Navi';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileName', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          FileName := XMLNodeFound.text;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileIsOrderFile', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          FileIsOrderFile := ConvertISOTxt2Boolean(XMLNodeFound.text);
+        END;
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileIsStempelPic', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          FileIsStempelPic := ConvertISOTxt2Boolean(XMLNodeFound.text);
+        END;
+
+      IF FileIsOrderFile AND FileIsStempelPic THEN
+        ERROR('File cannot be both OrderFile and StempelPic at the same time');
+      IF (NOT FileIsOrderFile) AND (NOT FileIsStempelPic) THEN
+        ERROR('File must be either OrderFile or StempelPic');
+
+      IF RequestHandler.FindNode(XMLRoot, 'FileData', XMLNodeFound) THEN BEGIN
+        IF ISCLEAR(XMLNodeFound) THEN
+          ERROR('FileData node not found');
+
+        EtradeSetup.GET;
+
+        IF FileIsOrderFile THEN
+          SaveFileToPathAndFileName := DELCHR(EtradeSetup."Input Path",'>','\') + '\' + FileName;
+        IF FileIsStempelPic THEN
+          SaveFileToPathAndFileName := DELCHR(EtradeSetup."Stempel Path",'>','\') + '\' + FileName;
+
+        IF EXISTS(SaveFileToPathAndFileName) THEN
+          ERROR('%1 already exists. The file was not saved/replaced. Please rename the file and resend',SaveFileToPathAndFileName);
+
+        CREATE(adoStream);
+        adoStream.Type := 1; // Binary mode
+        adoStream.Open;
+        XMLNodeFound.dataType := 'bin.base64';
+        adoStream.Write := XMLNodeFound.nodeTypedValue;
+        TestIfTimeSpanExceeded;
+        adoStream.SaveToFile(SaveFileToPathAndFileName);
+        adoStream.Close;
+        CLEAR(adoStream);
+
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN BEGIN
+          RequestHandler.AddElements(XMLNodeFound, 'File', '', DocNameSpace, XMLNode);
+
+          GETSTAMP(SaveFileToPathAndFileName, DateStamp, TimeStamp);
+          RequestHandler.AddElements(XMLNode, 'DateStamp', ConvertDate2Txt(DateStamp), DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'TimeStamp', ConvertTime2Txt(TimeStamp), DocNameSpace, XMLNodeAdded);
+          RequestHandler.AddElements(XMLNode, 'FilePathAndFileName', SaveFileToPathAndFileName, DocNameSpace, XMLNodeAdded);
+        END;
+        ReturnCode := TRUE
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebCategoryItemList@1000000046(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ItemWebCategory@1000000003 : Record 50101;
+      Item@1000000001 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+      ItemNo@1000000004 : Text[250];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebCategoryItemList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'WebCategoryFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ItemWebCategory.SETFILTER("Web Category Code",XMLNodeFound.text);
+
+      ItemWebCategory.SETCURRENTKEY("Web Category Code");
+
+      IF ItemWebCategory.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            IF Item.GET(ItemWebCategory."Item No.") THEN
+              IF Item."Show on Web" THEN BEGIN
+                RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+                RequestHandler.AddElements(XMLNode, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'WebCategoryCode', ItemWebCategory."Web Category Code", DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'UnitCost',
+                  ConvertDecimal2Txt(Item."Unit Cost"), DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'UnitPrice',
+                  ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+                Item.CALCFIELDS (Inventory);
+                RequestHandler.AddElements(XMLNode, 'Inventory',
+                  ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'ProfitPercent',
+                  ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'ProductPostGr',
+                  Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+                ReturnCode := TRUE;
+              END;
+            TestIfTimeSpanExceeded;
+          UNTIL ItemWebCategory.NEXT = 0;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebCategoryContLink@1000000049(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      WebCategoryContactLink@1000000005 : Record 50105;
+      ItemWebCategory@1000000003 : Record 50101;
+      Item@1000000001 : Record 27;
+      Contact@1000000009 : Record 5050;
+      Customer@1000000008 : Record 18;
+      TmpSalesHeader@1000000007 : TEMPORARY Record 36;
+      TmpSalesLine@1000000006 : TEMPORARY Record 37;
+      SalesPriceCalcMgt@1000000011 : Codeunit 7000;
+      Type@1000000010 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';
+      DocNameSpace@1000000002 : Text[200];
+      ItemNo@1000000004 : Text[250];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebCategoryItemList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNoNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          WebCategoryContactLink.SETFILTER("Contact No.",XMLNodeFound.text);
+
+      Type := Type::Item;
+
+      ItemWebCategory.SETCURRENTKEY("Web Category Code");
+
+      IF WebCategoryContactLink.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Contact', '', DocNameSpace, XMLNode);
+            RequestHandler.AddElements(XMLNode, 'ContactNo', WebCategoryContactLink."Contact No.", DocNameSpace, XMLNodeAdded);
+            ItemWebCategory.SETRANGE("Web Category Code",WebCategoryContactLink."Web Category Code");
+
+            Contact.GET(WebCategoryContactLink."Contact No.");
+            CLEAR(Customer);
+            FindCustomerFromContact(Contact,Customer);
+            FillSalesHeader(TmpSalesHeader, Customer."No.", Contact, Customer."Currency Code", TODAY);
+
+            IF ItemWebCategory.FIND('-') THEN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'WebCategory', '', DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNode2, 'WebCategoryCode', ItemWebCategory."Web Category Code", DocNameSpace, XMLNodeAdded);
+                IF Item.GET(ItemWebCategory."Item No.") THEN
+                  IF Item."Show on Web" THEN BEGIN
+                    RequestHandler.AddElements(XMLNode2, 'Item', '', DocNameSpace, XMLNode3);
+
+                    RequestHandler.AddElements(XMLNode3, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'WebCategoryCode',
+                      ItemWebCategory."Web Category Code", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'UnitPrice',
+                      ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+                    Item.CALCFIELDS (Inventory);
+                    RequestHandler.AddElements(XMLNode3, 'Inventory',
+                      ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'ProfitPercent',
+                      ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'ProductPostGr',
+                      Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'GrossWeight',
+                      ConvertDecimal2Txt(Item."Gross Weight"), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'NetWeight',
+                      ConvertDecimal2Txt(Item."Net Weight"), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'Height',
+                      ConvertDecimal2Txt(Item.Height), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'Width',
+                      ConvertDecimal2Txt(Item.Width), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'Depth',
+                      ConvertDecimal2Txt(Item.Depth), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'ShowOnWeb',
+                      ConvertBool2Txt(Item."Show on Web"), DocNameSpace, XMLNodeAdded);
+
+                    FillSalesLine(TmpSalesHeader, TmpSalesLine, Type, Item."No.", Item."Sales Unit of Measure", 1);
+                    SalesPriceCalcMgt.FindSalesLinePrice(TmpSalesHeader, TmpSalesLine, 0);
+                    SalesPriceCalcMgt.FindSalesLineLineDisc(TmpSalesHeader, TmpSalesLine);
+                    UpdateSalesLine(TmpSalesLine);
+
+                    RequestHandler.AddElements(XMLNode, 'CurrencyCode', TmpSalesHeader."Currency Code", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'UOM', TmpSalesLine."Unit of Measure", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'Price', ConvertDecimal2Txt(TmpSalesLine."Unit Price"),
+                      DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'LineDisc', ConvertDecimal2Txt(TmpSalesLine."Line Discount %"), DocNameSpace,
+                      XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'LineAmount', ConvertDecimal2Txt(TmpSalesLine."Line Amount"), DocNameSpace,
+                      XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'PriceIncludesVAT',
+                      ConvertBool2Txt(TmpSalesHeader."Prices Including VAT"), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'AllowInvoiceDiscount',
+                      ConvertBool2Txt(TmpSalesLine."Allow Invoice Disc."), DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode, 'AllowLineDiscount',
+                      ConvertBool2Txt(TmpSalesLine."Allow Line Disc."), DocNameSpace, XMLNodeAdded);
+
+                    ReturnCode := TRUE;
+                  END;
+                TestIfTimeSpanExceeded;
+              UNTIL ItemWebCategory.NEXT = 0;
+          UNTIL WebCategoryContactLink.NEXT = 0;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadItem@1000000039(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000001 : Record 27;
+      WebTemplateItemLink@1000000003 : Record 50106;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadItem';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item."No." := XMLNodeFound.text;
+
+      IF Item."No." <> '' THEN
+        Item.SETFILTER("No.", Item."No.");
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'No', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitCost',
+              ConvertDecimal2Txt(Item."Unit Cost"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UnitPrice',
+              ConvertDecimal2Txt(Item."Unit Price"), DocNameSpace, XMLNodeAdded);
+            Item.CALCFIELDS (Inventory);
+            RequestHandler.AddElements(XMLNode, 'Inventory',
+              ConvertDecimal2Txt(Item.Inventory), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProfitPercent',
+              ConvertDecimal2Txt(Item."Profit %"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ProductPostGr',
+              Item."Gen. Prod. Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'InvtPostGr', Item."Inventory Posting Group", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BaseUoM', Item."Base Unit of Measure", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'GrossWeight',
+              ConvertDecimal2Txt(Item."Gross Weight"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'NetWeight',
+              ConvertDecimal2Txt(Item."Net Weight"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Height',
+              ConvertDecimal2Txt(Item.Height), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Width',
+              ConvertDecimal2Txt(Item.Width), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Depth',
+              ConvertDecimal2Txt(Item.Depth), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'EANNo', Item."EAN No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShowOnWeb',
+              ConvertBool2Txt(Item."Show on Web"), DocNameSpace, XMLNodeAdded);
+
+            IF WebTemplateItemLink.READPERMISSION THEN BEGIN
+              WebTemplateItemLink.SETCURRENTKEY("Item No.");
+              WebTemplateItemLink.SETRANGE("Item No.",Item."No.");
+              RequestHandler.AddElements(XMLNode, 'Template', '', DocNameSpace, XMLNode2);
+              IF WebTemplateItemLink.FIND('-') THEN
+                REPEAT
+                  RequestHandler.AddElements(XMLNode2, 'WebTemplateCode', WebTemplateItemLink."Web Template Code",
+                    DocNameSpace, XMLNodeAdded);
+                UNTIL WebTemplateItemLink.NEXT = 0;
+            END;
+
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadCustomerContact@1000000041(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000000 : Record 5050;
+      Customer@1000000003 : Record 18;
+      WebTemplateLink@1000000004 : Record 50103;
+      WebTemplate@1000000005 : Record 50104;
+      WebTemplateItemLink@1000000006 : Record 50106;
+      Item@1000000007 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadCustomerContact';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Contact.SETFILTER("No.",XMLNodeFound.text);
+
+      Contact.SETRANGE(Type,Contact.Type::Company);
+
+      IF Contact.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            CLEAR(Customer);
+            IF FindCustomerFromContact(Contact,Customer) THEN;
+            RequestHandler.AddElements(XMLNodeFound, 'CustomerContact', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Number', Contact."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Name', Contact.Name, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Address', Contact.Address, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'City', Contact.City, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Zip', Contact."Post Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Country', Contact."Country/Region Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'EANLocationNumber', Customer."EAN Location Number", DocNameSpace, XMLNodeAdded);
+            //FMIT/001/START
+            RequestHandler.AddElements(XMLNode,'VATRegNo',Contact."VAT Registration No.",DocNameSpace,XMLNodeAdded);
+            //FMIT/001/STOP
+            // RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Contact."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Customer."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebTemplateGroup', Contact."Web Template Group", DocNameSpace, XMLNodeAdded);
+            IF WebTemplateLink.READPERMISSION THEN BEGIN
+              WebTemplateLink.SETRANGE("Web Template Group Code",Contact."Web Template Group");
+              IF WebTemplateLink.FIND('-') THEN BEGIN
+                REPEAT
+                  RequestHandler.AddElements(XMLNode, 'WebTemplate', '', DocNameSpace, XMLNode2);
+                  WebTemplateLink.CALCFIELDS("Web Template Description");
+                  RequestHandler.AddElements(XMLNode2, 'WebTemplateCode',
+                    WebTemplateLink."Web Template Code", DocNameSpace, XMLNodeAdded);
+                  RequestHandler.AddElements(XMLNode2, 'WebTemplateDescription', WebTemplateLink."Web Template Description",
+                    DocNameSpace, XMLNodeAdded);
+                  IF WebTemplate.GET(WebTemplateLink."Web Template Code") THEN
+                    RequestHandler.AddElements(XMLNode2, 'TemplateID', ConvertInteger2Txt(WebTemplate."Template ID"),
+                      DocNameSpace, XMLNodeAdded);
+
+                  WebTemplateItemLink.SETRANGE("Web Template Code",WebTemplateLink."Web Template Code");
+                  IF WebTemplateItemLink.FIND('-') THEN BEGIN
+                    REPEAT
+                      RequestHandler.AddElements(XMLNode2, 'Item', '', DocNameSpace, XMLNode3);
+                      RequestHandler.AddElements(XMLNode3, 'ItemNo', WebTemplateItemLink."Item No.", DocNameSpace, XMLNodeAdded);
+                      IF Item.GET(WebTemplateItemLink."Item No.") THEN BEGIN
+                        RequestHandler.AddElements(XMLNode3, 'ItemDescription', Item.Description, DocNameSpace, XMLNodeAdded);
+                      END;
+                      TestIfTimeSpanExceeded;
+                    UNTIL WebTemplateLink.NEXT = 0;
+                  END;
+
+                  TestIfTimeSpanExceeded;
+                UNTIL WebTemplateLink.NEXT = 0;
+              END;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Contact.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebCategoriesList@1000000040(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      WebCategory@1000000001 : Record 50100;
+      DocNameSpace@1000000002 : Text[200];
+      integ@1000000003 : Integer;
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebCategoriesList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      integ := WebCategory.COUNT;
+
+      IF WebCategory.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'WebCategory', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Code', WebCategory.Code, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', WebCategory.Description, DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL WebCategory.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadItemWebCategoryLink@1000000038(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      ItemWebCategory@1000000003 : Record 50101;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadItemWebCategoryLink';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'WebCategoryFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ItemWebCategory.SETFILTER("Web Category Code", XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'ItemNoFilter', XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          ItemWebCategory.SETFILTER("Item No.", XMLNodeFound.text);
+
+      IF ItemWebCategory.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            ItemWebCategory.CALCFIELDS("Item Description", "Web Category Description");
+            RequestHandler.AddElements(XMLNodeFound, 'ItemWebCategory', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'ItemNo', ItemWebCategory."Item No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebCategoryCode', ItemWebCategory."Web Category Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ItemDescription', ItemWebCategory."Item Description", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebCategoryDescription', ItemWebCategory."Web Category Description",
+              DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL ItemWebCategory.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadItemWebCatInclSubCat@1000000052(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      WebCategory@1000000003 : Record 50100;
+      SubWebCategory@1000000000 : Record 50100;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadItemWebCatInclSubCat';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'WebCategory',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          WebCategory.SETRANGE(Code,XMLNodeFound.text)
+        ELSE
+          WebCategory.SETRANGE("Main Web Category Code",'');
+
+      IF WebCategory.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'WebCategory', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'WebCategoryCode', WebCategory.Code, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebCategoryDescription', WebCategory.Description, DocNameSpace, XMLNodeAdded);
+
+            SubWebCategory.SETCURRENTKEY("Main Web Category Code");
+            SubWebCategory.SETRANGE("Main Web Category Code", WebCategory.Code);
+            IF SubWebCategory.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SubWebCategory', '', DocNameSpace, XMLNode2);
+
+                RequestHandler.AddElements(XMLNode2, 'WebCategoryCode', SubWebCategory.Code, DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode2, 'WebCategoryDescription', SubWebCategory.Description, DocNameSpace, XMLNodeAdded);
+              UNTIL SubWebCategory.NEXT = 0;
+            END;
+
+            TestIfTimeSpanExceeded;
+          UNTIL WebCategory.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebTemplateList@1000000042(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      WebTemplate@1000000003 : Record 50104;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebTemplateList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF WebTemplate.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'WebTemplate', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Code', WebTemplate.Code, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', WebTemplate.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'TemplateID', ConvertInteger2Txt(WebTemplate."Template ID"),
+              DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL WebTemplate.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebTemplateItemLink@1000000053(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      WebTemplate@1000000000 : Record 50104;
+      WebTemplateItemLink@1000000003 : Record 50106;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebTemplateItemLink';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot,'WebTemplateFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          WebTemplate.SETFILTER(Code,XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF WebTemplate.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'WebTemplate', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Code', WebTemplate.Code, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', WebTemplate.Description, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'TemplateID', ConvertInteger2Txt(WebTemplate."Template ID"),
+              DocNameSpace, XMLNodeAdded);
+            WebTemplateItemLink.SETRANGE("Web Template Code",WebTemplate.Code);
+            IF WebTemplateItemLink.FIND('-') THEN
+              REPEAT
+                RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode2);
+
+                RequestHandler.AddElements(XMLNode2, 'ItemNo', WebTemplateItemLink."Item No.", DocNameSpace, XMLNodeAdded);
+              UNTIL WebTemplateItemLink.NEXT = 0;
+            TestIfTimeSpanExceeded;
+          UNTIL WebTemplate.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadItemWebTemplateLink@1000000054(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000000 : Record 27;
+      WebTemplateItemLink@1000000003 : Record 50106;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebTemplateItemLink';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.",XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'ItemNo', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Description', Item.Description, DocNameSpace, XMLNodeAdded);
+            WebTemplateItemLink.SETCURRENTKEY("Item No.");
+            WebTemplateItemLink.SETRANGE("Item No.",Item."No.");
+            IF WebTemplateItemLink.FIND('-') THEN
+              REPEAT
+                RequestHandler.AddElements(XMLNodeFound, 'WebTemplate', '', DocNameSpace, XMLNode2);
+
+                RequestHandler.AddElements(XMLNode2, 'WebTemplateCode', WebTemplateItemLink."Web Template Code",
+                  DocNameSpace, XMLNodeAdded);
+              UNTIL WebTemplateItemLink.NEXT = 0;
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadWebOrder@1000000002(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      SalesHeaderWeb@1000000000 : Record 50000;
+      SalesLineWeb@1000000003 : Record 50001;
+      Contact@1000000004 : Record 5050;
+      Contact2@1000000006 : Record 5050;
+      Customer@1000000005 : Record 18;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadWebOrder';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      SalesHeaderWeb.SETRANGE("Document Type",SalesHeaderWeb."Document Type"::"1");
+
+      IF RequestHandler.FindNode(XMLRoot,'WebOrderNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          SalesHeaderWeb.SETFILTER("No.",XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustContNo',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN BEGIN
+          Contact.GET(XMLNodeFound.text);
+          IF NOT FindCustomerFromContact(Contact,Customer) THEN
+            ERROR('No customer is related to contact no. %1',Contact."No.");
+          SalesHeaderWeb.SETFILTER("Sell-to Customer No.",Customer."No.");
+        END;
+
+      IF SalesHeaderWeb.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            SalesHeaderWeb.CALCFIELDS(Amount,"Amount Including VAT");
+            RequestHandler.AddElements(XMLNodeFound, 'SalesOrder', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'DocumentType', FORMAT(SalesHeaderWeb."Document Type",0,'<Text>'),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'No', SalesHeaderWeb."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerNo', SalesHeaderWeb."Sell-to Customer No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BilltoCustomerNo', SalesHeaderWeb."Bill-to Customer No.", DocNameSpace, XMLNodeAdded);
+            IF NOT FindContactFromCustomer(Contact2,SalesHeaderWeb."Sell-to Customer No.") THEN
+              CLEAR(Contact2);
+            RequestHandler.AddElements(XMLNode, 'SellToContactNo', Contact2."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'YourReference', SalesHeaderWeb."Your Reference", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderDate', ConvertDate2Txt(SalesHeaderWeb."Order Date"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ShipmentDate', ConvertDate2Txt(SalesHeaderWeb."Shipment Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCustomerName', SalesHeaderWeb."Sell-to Customer Name",
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoAddress', SalesHeaderWeb."Sell-to Address", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCity', SalesHeaderWeb."Sell-to City", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoContact', SalesHeaderWeb."Sell-to Contact", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoPostCode', SalesHeaderWeb."Sell-to Post Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SelltoCountryCode', SalesHeaderWeb."Sell-to Country Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'CompletelyShipped', ConvertBool2Txt(SalesHeaderWeb."Completely Shipped"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'PricesIncludingVAT', ConvertBool2Txt(SalesHeaderWeb."Prices Including VAT"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'CurrencyCode', SalesHeaderWeb."Currency Code", DocNameSpace, XMLNodeAdded);
+
+            // Nydan specific fields:
+            RequestHandler.AddElements(XMLNode, 'Webordrestatus', FORMAT(SalesHeaderWeb."Webordre status",0,'<Text>'),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'SalesOrderNo', SalesHeaderWeb.SalesOrderNo, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'OrderTime', ConvertTime2Txt(SalesHeaderWeb.OrderTime), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebStatus', SalesHeaderWeb."Web Status", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Paid', FORMAT(SalesHeaderWeb.Paid,0,'<Text>'), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Betalingsident', SalesHeaderWeb.Betalingsident, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'BetalBelob', ConvertDecimal2Txt(SalesHeaderWeb.BetalBel�b), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Pris', ConvertDecimal2Txt(SalesHeaderWeb.Pris), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Moms', ConvertDecimal2Txt(SalesHeaderWeb.Moms), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Forsendelse', ConvertDecimal2Txt(SalesHeaderWeb.Forsendelse),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Total', ConvertDecimal2Txt(SalesHeaderWeb.Total), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Delvis_ship_ok', ConvertBool2Txt(SalesHeaderWeb.Delvis_ship_ok),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'KnowCustomer', SalesHeaderWeb.KnowCustomer, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'UserID', SalesHeaderWeb."User ID", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ImportedDate', ConvertDate2Txt(SalesHeaderWeb."Imported Date"),
+              DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ImportedTime', ConvertTime2Txt(SalesHeaderWeb."Imported Time"),
+              DocNameSpace, XMLNodeAdded);
+
+            // Sales Lines Web
+            SalesLineWeb.SETRANGE("Document Type",SalesHeaderWeb."Document Type");
+            SalesLineWeb.SETRANGE("Document No.",SalesHeaderWeb."No.");
+            IF SalesLineWeb.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'SalesOrderLine', '', DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineNo', ConvertInteger2Txt(SalesLineWeb."Line No."), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Type', FORMAT(SalesLineWeb.Type,0,'<Text>'),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'No', SalesLineWeb."No.", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Description', SalesLineWeb.Description, DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UOM', SalesLineWeb."Unit of Measure", DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Quantity', ConvertDecimal2Txt(SalesLineWeb.Quantity), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'OutstandingQuantity', ConvertDecimal2Txt(SalesLineWeb."Outstanding Quantity"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'UnitPrice', ConvertDecimal2Txt(SalesLineWeb."Unit Price"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'VATpct', ConvertDecimal2Txt(SalesLineWeb."VAT %"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountPct', ConvertDecimal2Txt(SalesLineWeb."Line Discount %"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineDiscountAmount', ConvertDecimal2Txt(SalesLineWeb."Line Discount Amount"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'LineAmount', ConvertDecimal2Txt(SalesLineWeb."Line Amount"),
+                  DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'InvoiceDiscountAmount',
+                  ConvertDecimal2Txt(SalesLineWeb."Inv. Discount Amount"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'TotalLineAmount',
+                  ConvertDecimal2Txt(SalesLineWeb."Line Amount" - SalesLineWeb."Inv. Discount Amount"), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'Billedenr', ConvertInteger2Txt(SalesLineWeb.Billedenr), DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNodeAdded, 'StempelPic', SalesLineWeb.StempelPic, DocNameSpace, XMLNode2);
+                TestIfTimeSpanExceeded;
+              UNTIL SalesLineWeb.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL SalesHeaderWeb.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadVariant@1000000055(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Item@1000000000 : Record 27;
+      Item2@1000000005 : Record 27;
+      TmpMainItem@1000000004 : TEMPORARY Record 27;
+      NydanItemVariant@1000000003 : Record 50107;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadVariant';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Item.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Item', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'ItemNo', Item."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ItemDescription', Item.Description, DocNameSpace, XMLNodeAdded);
+
+            // Main Item No.
+            NydanItemVariant.SETRANGE("Main Item No.",Item."No.");
+            IF NydanItemVariant.FIND('-') THEN
+              REPEAT
+                IF Item2.GET(NydanItemVariant."Main Item No.") THEN BEGIN
+                  TmpMainItem := Item2;
+                  IF TmpMainItem.INSERT THEN;
+                END;
+              UNTIL NydanItemVariant.NEXT = 0;
+
+            NydanItemVariant.SETCURRENTKEY("Item No.");
+            NydanItemVariant.SETRANGE("Item No.",Item."No.");
+            IF NydanItemVariant.FIND('-') THEN
+              REPEAT
+                IF Item2.GET(NydanItemVariant."Main Item No.") THEN BEGIN
+                  TmpMainItem := Item2;
+                  IF TmpMainItem.INSERT THEN;
+                END;
+              UNTIL NydanItemVariant.NEXT = 0;
+
+            IF TmpMainItem.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'MainItem', '', DocNameSpace, XMLNode2);
+
+                RequestHandler.AddElements(XMLNode2, 'ItemNo', TmpMainItem."No.", DocNameSpace, XMLNodeAdded);
+                RequestHandler.AddElements(XMLNode2, 'Description', TmpMainItem.Description, DocNameSpace, XMLNodeAdded);
+                CLEAR(NydanItemVariant);
+                NydanItemVariant.SETCURRENTKEY("Main Item No.","Sort Order");
+                NydanItemVariant.SETRANGE("Main Item No.",TmpMainItem."No.");
+                IF NydanItemVariant.FIND('-') THEN
+                  REPEAT
+                    RequestHandler.AddElements(XMLNode2, 'ItemVariant', '', DocNameSpace, XMLNode3);
+
+                    NydanItemVariant.CALCFIELDS("Item Description");
+                    RequestHandler.AddElements(XMLNode3, 'ItemNo', NydanItemVariant."Item No.", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'ColorName', NydanItemVariant."Color Name", DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'SortOrder', ConvertInteger2Txt(NydanItemVariant."Sort Order"),
+                      DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'Complete', ConvertBool2Txt(NydanItemVariant.Complete),
+                      DocNameSpace, XMLNodeAdded);
+                    RequestHandler.AddElements(XMLNode3, 'ItemDescription', NydanItemVariant."Item Description",
+                      DocNameSpace, XMLNodeAdded);
+                  UNTIL NydanItemVariant.NEXT = 0;
+              UNTIL TmpMainItem.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Item.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadCustomerList@1000000059(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000000 : Record 5050;
+      Customer@1000000003 : Record 18;
+      WebTemplateLink@1000000004 : Record 50103;
+      WebTemplate@1000000005 : Record 50104;
+      WebTemplateItemLink@1000000006 : Record 50106;
+      Item@1000000007 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadCustomerList';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Customer.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Customer.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            CLEAR(Contact);
+            IF FindContactFromCustomer(Contact,Customer."No.") THEN;
+            RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Number', Customer."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Name', Customer.Name, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'ContactNumber', Contact."No.", DocNameSpace, XMLNodeAdded);
+            //FMIT/001/START
+            RequestHandler.AddElements(XMLNode,'VATRegNo',Customer."VAT Registration No.",DocNameSpace,XMLNodeAdded);
+            //FMIT/001/STOP
+            // RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Contact."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Customer."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL Customer.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadCustomer@1000000060(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000000 : Record 5050;
+      Customer@1000000003 : Record 18;
+      WebTemplateLink@1000000004 : Record 50103;
+      WebTemplate@1000000005 : Record 50104;
+      WebTemplateItemLink@1000000006 : Record 50106;
+      Item@1000000007 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadCustomer';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Customer.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Customer.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            CLEAR(Contact);
+            IF FindContactFromCustomer(Contact,Customer."No.") THEN;
+            RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Number', Customer."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Name', Customer.Name, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Address', Customer.Address, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Address2', Customer."Address 2", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'City', Customer.City, DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Zip', Customer."Post Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Country', Customer."Country/Region Code", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'EANLocationNumber', Customer."EAN Location Number", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'Email', Customer."E-Mail", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'PhoneNo', Customer."Phone No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'FaxNo', Customer."Fax No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'HomePage', Customer."Home Page", DocNameSpace, XMLNodeAdded);
+            //FMIT/001/START
+            RequestHandler.AddElements(XMLNode,'VATRegNo',Customer."VAT Registration No.",DocNameSpace,XMLNodeAdded);
+            //FMIT/001/STOP
+            // RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Contact."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'HasWebAccess', ConvertBool2Txt(Customer."Has Web Access"), DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WebTemplateGroup', Contact."Web Template Group", DocNameSpace, XMLNodeAdded);
+            IF WebTemplateLink.READPERMISSION THEN BEGIN
+              WebTemplateLink.SETRANGE("Web Template Group Code",Contact."Web Template Group");
+              IF WebTemplateLink.FIND('-') THEN BEGIN
+                REPEAT
+                  RequestHandler.AddElements(XMLNode, 'WebTemplate', '', DocNameSpace, XMLNode2);
+                  WebTemplateLink.CALCFIELDS("Web Template Description");
+                  RequestHandler.AddElements(XMLNode2, 'WebTemplateCode',
+                    WebTemplateLink."Web Template Code", DocNameSpace, XMLNodeAdded);
+                  RequestHandler.AddElements(XMLNode2, 'WebTemplateDescription', WebTemplateLink."Web Template Description",
+                    DocNameSpace, XMLNodeAdded);
+                  IF WebTemplate.GET(WebTemplateLink."Web Template Code") THEN
+                    RequestHandler.AddElements(XMLNode2, 'TemplateID', ConvertInteger2Txt(WebTemplate."Template ID"),
+                      DocNameSpace, XMLNodeAdded);
+
+                  WebTemplateItemLink.SETRANGE("Web Template Code",WebTemplateLink."Web Template Code");
+                  IF WebTemplateItemLink.FIND('-') THEN BEGIN
+                    REPEAT
+                      RequestHandler.AddElements(XMLNode2, 'Item', '', DocNameSpace, XMLNode3);
+                      RequestHandler.AddElements(XMLNode3, 'ItemNo', WebTemplateItemLink."Item No.", DocNameSpace, XMLNodeAdded);
+                      IF Item.GET(WebTemplateItemLink."Item No.") THEN BEGIN
+                        RequestHandler.AddElements(XMLNode3, 'ItemDescription', Item.Description, DocNameSpace, XMLNodeAdded);
+                      END;
+                      TestIfTimeSpanExceeded;
+                    UNTIL WebTemplateLink.NEXT = 0;
+                  END;
+
+                  TestIfTimeSpanExceeded;
+                UNTIL WebTemplateLink.NEXT = 0;
+              END;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Customer.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE Nydan_ReadCustomerPassword@1000000061(VAR XMLDoc@1000000001 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Contact@1000000000 : Record 5050;
+      Customer@1000000003 : Record 18;
+      WebTemplateLink@1000000004 : Record 50103;
+      WebTemplate@1000000005 : Record 50104;
+      WebTemplateItemLink@1000000006 : Record 50106;
+      Item@1000000007 : Record 27;
+      DocNameSpace@1000000002 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'Nydan_ReadCustomerPassword';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Customer.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Customer.FIND('-') THEN BEGIN
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            CLEAR(Contact);
+            IF FindContactFromCustomer(Contact,Customer."No.") THEN;
+            RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+
+            RequestHandler.AddElements(XMLNode, 'Number', Customer."No.", DocNameSpace, XMLNodeAdded);
+            RequestHandler.AddElements(XMLNode, 'WEB-Code', Customer."WEB-Code", DocNameSpace, XMLNodeAdded);
+            TestIfTimeSpanExceeded;
+          UNTIL Customer.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    PROCEDURE NyDan_ReadItemDiscountPct@1000000062(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument") ReturnCode : Boolean;
+    VAR
+      Customer@1000000006 : Record 18;
+      Item@1000000002 : Record 27;
+      Contact@1000000009 : Record 5050;
+      TmpSalesHeader@1000000008 : TEMPORARY Record 36;
+      TmpSalesLine@1000000007 : TEMPORARY Record 37;
+      Currency@1000000005 : Record 4;
+      SalesPriceCalcMgt@1000000004 : Codeunit 7000;
+      Type@1000000010 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';
+      DocNameSpace@1000000001 : Text[200];
+    BEGIN
+      CurrentFunctionName := 'NyDan_ReadItemDiscountPct';
+      ResponsSchemaName := CurrentFunctionName + 'Response.xsd';
+      ResponsNodeName := CurrentFunctionName + 'Response';
+      ResultNodeName := CurrentFunctionName + 'Result';
+
+      XMLRoot := XMLDoc.documentElement;
+      DocNameSpace := '';
+      RequestHandler.SetNormalCase;
+
+      IF RequestHandler.FindNode(XMLRoot, 'TimeSpanInMilliSeconds', XMLNodeFound) THEN
+        SetTimeSpanInMilliSeconds(XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'CustNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Customer.SETFILTER("No.",XMLNodeFound.text);
+
+      IF RequestHandler.FindNode(XMLRoot,'ItemNoFilter',XMLNodeFound) THEN
+        IF STRLEN(XMLNodeFound.text) > 0 THEN
+          Item.SETFILTER("No.",XMLNodeFound.text);
+
+      IF Customer.FIND('-') THEN BEGIN
+        FindContactFromCustomer(Contact,Customer."No.");
+        CLEAR(TmpSalesHeader);
+        FillSalesHeader(TmpSalesHeader, Customer."No.", Contact, Customer."Currency Code", TODAY);
+        loadNewXMLDoc(XMLDoc,
+                      ResponsSchemaName,
+                      ResponsNodeName,
+                      ResultNodeName);
+        XMLRoot := XMLDoc.documentElement;
+        IF RequestHandler.FindNode(XMLRoot, ResultNodeName, XMLNodeFound) THEN
+          REPEAT
+            RequestHandler.AddElements(XMLNodeFound, 'Customer', '', DocNameSpace, XMLNode);
+            RequestHandler.AddElements(XMLNode, 'Number', Customer."No.", DocNameSpace, XMLNodeAdded);
+            IF Item.FIND('-') THEN BEGIN
+              REPEAT
+                RequestHandler.AddElements(XMLNode, 'Item', '', DocNameSpace, XMLNode2);
+                RequestHandler.AddElements(XMLNode2, 'Number', Item."No.", DocNameSpace, XMLNodeAdded);
+                CLEAR(TmpSalesLine);
+                FillSalesLine(TmpSalesHeader, TmpSalesLine, Type::Item, Item."No.", Item."Sales Unit of Measure", 1);
+                SalesPriceCalcMgt.FindSalesLineLineDisc(TmpSalesHeader, TmpSalesLine);
+                UpdateSalesLine(TmpSalesLine);
+                RequestHandler.AddElements(XMLNode2, 'SalesLineDiscountPct', '', DocNameSpace, XMLNode3);
+                RequestHandler.AddElements(XMLNode3, 'LineDiscountPct',
+                  ConvertDecimal2Txt(TmpSalesLine."Line Discount %"), DocNameSpace, XMLNodeAdded);
+                TestIfTimeSpanExceeded;
+              UNTIL Item.NEXT = 0;
+            END;
+            TestIfTimeSpanExceeded;
+          UNTIL Customer.NEXT = 0;
+        ReturnCode := TRUE;
+      END ELSE
+        ReturnCode := FALSE;
+    END;
+
+    LOCAL PROCEDURE AddElement@1000000020(VAR XMLNode@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument";NodeName@1000000001 : Text[250];VAR CreatedXMLNode@1000000002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode");
+    VAR
+      NewChildNode@1000000003 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+    BEGIN
+      NewChildNode := XMLNode.ownerDocument.createNode('element', NodeName, '');
+      XMLNode.appendChild(NewChildNode);
+      CreatedXMLNode := NewChildNode;
+    END;
+
+    LOCAL PROCEDURE AddAttribute@1000000021(VAR XMLNode@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument";Name@1000000001 : Text[260];NodeValue@1000000002 : Text[260]);
+    VAR
+      XMLNewAttributeNode@1000000003 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+    BEGIN
+      IF NodeValue <> '' THEN BEGIN
+        XMLNewAttributeNode := XMLNode.ownerDocument.createAttribute(Name);
+        XMLNewAttributeNode.nodeValue := NodeValue;
+        XMLNode.attributes.setNamedItem(XMLNewAttributeNode);
+      END;
+    END;
+
+    LOCAL PROCEDURE ConvertDecimal2Txt@1000000026(Decimal2Convert@1000000000 : Decimal) ReturnText : Text[30];
+    BEGIN
+      // x,xxx.yy
+      ReturnText := FORMAT(Decimal2Convert, 0, '<Sign><Integer><Decimals><Comma,.>');
+    END;
+
+    LOCAL PROCEDURE ConvertDate2Txt@1000000025(Date2Convert@1000000000 : Date) ReturnText : Text[30];
+    BEGIN
+      // YYYY-MM-DD
+      ReturnText := FORMAT(Date2Convert, 0, '<Year4>-<Month,2>-<Day,2>');
+    END;
+
+    LOCAL PROCEDURE ConvertTime2Txt@1000000051(Time2Convert@1000000000 : Time) ReturnText : Text[30];
+    BEGIN
+      // hh:mm:ss
+      ReturnText := FORMAT(Time2Convert, 0, '<Hours24,2><Filler Character,0>:<Minutes,2>:<Seconds,2>');
+    END;
+
+    LOCAL PROCEDURE ConvertBool2Txt@1000000027(Bool2Convert@1000000000 : Boolean) ReturnText : Text[30];
+    BEGIN
+      // 1 = true, 0 = false
+      IF Bool2Convert THEN
+        ReturnText := '1'
+      ELSE
+        ReturnText := '0';
+    END;
+
+    LOCAL PROCEDURE ConvertInteger2Txt@1000000048(Integer2Convert@1000000000 : Integer) ReturnText : Text[30];
+    BEGIN
+      ReturnText := FORMAT(Integer2Convert, 0, '<Sign><Integer>');
+    END;
+
+    LOCAL PROCEDURE ConvertISOTxt2Decimal@1000000029(ISOtxtDec2Convert@1000000000 : Text[30]) ReturnDecimal : Decimal;
+    BEGIN
+      EVALUATE(ReturnDecimal, CONVERTSTR(ISOtxtDec2Convert,'.,',',.'));
+    END;
+
+    LOCAL PROCEDURE ConvertISOTxt2Date@1000000031(ISOtxtDate2Convert@1000000000 : Text[30]) ReturnDate : Date;
+    VAR
+      Day@1000000003 : Integer;
+      Month@1000000002 : Integer;
+      Year@1000000001 : Integer;
+    BEGIN
+      // YYYY-MM-DD
+      EVALUATE(Year, COPYSTR(ISOtxtDate2Convert, 1, 4));
+      EVALUATE(Month, COPYSTR(ISOtxtDate2Convert, 6, 2));
+      EVALUATE(Day, COPYSTR(ISOtxtDate2Convert, 9, 2));
+      ReturnDate := DMY2DATE(Day, Month, Year);
+    END;
+
+    LOCAL PROCEDURE ConvertISOTxt2Boolean@1000000045(ISOtxtBoolean2Convert@1000000000 : Text[30]) ReturnBoolean : Boolean;
+    VAR
+      Day@1000000003 : Integer;
+      Month@1000000002 : Integer;
+      Year@1000000001 : Integer;
+    BEGIN
+      CASE UPPERCASE(ISOtxtBoolean2Convert) OF
+        '0', 'FALSE' :
+          ReturnBoolean := FALSE;
+        '1', 'TRUE' :
+          ReturnBoolean := TRUE;
+      END;
+    END;
+
+    LOCAL PROCEDURE FillSalesHeader@1000000028(VAR TmpSalesHeader@1000000000 : TEMPORARY Record 36;CustNo@1000000001 : Code[10];VAR Contact@1000000006 : Record 5050;CurrCode@1000000004 : Code[20];DateReq@1000000005 : Date);
+    VAR
+      Cust@1000000002 : Record 18;
+      Bill2Cust@1000000003 : Record 18;
+    BEGIN
+      IF CustNo <> '' THEN
+        Cust.GET(CustNo);
+
+      TmpSalesHeader."Order Date" := DateReq;
+      TmpSalesHeader."Posting Date" := DateReq;
+      TmpSalesHeader."Shipment Date" := DateReq;
+
+      TmpSalesHeader."Sell-to Customer No." := Cust."No.";
+      TmpSalesHeader."Sell-to Contact" := Contact."No.";
+      TmpSalesHeader."Sell-to Customer Template Code" := '';
+      TmpSalesHeader."Sell-to Customer Name" := Cust.Name;
+      TmpSalesHeader."Sell-to Customer Name 2" := Cust."Name 2";
+      TmpSalesHeader."Sell-to Address" := Cust.Address;
+      TmpSalesHeader."Sell-to Address 2" := Cust."Address 2";
+      TmpSalesHeader."Sell-to City" := Cust.City;
+      TmpSalesHeader."Sell-to Post Code" := Cust."Post Code";
+      TmpSalesHeader."Sell-to County" := Cust.County;
+      TmpSalesHeader."Sell-to Country/Region Code" := Cust."Country/Region Code";
+      TmpSalesHeader."Gen. Bus. Posting Group" := Cust."Gen. Bus. Posting Group";
+      TmpSalesHeader."VAT Bus. Posting Group" := Cust."VAT Bus. Posting Group";
+      TmpSalesHeader."Tax Area Code" := Cust."Tax Area Code";
+      TmpSalesHeader."Tax Liable" := Cust."Tax Liable";
+      TmpSalesHeader."VAT Registration No." := Cust."VAT Registration No.";
+      TmpSalesHeader."Shipping Advice" := Cust."Shipping Advice";
+
+      IF Cust."Bill-to Customer No." <> '' THEN
+        Bill2Cust.GET(Cust."Bill-to Customer No.")
+      ELSE
+        Bill2Cust.GET(Cust."No.");
+
+      TmpSalesHeader."Bill-to Customer No." := Bill2Cust."No.";
+      TmpSalesHeader."Bill-to Name" := Bill2Cust.Name;
+      TmpSalesHeader."Bill-to Name 2" := Bill2Cust."Name 2";
+      TmpSalesHeader."Bill-to Address" := Bill2Cust.Address;
+      TmpSalesHeader."Bill-to Address 2" := Bill2Cust."Address 2";
+      TmpSalesHeader."Bill-to City" := Bill2Cust.City;
+      TmpSalesHeader."Bill-to Post Code" := Bill2Cust."Post Code";
+      TmpSalesHeader."Bill-to County" := Bill2Cust.County;
+      TmpSalesHeader."Bill-to Country/Region Code" := Bill2Cust."Country/Region Code";
+      TmpSalesHeader."Payment Terms Code" := Bill2Cust."Payment Terms Code";
+      TmpSalesHeader."Gen. Bus. Posting Group" := Bill2Cust."Gen. Bus. Posting Group";
+      TmpSalesHeader."VAT Bus. Posting Group" := Bill2Cust."VAT Bus. Posting Group";
+      TmpSalesHeader."Customer Posting Group" := Bill2Cust."Customer Posting Group";
+
+      IF CurrCode <> '' THEN
+        TmpSalesHeader.VALIDATE("Currency Code", CurrCode)
+      ELSE
+        TmpSalesHeader.VALIDATE("Currency Code", Bill2Cust."Currency Code");
+
+      TmpSalesHeader."Customer Price Group" := Bill2Cust."Customer Price Group";
+      TmpSalesHeader."Prices Including VAT" := Bill2Cust."Prices Including VAT";
+      TmpSalesHeader."Allow Line Disc." := Bill2Cust."Allow Line Disc.";
+      TmpSalesHeader."Invoice Disc. Code" := Bill2Cust."Invoice Disc. Code";
+      TmpSalesHeader."Customer Disc. Group" := Bill2Cust."Customer Disc. Group";
+      TmpSalesHeader."Language Code" := Bill2Cust."Language Code";
+      TmpSalesHeader."Salesperson Code" := Bill2Cust."Salesperson Code";
+      TmpSalesHeader."Combine Shipments" := Bill2Cust."Combine Shipments";
+      TmpSalesHeader.Reserve := Bill2Cust.Reserve;
+      TmpSalesHeader."VAT Registration No." := Bill2Cust."VAT Registration No.";
+    END;
+
+    LOCAL PROCEDURE FillSalesLine@1000000032(VAR TmpSalesHeader@1000000002 : TEMPORARY Record 36;VAR TmpSalesLine@1000000000 : TEMPORARY Record 37;ItemType@1000000001 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';ItemNo@1000000003 : Code[20];UOM@1000000005 : Code[20];Qty@1000000006 : Decimal);
+    VAR
+      Item@1000000004 : Record 27;
+    BEGIN
+      TmpSalesLine."Document Type" := TmpSalesHeader."Document Type";
+      TmpSalesLine."Document No." := TmpSalesHeader."No.";
+
+      TmpSalesLine."Sell-to Customer No." := TmpSalesHeader."Sell-to Customer No.";
+      TmpSalesLine."Currency Code" := TmpSalesHeader."Currency Code";
+
+      TmpSalesLine.Type := ItemType;
+      TmpSalesLine."No." := ItemNo;
+      TmpSalesLine."Unit of Measure Code" := UOM;
+      TmpSalesLine.Quantity := Qty;
+
+      TmpSalesLine."Job No." := TmpSalesHeader."Job No.";
+      TmpSalesLine."Location Code" := TmpSalesHeader."Location Code";
+      TmpSalesLine."Customer Price Group" := TmpSalesHeader."Customer Price Group";
+      TmpSalesLine."Customer Disc. Group" := TmpSalesHeader."Customer Disc. Group";
+      TmpSalesLine."Allow Line Disc." := TmpSalesHeader."Allow Line Disc.";
+      TmpSalesLine."Transaction Type" := TmpSalesHeader."Transaction Type";
+      TmpSalesLine."Transport Method" := TmpSalesHeader."Transport Method";
+      TmpSalesLine."Bill-to Customer No." := TmpSalesHeader."Bill-to Customer No.";
+      TmpSalesLine."Gen. Bus. Posting Group" := TmpSalesHeader."Gen. Bus. Posting Group";
+      TmpSalesLine."VAT Bus. Posting Group" := TmpSalesHeader."VAT Bus. Posting Group";
+      TmpSalesLine."Exit Point" := TmpSalesHeader."Exit Point";
+      TmpSalesLine.Area := TmpSalesHeader.Area;
+      TmpSalesLine."Transaction Specification" := TmpSalesHeader."Transaction Specification";
+      TmpSalesLine."Tax Area Code" := TmpSalesHeader."Tax Area Code";
+      TmpSalesLine."Tax Liable" := TmpSalesHeader."Tax Liable";
+      TmpSalesLine."Responsibility Center" := TmpSalesHeader."Responsibility Center";
+      TmpSalesLine."Shipping Agent Code" := TmpSalesHeader."Shipping Agent Code";
+      TmpSalesLine."Shipping Agent Service Code" := TmpSalesHeader."Shipping Agent Service Code";
+      TmpSalesLine."Outbound Whse. Handling Time" := TmpSalesHeader."Outbound Whse. Handling Time";
+      TmpSalesLine."Shipping Time" := TmpSalesHeader."Shipping Time";
+      TmpSalesLine."Promised Delivery Date" := TmpSalesHeader."Promised Delivery Date";
+      TmpSalesLine."Requested Delivery Date" := TmpSalesHeader."Requested Delivery Date";
+      TmpSalesLine.UpdateDates;
+
+      Item.GET(TmpSalesLine."No.");
+      TmpSalesLine."Posting Group" := Item."Inventory Posting Group";
+      TmpSalesLine.Description := Item.Description;
+      TmpSalesLine."Description 2" := Item."Description 2";
+
+      TmpSalesLine."Allow Invoice Disc." := Item."Allow Invoice Disc.";
+      TmpSalesLine."Units per Parcel" := Item."Units per Parcel";
+      TmpSalesLine."Gen. Prod. Posting Group" := Item."Gen. Prod. Posting Group";
+      TmpSalesLine."VAT Prod. Posting Group" := Item."VAT Prod. Posting Group";
+      TmpSalesLine."Tax Group Code" := Item."Tax Group Code";
+      TmpSalesLine."Item Category Code" := Item."Item Category Code";
+      TmpSalesLine."Product Group Code" := Item."Product Group Code";
+      TmpSalesLine.Nonstock := Item."Created From Nonstock Item";
+      TmpSalesLine."Profit %" := Item."Profit %";
+      TmpSalesLine."Allow Item Charge Assignment" := TRUE;
+      IF TmpSalesLine."Unit of Measure Code" = '' THEN
+        TmpSalesLine."Unit of Measure Code" := Item."Sales Unit of Measure";
+    END;
+
+    LOCAL PROCEDURE UpdateSalesLine@1000000050(VAR TmpSalesLine@1000000000 : TEMPORARY Record 37);
+    BEGIN
+      TmpSalesLine."Line Discount Amount" :=
+        ROUND(
+          ROUND(TmpSalesLine.Quantity * TmpSalesLine."Unit Price",0.01) *
+          TmpSalesLine."Line Discount %" / 100,0.01);
+
+      TmpSalesLine."Line Amount" :=
+        ROUND(TmpSalesLine.Quantity * TmpSalesLine."Unit Price",0.01) - TmpSalesLine."Line Discount Amount";
+      TmpSalesLine."VAT Difference" := 0;
+    END;
+
+    LOCAL PROCEDURE FindCustomerFromContact@1000000043(VAR Contact@1000000000 : Record 5050;VAR Customer@1000000001 : Record 18) CustomerFound : Boolean;
+    VAR
+      ContBusRel@1000000006 : Record 5054;
+    BEGIN
+      ContBusRel.RESET;
+      ContBusRel.SETRANGE("Contact No.",Contact."Company No.");
+      ContBusRel.SETFILTER("No.",'<>''''');
+      ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
+
+      IF ContBusRel.FIND('-') THEN
+        IF Customer.GET(ContBusRel."No.") THEN BEGIN
+          CustomerFound := TRUE;
+        END;
+    END;
+
+    LOCAL PROCEDURE FindContactFromCustomer@1000000044(VAR Contact@1000000000 : Record 5050;CustomerNo@1000000001 : Code[20]) ContactFound : Boolean;
+    VAR
+      ContBusRel@1000000006 : Record 5054;
+    BEGIN
+      IF CustomerNo = '' THEN
+        EXIT;
+      ContBusRel.RESET;
+      ContBusRel.SETCURRENTKEY("Link to Table","No.");
+      ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
+      ContBusRel.SETRANGE("No.",CustomerNo);
+
+      IF ContBusRel.FIND('-') THEN
+        IF Contact.GET(ContBusRel."Contact No.") THEN BEGIN
+          ContactFound := TRUE;
+        END;
+    END;
+
+    PROCEDURE SetProcessStartTime@1000000035();
+    BEGIN
+      ProcessStartTime := TIME;
+      // TimeSpanInMilliSeconds := 3000;
+    END;
+
+    LOCAL PROCEDURE SetTimeSpanInMilliSeconds@1000000010(TimeSpanTxt@1000000000 : Text[250]);
+    BEGIN
+      IF STRLEN(TimeSpanTxt) > 0 THEN
+        EVALUATE(TimeSpanInMilliSeconds,TimeSpanTxt);
+    END;
+
+    LOCAL PROCEDURE TestIfTimeSpanExceeded@1000000013() : Boolean;
+    BEGIN
+      IF (TIME - ProcessStartTime) > TimeSpanInMilliSeconds THEN
+        ERROR('TimeSpan was exceeded - in Navision');
+    END;
+
+    LOCAL PROCEDURE loadNewXMLDoc@1000000007(VAR XMLDoc@1000000000 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument";XLDDocName@1000000001 : Text[250];RootNode@1000000002 : Text[250];RequestType@1000000003 : Text[250]);
+    VAR
+      TestText@1000000005 : Text[500];
+    BEGIN
+      XMLDoc.loadXML('<?xml version="1.0" encoding="utf-8"?>' +
+                     '<' +
+                     RootNode +
+                     '><' +
+                     RequestType + '></' + RequestType +
+                     '></' +
+                     RootNode +
+                     '>');
+    END;
+
+    BEGIN
+    {
+      //FMIT/001/12122007/FM: Added "VAT Registration No"
+    }
+    END.
+  }
+}
+

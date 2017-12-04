@@ -1,0 +1,156 @@
+OBJECT Table 61307 ESALESTABLE
+{
+  OBJECT-PROPERTIES
+  {
+    Date=24-09-09;
+    Time=10:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    OnInsert=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnModify=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnDelete=VAR
+               ESALESLINE@1000000000 : Record 61308;
+             BEGIN
+               ESALESLINE.SETCURRENTKEY("Web Site",ESALESNUMBER,LINENUMBER);
+               ESALESLINE.SETRANGE("Web Site","Web Site");
+               ESALESLINE.SETRANGE(ESALESNUMBER,ESALESNUMBER);
+               ESALESLINE.DELETEALL;
+             END;
+
+    CaptionML=[DAN=Salgs Ordre Journal;
+               ENU=Sales Order Journal];
+  }
+  FIELDS
+  {
+    { 1   ;   ;DATASET             ;Text3          }
+    { 2   ;   ;ROWNUMBER           ;Integer        }
+    { 3   ;   ;LASTCHANGED         ;DateTime      ;CaptionML=ENU=Last Changed }
+    { 4   ;   ;NAME                ;Text30        ;CaptionML=ENU=Name }
+    { 5   ;   ;ADDRESS1            ;Text30        ;CaptionML=ENU=Address 1 }
+    { 6   ;   ;ADDRESS2            ;Text30        ;CaptionML=ENU=Address 2 }
+    { 7   ;   ;ADDRESS3            ;Text30        ;CaptionML=ENU=Address 3 }
+    { 8   ;   ;PHONE               ;Text20        ;CaptionML=ENU=Phone }
+    { 9   ;   ;EMAIL               ;Text80        ;CaptionML=ENU=email }
+    { 10  ;   ;DELIVERYMODE        ;Text10        ;TableRelation="Shipment Method";
+                                                   CaptionML=ENU=Delivery Mode }
+    { 11  ;   ;PAYMENT             ;Text10        ;TableRelation="Payment Method";
+                                                   CaptionML=ENU=Payment }
+    { 12  ;   ;DELIVERYNAME        ;Text30        ;CaptionML=ENU=Delivery Name }
+    { 13  ;   ;DELIVERYADDRESS1    ;Text30        ;CaptionML=ENU=Delivery Address 1 }
+    { 14  ;   ;DELIVERYADDRESS2    ;Text30        ;CaptionML=ENU=Delivery Address 2 }
+    { 15  ;   ;DELIVERYADDRESS3    ;Text30        ;CaptionML=ENU=Delivery Address 3 }
+    { 16  ;   ;DELIVERYCOUNTRY     ;Text30        ;TableRelation=Country/Region;
+                                                   CaptionML=ENU=Delivery Country }
+    { 17  ;   ;ESALESNUMBER        ;Text10        ;OnValidate=VAR
+                                                                ESALESLINE@1000000000 : Record 61308;
+                                                              BEGIN
+                                                                ESALESLINE.SETCURRENTKEY("Web Site",ESALESNUMBER,LINENUMBER);
+                                                                ESALESLINE.SETRANGE("Web Site",xRec."Web Site");
+                                                                ESALESLINE.SETRANGE(ESALESNUMBER,xRec.ESALESNUMBER);
+                                                                ESALESLINE.MODIFYALL(ESALESNUMBER,ESALESNUMBER);
+                                                              END;
+
+                                                   CaptionML=ENU=Order No. }
+    { 18  ;   ;EREFERENCE          ;Text50        ;CaptionML=ENU=Reference }
+    { 19  ;   ;CUSTACCOUNT         ;Text20        ;CaptionML=ENU=Customer No. }
+    { 20  ;   ;DELIVERYDATE        ;DateTime      ;CaptionML=ENU=Delivery Date }
+    { 21  ;   ;STATUS              ;Integer       ;CaptionML=ENU=Status }
+    { 22  ;   ;LINES               ;Integer       ;CaptionML=ENU=Lines }
+    { 23  ;   ;CONTACTID           ;Text20        ;CaptionML=ENU=Contact ID }
+    { 24  ;   ;CREATEDATE          ;DateTime      ;CaptionML=ENU=Created Date }
+    { 25  ;   ;CREATETIME          ;Integer       ;CaptionML=ENU=Created Time }
+    { 26  ;   ;CURRENCY            ;Text3         ;TableRelation=Currency;
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=ENU=Currency }
+    { 27  ;   ;FEE                 ;Decimal       ;CaptionML=ENU=Fee }
+    { 28  ;   ;FREIGHT             ;Decimal       ;CaptionML=ENU=Freight }
+    { 29  ;   ;COUNTRY             ;Text30        ;TableRelation=Country/Region;
+                                                   CaptionML=ENU=Country }
+    { 30  ;   ;ACCEPT              ;Option        ;OnValidate=BEGIN
+                                                                xRec.TESTFIELD(ACCEPT,xRec.ACCEPT::New);
+                                                                IF ACCEPT = ACCEPT::Accepted THEN BEGIN
+                                                                  //"Process Status" := "Process Status"::"Being Processed";
+                                                                  "Process Result" := "Process Result"::"Not Processed";
+                                                                END;
+                                                                IF ACCEPT = ACCEPT::Rejected THEN BEGIN
+                                                                  IF GUIALLOWED THEN
+                                                                    IF NOT CONFIRM(STRSUBSTNO(Text001,FIELDCAPTION(ACCEPT),ACCEPT,FIELDCAPTION(ESALESNUMBER),ESALESNUMBER)) THEN
+                                                                      ERROR(Text002);
+                                                                  "Process Status" := "Process Status"::Processed;
+                                                                  "Process Result" := "Process Result"::Rejected;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=ENU=Accept;
+                                                   OptionCaptionML=[DAN=Ny,Accepteret,Afvist;
+                                                                    ENU=New,Accepted,Rejected];
+                                                   OptionString=New,Accepted,Rejected }
+    { 31  ;   ;ESHOP               ;Integer       ;CaptionML=ENU=Eshop }
+    { 32  ;   ;PAYMENTID           ;Text30        ;CaptionML=ENU=Payment ID }
+    { 33  ;   ;STATUS_ORIG         ;Integer       ;CaptionML=ENU=Status Orig. }
+    { 34  ;   ;POSTAGEFEE          ;Decimal       ;CaptionML=ENU=Postage Fee }
+    { 35  ;   ;ZIPCODE             ;Text20        ;TableRelation="Post Code";
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=ENU=Zip Code }
+    { 36  ;   ;REGION              ;Text30        ;CaptionML=ENU=Region }
+    { 37  ;   ;DELIVERYZIPCODE     ;Text20        ;TableRelation="Post Code";
+                                                   ValidateTableRelation=No;
+                                                   TestTableRelation=No;
+                                                   CaptionML=ENU=Delivery Zip Code }
+    { 38  ;   ;DELIVERYREGION      ;Text30        ;CaptionML=ENU=Delivery Region }
+    { 39  ;   ;SALESNUMBER         ;Text10        ;CaptionML=ENU=Sales Number }
+    { 40  ;   ;DEPARTMENT          ;Text20        ;CaptionML=ENU=Department }
+    { 41  ;   ;CENTRE              ;Text20        ;CaptionML=ENU=Centre }
+    { 42  ;   ;PURPOSE             ;Text20        ;CaptionML=ENU=Purpose }
+    { 43  ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+    { 44  ;   ;Process Status      ;Option        ;CaptionML=ENU=Process Status;
+                                                   OptionCaptionML=[DAN=Ny,Under Behandling,Behandlet;
+                                                                    ENU=New,Being Processed,Processed];
+                                                   OptionString=New,Being Processed,Processed }
+    { 45  ;   ;Process Result      ;Option        ;CaptionML=ENU=Process Result;
+                                                   OptionCaptionML=[DAN=Ikke Behandlet,Ordre Dannet,Fejl,Afvist;
+                                                                    ENU=Not Processed,Order Created,Error,Rejected];
+                                                   OptionString=Not Processed,Order Created,Error,Rejected }
+    { 46  ;   ;Sales Document Type ;Option        ;CaptionML=ENU=Sales Document Type;
+                                                   OptionCaptionML=[DAN=Tilbud,Ordre,Faktura,Kreditnota,Rammeordre,Returv.ordre;
+                                                                    ENU=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order];
+                                                   OptionString=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order }
+    { 47  ;   ;Sales Document No.  ;Code20        ;CaptionML=ENU=Sales Document No. }
+    { 48  ;   ;Total Amount Excl. VAT;Decimal      }
+    { 49  ;   ;Total Amount Incl. VAT;Decimal      }
+  }
+  KEYS
+  {
+    {    ;Web Site,ROWNUMBER                      ;Clustered=Yes }
+    {    ;Web Site,ESALESNUMBER                    }
+    {    ;Web Site,ACCEPT,ESALESNUMBER             }
+    {    ;Web Site,ACCEPT,Process Status,Process Result }
+    {    ;Web Site,Process Status,Process Result,ACCEPT }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text001@1000000000 : TextConst 'DAN=%1 vil blive sat til %2 p� %3 %4.Forts�t?;ENU=%1 will be set to %2 on %3 %4.Continue?';
+      Text002@1000000001 : TextConst 'DAN=Opdatering blev afbrudt.;ENU=Update was cancelled.';
+
+    BEGIN
+    END.
+  }
+}
+

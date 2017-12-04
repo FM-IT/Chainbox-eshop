@@ -1,0 +1,126 @@
+OBJECT Form 61313 eSales Order Journal Lines
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21-09-09;
+    Time=21:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16500;
+    Height=6710;
+    Editable=No;
+    CaptionML=[DAN=Salgs Ordre Journal Linjer;
+               ENU=Sales Order Journal Lines];
+    TableBoxID=1106000000;
+    SourceTable=Table61308;
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;16060;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000001;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ROWNUMBER }
+    { 1106000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000001;
+                                                 InColumnHeading=Yes }
+    { 1106000003;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LASTCHANGED }
+    { 1106000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000003;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ESALESNUMBER }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000007;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LINENUMBER }
+    { 1106000008;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000007;
+                                                 InColumnHeading=Yes }
+    { 1106000009;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ITEMNUMBER }
+    { 1106000010;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000009;
+                                                 InColumnHeading=Yes }
+    { 1106000011;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=QUANTITY }
+    { 1106000012;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000011;
+                                                 InColumnHeading=Yes }
+    { 1106000013;TextBox;0    ;0    ;2200 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=SALESPRICE }
+    { 1106000014;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000013;
+                                                 InColumnHeading=Yes }
+    { 1106000015;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=DELIVERYDATE }
+    { 1106000016;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000015;
+                                                 InColumnHeading=Yes }
+    { 1106000017;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=VARIANT }
+    { 1106000018;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000017;
+                                                 InColumnHeading=Yes }
+    { 1106000019;CommandButton;6820;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000020;CommandButton;9240;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000021;CommandButton;14080;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1000000000;MenuButton;11660;5940;2200;550 ;CaptionML=[DAN=Ordre Linje;
+                                                            ENU=Order Line];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000001;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=Validation Description;
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Validation),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER),
+                                                                 LINENUMBER=FIELD(LINENUMBER) }
+                                                   { ID=1000000002;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=Comment;
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Comment),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER),
+                                                                 LINENUMBER=FIELD(LINENUMBER) }
+                                                   { ID=1000000003;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Linjekommentar;
+                                                                ENU=Line Comment];
+                                                     RunObject=Form 61316;
+                                                     RunFormView=SORTING(Web Site,Text Type,ESALESNUMBER,LINENUMBER,Text Line No.);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Order Line Text),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER),
+                                                                 LINENUMBER=FIELD(LINENUMBER) }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

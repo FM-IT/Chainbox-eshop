@@ -1,0 +1,205 @@
+OBJECT Report 61302 Create Categories
+{
+  OBJECT-PROPERTIES
+  {
+    Date=29-05-10;
+    Time=08:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Opret Kategorier;
+               ENU=Create Categories];
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   IF eWebSiteSetup.GetWebSiteSetup('') THEN;
+                 END;
+
+    OnPreReport=BEGIN
+                  eWebSiteSetup.GET(eWebSiteSetup."Web Site");
+                END;
+
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table27;
+        OnPreDataItem=BEGIN
+                        ECATEGORYTmp.DELETEALL;
+                        EINVENCATEGORYTmp.DELETEALL;
+                      END;
+
+        OnAfterGetRecord=BEGIN
+                           CASE CreateCatFrom OF
+                             CreateCatFrom::"Inventory Posting Group" :
+                               BEGIN
+                                 InsertNewCategoryTmp(Item,eWebSiteSetup."Web Site","Inventory Posting Group");
+                               END;
+                             CreateCatFrom::"Item Category Code" :
+                               BEGIN
+                                 InsertNewCategoryTmp(Item,eWebSiteSetup."Web Site","Item Category Code");
+                               END;
+                             CreateCatFrom::"Product Group Code" :
+                               BEGIN
+                                 InsertNewCategoryTmp(Item,eWebSiteSetup."Web Site","Product Group Code");
+                               END;
+                             CreateCatFrom::"Gen. Prod. Posting Group" :
+                               BEGIN
+                                 InsertNewCategoryTmp(Item,eWebSiteSetup."Web Site","Gen. Prod. Posting Group");
+                               END;
+                           END;
+                         END;
+
+        OnPostDataItem=BEGIN
+                         UpdateCategories;
+                       END;
+
+        ReqFilterFields=No.,Inventory Posting Group,Statistics Group,Item Category Code,Product Group Code,Gen. Prod. Posting Group;
+      }
+      SECTIONS
+      {
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9020;
+      Height=4510;
+      OnOpenForm=BEGIN
+                   RequestOptionsForm.WebSiteCtrl.VISIBLE(eWebSiteSetup.ShowWebSiteField);
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1000000000;OptionButton;3410;0;3740 ;440  ;CaptionML=ENU=Inventory Posting Group;
+                                                   SourceExpr=CreateCatFrom;
+                                                   OptionValue=Inventory Posting Group }
+      { 1000000001;Label  ;0    ;0    ;3300 ;440  ;ParentControl=1000000000;
+                                                   CaptionML=ENU=Create Category From }
+      { 1000000003;OptionButton;3410;550;3740;440 ;CaptionML=ENU=Item Category Code;
+                                                   SourceExpr=CreateCatFrom;
+                                                   OptionValue=Item Category Code }
+      { 1000000004;OptionButton;3410;1100;3740;440;CaptionML=ENU=Product Group Code;
+                                                   SourceExpr=CreateCatFrom;
+                                                   OptionValue=Product Group Code }
+      { 1000000005;OptionButton;3410;1650;3740;440;CaptionML=ENU=Gen. Prod. Posting Group;
+                                                   SourceExpr=CreateCatFrom;
+                                                   OptionValue=Gen. Prod. Posting Group }
+      { 1000000007;TextBox;3410 ;4070 ;1700 ;440  ;Name=WebSiteCtrl;
+                                                   CaptionML=ENU=Web Site;
+                                                   SourceExpr=eWebSiteSetup."Web Site";
+                                                   TableRelation="eWeb Site Setup" }
+      { 1000000008;Label  ;0    ;4070 ;3300 ;440  ;ParentControl=1000000007 }
+      { 1000000006;OptionButton;3410;2310;3740;440;CaptionML=ENU=Update Existing Category;
+                                                   SourceExpr=ActionWhenCatExists;
+                                                   OptionValue=Update Existing Category }
+      { 1000000009;OptionButton;3410;2860;3740;440;CaptionML=ENU=Stop With Error;
+                                                   SourceExpr=ActionWhenCatExists;
+                                                   OptionValue=Stop With Error }
+      { 1000000010;Label  ;0    ;2310 ;3300 ;440  ;ParentControl=1000000006;
+                                                   CaptionML=ENU=When Category Exists }
+      { 1000000011;OptionButton;3410;3410;3740;440;CaptionML=ENU=Skip Item And Continue;
+                                                   SourceExpr=ActionWhenCatExists;
+                                                   OptionValue=Skip Item }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      eWebSiteSetup@1000000001 : Record 61300;
+      ECATEGORYTmp@1000000003 : TEMPORARY Record 61305;
+      EINVENCATEGORYTmp@1000000006 : TEMPORARY Record 61306;
+      CreateCatFrom@1000000000 : 'Inventory Posting Group,Item Category Code,Product Group Code,Gen. Prod. Posting Group';
+      ActionWhenCatExists@1000000002 : 'Update Existing Category,Stop With Error,Skip Item';
+      Text001@1000000004 : TextConst 'ENU=%1 %2 already exists.';
+
+    PROCEDURE InsertNewCategoryTmp@1000000000(VAR Item@1000000003 : Record 27;"Web Site"@1000000001 : Code[10];Category@1000000002 : Code[10]);
+    BEGIN
+      ECATEGORYTmp."Web Site" := "Web Site";
+      ECATEGORYTmp.CATEGORY := Category;
+      ECATEGORYTmp.Description := Category;
+      IF ECATEGORYTmp.INSERT THEN;
+
+      EINVENCATEGORYTmp."Web Site" := "Web Site";
+      EINVENCATEGORYTmp.CATEGORY := Category;
+      EINVENCATEGORYTmp.ITEMNUMBER := Item."No.";
+      IF EINVENCATEGORYTmp.INSERT THEN;
+    END;
+
+    PROCEDURE UpdateCategories@1000000002();
+    VAR
+      ECATEGORY@1000000001 : Record 61305;
+    BEGIN
+      IF ECATEGORYTmp.FINDFIRST THEN
+        REPEAT
+          ECATEGORY.SETRANGE("Web Site",ECATEGORYTmp."Web Site");
+          ECATEGORY.SETRANGE(CATEGORY,ECATEGORYTmp.CATEGORY);
+          IF ECATEGORY.FINDFIRST THEN BEGIN
+            CASE ActionWhenCatExists OF
+              ActionWhenCatExists::"Update Existing Category" :
+                BEGIN
+                  EINVENCATEGORYTmp.SETRANGE("Web Site",ECATEGORYTmp."Web Site");
+                  EINVENCATEGORYTmp.SETRANGE(CATEGORY,ECATEGORYTmp.CATEGORY);
+                  IF EINVENCATEGORYTmp.FINDSET THEN
+                    REPEAT
+                      InsertInventCategory(ECATEGORY,EINVENCATEGORYTmp);
+                    UNTIL EINVENCATEGORYTmp.NEXT = 0;
+                END;
+              ActionWhenCatExists::"Stop With Error" :
+                BEGIN
+                  ERROR(STRSUBSTNO(Text001,ECATEGORY.TABLECAPTION,ECATEGORY.CATEGORY));
+                END;
+              ActionWhenCatExists::"Skip Item" :
+                BEGIN
+                  //Do nothing...
+                END;
+            END;
+          END ELSE BEGIN
+            ECATEGORY := ECATEGORYTmp;
+            ECATEGORY.INSERT(TRUE);
+            EINVENCATEGORYTmp.SETRANGE("Web Site",ECATEGORYTmp."Web Site");
+            EINVENCATEGORYTmp.SETRANGE(CATEGORY,ECATEGORYTmp.CATEGORY);
+            IF EINVENCATEGORYTmp.FINDSET THEN
+              REPEAT
+                InsertInventCategory(ECATEGORY,EINVENCATEGORYTmp);
+              UNTIL EINVENCATEGORYTmp.NEXT = 0;
+          END;
+        UNTIL ECATEGORYTmp.NEXT = 0;
+    END;
+
+    PROCEDURE InsertInventCategory@1000000003(VAR ECATEGORY@1000000002 : Record 61305;VAR EINVENCATEGORY@1000000001 : Record 61306);
+    VAR
+      EINVENCATEGORY2@1000000000 : Record 61306;
+      Item@1000000003 : Record 27;
+    BEGIN
+      EINVENCATEGORY2 := EINVENCATEGORY;
+      EINVENCATEGORY2.CATEGORY := ECATEGORY.CATEGORY;
+      IF EINVENCATEGORY2.INSERT THEN;
+      IF Item.GET(EINVENCATEGORY2.ITEMNUMBER) THEN
+        IF Item."On Chainbox Web" = Item."On Chainbox Web"::No THEN BEGIN
+          Item.VALIDATE("On Chainbox Web",Item."On Chainbox Web"::"Item Only");
+          Item.MODIFY(TRUE);
+        END;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

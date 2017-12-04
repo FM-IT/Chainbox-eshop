@@ -1,0 +1,216 @@
+OBJECT Report 61303 Export Item Language to Excel
+{
+  OBJECT-PROPERTIES
+  {
+    Date=29-05-10;
+    Time=08:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Eksporter Vare Sprog til Excel;
+               ENU=Export Item Language to Excel];
+    ProcessingOnly=Yes;
+    OnInitReport=VAR
+                   ChrLF@1000000001 : Char;
+                 BEGIN
+                   ShowWebSiteField := eWebSiteSetup.ShowWebSiteField;
+                   eWebSiteSetup.GetWebSiteSetup('');
+                   TempExcelBuffer.DELETEALL;
+                   ChrLF := 10;
+                   LF := FORMAT(ChrLF);
+                 END;
+
+    OnPreReport=VAR
+                  eLanguage@1000000000 : Record 61303;
+                BEGIN
+                  eWebSiteSetup.GET(eWebSiteSetup."Web Site");
+                  RowNo := 0;
+                  eLanguage.SETRANGE("Web Site",eWebSiteSetup."Web Site");
+                  eLanguageTmp.DELETEALL;
+                  IF eLanguage.FINDSET THEN
+                    REPEAT
+                      eLanguageTmp := eLanguage;
+                      eLanguageTmp.INSERT;
+                    UNTIL eLanguage.NEXT = 0;
+                END;
+
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table61304;
+        DataItemTableView=SORTING(Web Site,Item No.,ITEMNUMBER);
+        OnPreDataItem=BEGIN
+                        NextRowNo;
+                        EnterCell(RowNo,GetNextColNo,EINVENTABLE.FIELDNAME(ITEMNUMBER),TRUE,FALSE,FALSE);
+                        EnterCell(RowNo,GetNextColNo,FORMAT(eTranslationFilter.Type),TRUE,FALSE,FALSE);
+                        IF eLanguageTmp.FINDSET THEN
+                          REPEAT
+                            EnterCell(RowNo,GetNextColNo,eLanguageTmp.Code,TRUE,FALSE,FALSE);
+                          UNTIL eLanguageTmp.NEXT = 0;
+                      END;
+
+        OnAfterGetRecord=VAR
+                           Item@1000000000 : Record 27;
+                           ItemIdentifier@1000000004 : Record 7704;
+                           ItemVariant@1000000001 : Record 5401;
+                           eTranslation@1000000003 : Record 61301;
+                           ItemVarDescription@1000000002 : Text[250];
+                           Text2Add@1000000006 : Text[250];
+                           TextLengthExceeded@1000000005 : Boolean;
+                         BEGIN
+                           IF NOT EINVENTABLE.IsItemIdentifier THEN BEGIN
+                             IF Item.GET(EINVENTABLE.ITEMNUMBER) THEN
+                               ItemVarDescription := Item.Description;
+                           END ELSE BEGIN
+                             IF ItemIdentifier.GET(EINVENTABLE.ITEMNUMBER) THEN BEGIN
+                               IF Item.GET(ItemIdentifier."Item No.") THEN
+                                 ItemVarDescription := Item.Description;
+                               IF ItemIdentifier."Variant Code" <> '' THEN BEGIN
+                                 IF ItemVariant.GET(EINVENTABLE."Item No.",ItemIdentifier."Variant Code") THEN
+                                   ItemVarDescription := ItemVariant.Description;
+                               END;
+                             END;
+                           END;
+
+                           NextRowNo;
+                           EnterCell(RowNo,GetNextColNo,EINVENTABLE.ITEMNUMBER,TRUE,FALSE,FALSE);
+                           EnterCell(RowNo,GetNextColNo,ItemVarDescription,TRUE,FALSE,FALSE);
+                           IF eLanguageTmp.FINDSET THEN
+                             REPEAT
+                               ItemVarDescription := '';
+                               TextLengthExceeded := FALSE;
+                               eTranslation.SETRANGE("Table No.",eTranslation."Table No."::eItem);
+                               eTranslation.SETRANGE("Web Site",eWebSiteSetup."Web Site");
+                               eTranslation.SETRANGE(Code,EINVENTABLE.ITEMNUMBER);
+                               eTranslation.SETRANGE("Language Code",eLanguageTmp.Code);
+                               eTranslation.SETRANGE(Type,eTranslationFilter.Type);
+                               IF eTranslation.FINDSET THEN BEGIN
+                                 REPEAT
+                                   IF ItemVarDescription = '' THEN
+                                     Text2Add := COPYSTR(eTranslation.Text,1,MAXSTRLEN(Text2Add))
+                                   ELSE
+                                     Text2Add := COPYSTR(LF + eTranslation.Text,1,MAXSTRLEN(Text2Add));
+                                   TextLengthExceeded :=
+                                     STRLEN(ItemVarDescription) + STRLEN(Text2Add) > MAXSTRLEN(TempExcelBuffer."Cell Value as Text");
+                                   IF NOT TextLengthExceeded THEN
+                                     ItemVarDescription += Text2Add
+                                   ELSE
+                                     ItemVarDescription := '***';
+                                 UNTIL (eTranslation.NEXT = 0) OR TextLengthExceeded;
+                               END;
+                               IF NOT TextLengthExceeded THEN
+                                 EnterCell(RowNo,GetNextColNo,ItemVarDescription,TRUE,FALSE,FALSE);
+                             UNTIL eLanguageTmp.NEXT = 0;
+                         END;
+
+        OnPostDataItem=BEGIN
+                         TempExcelBuffer.CreateBook;
+                         TempExcelBuffer.CreateSheet(eWebSiteSetup."Web Site",eWebSiteSetup."Web Site",COMPANYNAME,USERID);
+                         TempExcelBuffer.GiveUserControl;
+                       END;
+
+        ReqFilterFields=Item No.;
+      }
+      SECTIONS
+      {
+        { PROPERTIES
+          {
+            SectionType=Body;
+            SectionWidth=12000;
+            SectionHeight=846;
+          }
+          CONTROLS
+          {
+          }
+           }
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9020;
+      Height=3410;
+      SaveValues=Yes;
+      OnOpenForm=BEGIN
+                   RequestOptionsForm.eWebSiteTxtBox.VISIBLE(ShowWebSiteField);
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1000000000;OptionButton;3410;0;3740 ;440  ;CaptionML=ENU=Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Description }
+      { 1000000001;Label  ;0    ;0    ;3300 ;440  ;ParentControl=1000000000;
+                                                   CaptionML=ENU=Export Type }
+      { 1000000002;OptionButton;3410;550;3740;440 ;CaptionML=ENU=Short Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Short Description }
+      { 1000000003;OptionButton;3410;1100;3740;440;CaptionML=ENU=Long Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Long Description }
+      { 1000000004;TextBox;3410 ;1760 ;1700 ;440  ;Name=eWebSiteTxtBox;
+                                                   SourceExpr=eWebSiteSetup."Web Site";
+                                                   TableRelation="eWeb Site Setup" }
+      { 1000000005;Label  ;0    ;1760 ;3300 ;440  ;ParentControl=1000000004 }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      TempExcelBuffer@1000000000 : TEMPORARY Record 370;
+      eWebSiteSetup@1000000001 : Record 61300;
+      eLanguageTmp@1000000006 : TEMPORARY Record 61303;
+      eTranslationFilter@1000000003 : Record 61301;
+      RowNo@1000000004 : Integer;
+      ColNo@1000000005 : Integer;
+      LF@1000000007 : Text[2];
+      ShowWebSiteField@1000000002 : Boolean;
+
+    LOCAL PROCEDURE EnterCell@1000000001(RowNo@1000 : Integer;ColumnNo@1001 : Integer;CellValue@1002 : Text[250];Bold@1003 : Boolean;Italic@1004 : Boolean;UnderLine@1005 : Boolean);
+    BEGIN
+      TempExcelBuffer.INIT;
+      TempExcelBuffer.VALIDATE("Row No.",RowNo);
+      TempExcelBuffer.VALIDATE("Column No.",ColumnNo);
+      TempExcelBuffer."Cell Value as Text" := CellValue;
+      TempExcelBuffer.Formula := '';
+      TempExcelBuffer.Bold := Bold;
+      TempExcelBuffer.Italic := Italic;
+      TempExcelBuffer.Underline := UnderLine;
+      TempExcelBuffer.INSERT;
+    END;
+
+    PROCEDURE NextRowNo@1000000004();
+    BEGIN
+      RowNo += 1;
+      ColNo := 0;
+    END;
+
+    PROCEDURE GetNextColNo@1000000005() : Integer;
+    BEGIN
+      ColNo += 1;
+      EXIT(ColNo);
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

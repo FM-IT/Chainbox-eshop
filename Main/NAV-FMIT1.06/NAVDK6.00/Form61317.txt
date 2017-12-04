@@ -1,0 +1,200 @@
+OBJECT Form 61317 Wizard
+{
+  OBJECT-PROPERTIES
+  {
+    Date=09-09-09;
+    Time=18:13:25;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=28490;
+    Height=11660;
+    OnOpenForm=BEGIN
+                 VisibleFrameNo.SETRANGE(Number,1,6);
+                 FindVisibleFrm('-');
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;Frame  ;220  ;220  ;9350 ;4950 ;Name=01-WebSiteFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=[DAN=Web Side Ops�tning;
+                                                            ENU=Web Site Setup] }
+    { 1000000011;CheckBox;3850;660  ;440  ;440  ;ParentControl=1000000000;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Web Side Ops�tning;
+                                                            ENU=Update Web Site Setup];
+                                                 SourceExpr=Execute01WebSiteFrame }
+    { 1000000012;Label  ;440  ;660  ;3300 ;440  ;ParentControl=1000000011 }
+    { 1000000001;CommandButton;3740;5390;770;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=<<;
+                                                            ENU=<<];
+                                                 OnPush=BEGIN
+                                                          FindVisibleFrm('-');
+                                                        END;
+                                                         }
+    { 1000000002;CommandButton;4620;5390;770;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=<;
+                                                            ENU=<];
+                                                 OnPush=BEGIN
+                                                          FindVisibleFrm('<=');
+                                                        END;
+                                                         }
+    { 1000000003;CommandButton;5500;5390;770;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=>;
+                                                            ENU=>];
+                                                 OnPush=BEGIN
+                                                          FindVisibleFrm('>=');
+                                                        END;
+                                                         }
+    { 1000000004;CommandButton;6380;5390;770;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=>>;
+                                                            ENU=>>];
+                                                 OnPush=BEGIN
+                                                          FindVisibleFrm('+');
+                                                        END;
+                                                         }
+    { 1000000005;CommandButton;7370;5390;2200;550;
+                                                 Name=ExecuteBtn;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=Udf�r;
+                                                            ENU=Execute] }
+    { 1000000006;Frame  ;9680 ;220  ;9350 ;4950 ;Name=02-ItemFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=ENU=Item }
+    { 1000000013;CheckBox;13310;660 ;440  ;440  ;ParentControl=1000000006;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Varer;
+                                                            ENU=Update Items];
+                                                 SourceExpr=Execute02ItemFrame }
+    { 1000000014;Label  ;9900 ;660  ;3300 ;440  ;ParentControl=1000000013 }
+    { 1000000007;Frame  ;19140;220  ;9350 ;4950 ;Name=03-ContactFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=ENU=Contact }
+    { 1000000015;CheckBox;22770;660 ;440  ;440  ;ParentControl=1000000007;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Kontakter;
+                                                            ENU=Update Contacts];
+                                                 SourceExpr=Execute03ContactFrame }
+    { 1000000016;Label  ;19360;660  ;3300 ;440  ;ParentControl=1000000015 }
+    { 1000000008;Frame  ;220  ;6160 ;9350 ;4950 ;Name=04-CategoryFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=ENU=Category }
+    { 1000000017;CheckBox;3850;6600 ;440  ;440  ;ParentControl=1000000008;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Kategorier;
+                                                            ENU=Update Categories];
+                                                 SourceExpr=Execute04CategoryFrame }
+    { 1000000018;Label  ;440  ;6600 ;3300 ;440  ;ParentControl=1000000017 }
+    { 1000000009;Frame  ;9680 ;6160 ;9350 ;4950 ;Name=05-LanguageFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=ENU=Language }
+    { 1000000019;CheckBox;13310;6600;440  ;440  ;ParentControl=1000000009;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Sprog;
+                                                            ENU=Update Languages];
+                                                 SourceExpr=Execute05LanguageFrame }
+    { 1000000020;Label  ;9900 ;6600 ;3300 ;440  ;ParentControl=1000000019 }
+    { 1000000010;Frame  ;19140;6160 ;9350 ;4950 ;Name=06-ExecuteFrame;
+                                                 HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 CaptionML=ENU=Execute }
+    { 1000000023;CheckBox;22770;6600;440  ;440  ;Editable=No;
+                                                 ParentControl=1000000010;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Web Side Ops�tning;
+                                                            ENU=Update Web Site Setup];
+                                                 SourceExpr=Execute01WebSiteFrame }
+    { 1000000024;Label  ;19360;6600 ;3300 ;440  ;ParentControl=1000000023 }
+    { 1000000025;CheckBox;22770;7150;440  ;440  ;Editable=No;
+                                                 ParentControl=1000000010;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Varer;
+                                                            ENU=Update Items];
+                                                 SourceExpr=Execute02ItemFrame }
+    { 1000000026;Label  ;19360;7150 ;3300 ;440  ;ParentControl=1000000025 }
+    { 1000000027;CheckBox;22770;7700;440  ;440  ;Editable=No;
+                                                 ParentControl=1000000010;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Kontakter;
+                                                            ENU=Update Contacts];
+                                                 SourceExpr=Execute03ContactFrame }
+    { 1000000028;Label  ;19360;7700 ;3300 ;440  ;ParentControl=1000000027 }
+    { 1000000029;CheckBox;22770;8250;440  ;440  ;Editable=No;
+                                                 ParentControl=1000000010;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Kategorier;
+                                                            ENU=Update Categories];
+                                                 SourceExpr=Execute04CategoryFrame }
+    { 1000000030;Label  ;19360;8250 ;3300 ;440  ;ParentControl=1000000029 }
+    { 1000000031;CheckBox;22770;8800;440  ;440  ;Editable=No;
+                                                 ParentControl=1000000010;
+                                                 InFrame=Yes;
+                                                 ShowCaption=No;
+                                                 CaptionML=[DAN=Opdater Sprog;
+                                                            ENU=Update Languages];
+                                                 SourceExpr=Execute05LanguageFrame }
+    { 1000000032;Label  ;19360;8800 ;3300 ;440  ;ParentControl=1000000031 }
+  }
+  CODE
+  {
+    VAR
+      VisibleFrameNo@1000000000 : Record 2000000026;
+      Execute01WebSiteFrame@1000000001 : Boolean;
+      Execute02ItemFrame@1000000002 : Boolean;
+      Execute03ContactFrame@1000000003 : Boolean;
+      Execute04CategoryFrame@1000000004 : Boolean;
+      Execute05LanguageFrame@1000000005 : Boolean;
+
+    PROCEDURE FindVisibleFrm@1000000000(SearchText@1000000000 : Code[10]);
+    BEGIN
+      VisibleFrameNo.FIND(SearchText);
+      SetNewVisibleFrm(VisibleFrameNo.Number);
+      SetVisibleExecBtn(VisibleFrameNo.Number);
+    END;
+
+    PROCEDURE SetNewVisibleFrm@1000000003(NewFrameNo@1000000000 : Integer);
+    BEGIN
+      CurrForm."01-WebSiteFrame".VISIBLE(NewFrameNo = 1);
+      CurrForm."02-ItemFrame".VISIBLE(NewFrameNo = 2);
+      CurrForm."03-ContactFrame".VISIBLE(NewFrameNo = 3);
+      CurrForm."04-CategoryFrame".VISIBLE(NewFrameNo = 4);
+      CurrForm."05-LanguageFrame".VISIBLE(NewFrameNo = 5);
+      CurrForm."06-ExecuteFrame".VISIBLE(NewFrameNo = 6);
+    END;
+
+    PROCEDURE SetVisibleExecBtn@1000000004(NewFrameNo@1000000000 : Integer);
+    VAR
+      FindLastFrameNo@1000000001 : Record 2000000026;
+    BEGIN
+      FindLastFrameNo.COPY(VisibleFrameNo);
+      FindLastFrameNo.FIND('+');
+      CurrForm.ExecuteBtn.VISIBLE(NewFrameNo = FindLastFrameNo.Number);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

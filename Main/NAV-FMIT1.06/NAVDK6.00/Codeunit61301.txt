@@ -1,0 +1,551 @@
+OBJECT Codeunit 61301 eShop Tranfer eOrder
+{
+  OBJECT-PROPERTIES
+  {
+    Date=29-12-09;
+    Time=11:00:00;
+    Version List=FMIT1.06;
+  }
+  PROPERTIES
+  {
+    TableNo=61307;
+    OnRun=VAR
+            ESALESLINE@1000000002 : Record 61308;
+            SalesHeader@1000000000 : Record 36;
+            SalesLine@1000000001 : Record 37;
+            eWebSiteSetup@1000000003 : Record 61300;
+            ArchiveMgt@1000000004 : Codeunit 5063;
+            NextLineNo@1000000005 : Integer;
+          BEGIN
+            LOCKTABLE;
+            SalesHeader.LOCKTABLE;
+            IF RECORDLEVELLOCKING THEN
+              SalesLine.LOCKTABLE;
+
+            eWebSiteSetup.GET("Web Site");
+            TESTFIELD(ACCEPT,ACCEPT::Accepted);
+            IF ("Process Result" = "Process Result"::"Order Created") THEN
+              FIELDERROR("Process Result");
+            IF ("Process Status" = "Process Status"::Processed) THEN
+              FIELDERROR("Process Status");
+
+            IF NOT ValidateOrderJournal(Rec) THEN
+              ERROR(STRSUBSTNO(Text002,TABLECAPTION,ROWNUMBER));
+
+            //From ESALESTABLE to Sales Header
+            SalesHeader."Document Type" := SalesHeader."Document Type"::Order;
+            SalesHeader.INSERT(TRUE);
+
+            SalesHeader.VALIDATE("Sell-to Customer No.",CUSTACCOUNT);
+            IF (eWebSiteSetup."Assign Location to Orders") AND (eWebSiteSetup.Location <> '') THEN
+              SalesHeader.VALIDATE("Location Code",eWebSiteSetup.Location);
+            SalesHeader.VALIDATE("Shipment Date",DT2DATE(DELIVERYDATE));
+            SalesHeader.VALIDATE("Shipment Method Code",DELIVERYMODE);
+            SalesHeader.VALIDATE("Payment Method Code",PAYMENT);
+            GetGLSetup;
+            IF CURRENCY = GeneralLedgerSetup."LCY Code" THEN
+              SalesHeader.VALIDATE("Currency Code",'')
+            ELSE
+              SalesHeader.VALIDATE("Currency Code",CURRENCY);
+
+            //Ship-to
+            IF NOT DeliveryAddressIsBlank(Rec) THEN BEGIN
+              SalesHeader.VALIDATE("Ship-to Name",DELIVERYNAME);
+              SalesHeader.VALIDATE("Ship-to Address",DELIVERYADDRESS1);
+              SalesHeader.VALIDATE("Ship-to Address 2",DELIVERYADDRESS2);
+              SalesHeader."Ship-to City" := DELIVERYADDRESS3;
+              SalesHeader.VALIDATE("Ship-to Country/Region Code",DELIVERYCOUNTRY);
+              SalesHeader."Ship-to Post Code" := DELIVERYZIPCODE;
+            END ELSE BEGIN
+              SalesHeader.VALIDATE("Ship-to Name",NAME);
+              SalesHeader.VALIDATE("Ship-to Address",ADDRESS1);
+              SalesHeader.VALIDATE("Ship-to Address 2",ADDRESS2);
+              SalesHeader."Ship-to City" := ADDRESS3;
+              SalesHeader.VALIDATE("Ship-to Country/Region Code",COUNTRY);
+              SalesHeader."Ship-to Post Code" := ZIPCODE;
+            END;
+            //DELIVERYREGION
+
+            //Sell-to
+            SalesHeader.VALIDATE("Sell-to Customer Name",NAME);
+            SalesHeader.VALIDATE("Sell-to Address",ADDRESS1);
+            SalesHeader.VALIDATE("Sell-to Address 2",ADDRESS2);
+            SalesHeader."Sell-to City" := ADDRESS3;
+            SalesHeader.VALIDATE("Sell-to Country/Region Code",COUNTRY);
+            SalesHeader."Sell-to Post Code" := ZIPCODE;
+            //REGION
+
+            //Bill-to
+            SalesHeader.VALIDATE("Bill-to Name",NAME);
+            SalesHeader.VALIDATE("Bill-to Address",ADDRESS1);
+            SalesHeader.VALIDATE("Bill-to Address 2",ADDRESS2);
+            SalesHeader."Bill-to City" := ADDRESS3;
+            SalesHeader.VALIDATE("Bill-to Country/Region Code",COUNTRY);
+            SalesHeader."Bill-to Post Code" := ZIPCODE;
+            //REGION
+
+            SalesHeader.VALIDATE("External Document No.",EREFERENCE);
+            SalesHeader.MODIFY(TRUE);
+
+            //From Sales Header to ESALESTABLE
+            "Sales Document Type" := SalesHeader."Document Type";
+            "Sales Document No." := SalesHeader."No.";
+
+            //Transfer Comments
+            CommentsFromESALESTABLE2SH(Rec,SalesHeader);
+
+            //Transfer Lines
+            ESALESLINE.SETCURRENTKEY("Web Site",ESALESNUMBER,LINENUMBER);
+            ESALESLINE.SETRANGE("Web Site","Web Site");
+            ESALESLINE.SETRANGE(ESALESNUMBER,ESALESNUMBER);
+            NextLineNo := 10000;
+            IF ESALESLINE.FINDSET(TRUE) THEN
+              REPEAT
+                SalesLine.VALIDATE("Document Type",SalesHeader."Document Type");
+                SalesLine.VALIDATE("Document No.",SalesHeader."No.");
+                //From ESALESLINE to Sales Line
+                SalesLine."Line No." := NextLineNo;
+                NextLineNo += 10000;
+                SalesLine.INSERT(TRUE);
+                SalesLine.VALIDATE(Type,SalesLine.Type::Item);
+                SalesLine.VALIDATE("No.",ESALESLINE.ITEMNUMBER);
+                SalesLine.VALIDATE("Variant Code",ESALESLINE.VARIANT);
+                SalesLine.VALIDATE(Quantity,ESALESLINE.QUANTITY);
+                IF eWebSiteSetup."Use Prices From Web" THEN
+                  SalesLine.VALIDATE("Unit Price",ESALESLINE.SALESPRICE);
+                SalesLine.VALIDATE("Shipment Date",DT2DATE(ESALESLINE.DELIVERYDATE));
+                SalesLine.MODIFY(TRUE);
+
+                //Transfer Comments
+                CommentsFromESALESLINE2SL(ESALESLINE,SalesLine);
+                OrderLineTextFromESALESLINE(ESALESLINE,SalesHeader,NextLineNo);
+
+                //From Sales Line to ESALESLINE
+                ESALESLINE."Sales Document Type" := SalesLine."Document Type";
+                ESALESLINE."Sales Document No." := SalesLine."Document No.";
+                ESALESLINE."Sales Document Line No." := SalesLine."Line No.";
+                ESALESLINE."Process Result" := ESALESLINE."Process Result"::"Order Created";
+                ESALESLINE.MODIFY(TRUE);
+              UNTIL ESALESLINE.NEXT = 0;
+
+            OrderLineTextFromESALESTABLE(Rec,SalesHeader,NextLineNo);
+
+            //From Sales Header to ESALESTABLE
+            "Process Result" := "Process Result"::"Order Created";
+            "Process Status" := "Process Status"::Processed;
+            MODIFY(TRUE);
+
+            IF eWebSiteSetup."Auto Save to Sales Archive" THEN
+              ArchiveMgt.StoreSalesDocument(SalesHeader,FALSE);
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      GeneralLedgerSetup@1000000000 : Record 98;
+      Text001@1000000001 : TextConst 'ENU=%1 must not be %2 in %3.';
+      Text002@1000000002 : TextConst 'ENU=%1 %2 could not be transferred.';
+      Text003@1000000003 : TextConst 'ENU=%1 (%2) from the %3 does not match actual count of %4 (%5).';
+      Text004@1000000004 : TextConst 'DAN=<BLANK>;ENU=<BLANK>';
+      Text005@1000000005 : TextConst 'DAN=%1 %2 kunne ikke findes.;ENU=%1 %2 could not be found.';
+      GLSetupAlreadyRetrieved@1000000006 : Boolean;
+
+    PROCEDURE ValidateOrderJournal@1000000000(VAR ESALESTABLE@1000000000 : Record 61307) : Boolean;
+    VAR
+      ESALESLINE@1000000001 : Record 61308;
+      OrderValidationText@1000000003 : Record 61309;
+      OrderValidationTextTmp@1000000004 : TEMPORARY Record 61309;
+      Item@1000000006 : Record 27;
+      Customer@1000000007 : Record 18;
+      Currency@1000000008 : Record 4;
+      ErrorMsg@1000000005 : Text[250];
+      ErrorFound@1000000002 : Boolean;
+    BEGIN
+      OrderValidationText.SETRANGE("Web Site",ESALESTABLE."Web Site");
+      OrderValidationText.SETRANGE("Text Type",OrderValidationText."Text Type"::Validation);
+      OrderValidationText.SETRANGE(ESALESNUMBER,ESALESTABLE.ESALESNUMBER);
+      OrderValidationText.DELETEALL;
+
+      //Header
+      IF ESALESTABLE.CUSTACCOUNT = '' THEN BEGIN
+        ErrorFound := TRUE;
+        ErrorMsg := COPYSTR(STRSUBSTNO(Text001,ESALESTABLE.FIELDCAPTION(CUSTACCOUNT),Text004,ESALESTABLE.GETPOSITION),1,
+          MAXSTRLEN(ErrorMsg));
+        InsertNewValidationText(OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+      END ELSE BEGIN
+        IF NOT Customer.GET(ESALESTABLE.CUSTACCOUNT) THEN BEGIN
+          ErrorFound := TRUE;
+          ErrorMsg := COPYSTR(STRSUBSTNO(Text005,ESALESTABLE.FIELDCAPTION(CUSTACCOUNT),ESALESTABLE.CUSTACCOUNT),1,MAXSTRLEN(ErrorMsg));
+          InsertNewValidationText(
+            OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+        END ELSE BEGIN
+          IF Customer.Blocked > Customer.Blocked::" " THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Customer.FIELDCAPTION(Blocked),Customer.Blocked,ESALESTABLE.GETPOSITION),1,
+              MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(
+              OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+          END;
+          IF Customer."Customer Posting Group" = '' THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Customer.FIELDCAPTION("Customer Posting Group"),
+              Text004,ESALESTABLE.GETPOSITION),1,
+              MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(
+              OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+          END;
+          IF Customer."Gen. Bus. Posting Group" = '' THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Customer.FIELDCAPTION("Gen. Bus. Posting Group"),
+              Text004,ESALESTABLE.GETPOSITION),1,
+              MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(
+              OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+          END;
+        END;
+        GetGLSetup;
+        IF ESALESTABLE.CURRENCY <> GeneralLedgerSetup."LCY Code" THEN BEGIN
+          IF NOT Currency.GET(ESALESTABLE.CURRENCY) THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text005,Currency.TABLECAPTION,ESALESTABLE.CURRENCY),1,MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(
+              OrderValidationTextTmp,ESALESTABLE."Web Site",ESALESTABLE.ESALESNUMBER,0,ErrorMsg);
+          END;
+        END;
+      END;
+
+      //Lines
+      ESALESLINE.SETRANGE("Web Site",ESALESTABLE."Web Site");
+      ESALESLINE.SETRANGE(ESALESNUMBER,ESALESTABLE.ESALESNUMBER);
+      IF ESALESLINE.COUNT <> ESALESTABLE.LINES THEN BEGIN
+        ErrorFound := TRUE;
+        ErrorMsg := COPYSTR(STRSUBSTNO(Text003,ESALESTABLE.FIELDCAPTION(LINES),
+          ESALESTABLE.LINES,ESALESTABLE.TABLECAPTION,
+          ESALESLINE.TABLECAPTION,ESALESLINE.COUNT),1,
+          MAXSTRLEN(ErrorMsg));
+        InsertNewValidationText(OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+      END;
+      IF ESALESLINE.FINDSET THEN
+        REPEAT
+          IF ESALESLINE.ROWNUMBER = 0 THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text001,ESALESLINE.FIELDCAPTION(ROWNUMBER),ESALESLINE.ROWNUMBER,ESALESLINE.GETPOSITION),1,
+              MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+          END;
+          IF ESALESLINE.ITEMNUMBER = '' THEN BEGIN
+            ErrorFound := TRUE;
+            ErrorMsg := COPYSTR(STRSUBSTNO(Text001,ESALESLINE.FIELDCAPTION(ITEMNUMBER),Text004,ESALESLINE.GETPOSITION),1,
+              MAXSTRLEN(ErrorMsg));
+            InsertNewValidationText(OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+          END ELSE BEGIN
+            IF NOT Item.GET(ESALESLINE.ITEMNUMBER) THEN BEGIN
+              ErrorFound := TRUE;
+              ErrorMsg := COPYSTR(STRSUBSTNO(Text005,ESALESLINE.FIELDCAPTION(ITEMNUMBER),ESALESLINE.ITEMNUMBER),1,MAXSTRLEN(ErrorMsg));
+              InsertNewValidationText(
+                OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+            END ELSE BEGIN
+              IF Item.Blocked = TRUE THEN BEGIN
+                ErrorFound := TRUE;
+                ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Item.FIELDCAPTION(Blocked),Item.Blocked,ESALESLINE.GETPOSITION),1,
+                  MAXSTRLEN(ErrorMsg));
+                InsertNewValidationText(
+                  OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+              END;
+              IF Item."Inventory Posting Group" = '' THEN BEGIN
+                ErrorFound := TRUE;
+                ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Item.FIELDCAPTION("Inventory Posting Group"),
+                  Text004,ESALESLINE.GETPOSITION),1,
+                  MAXSTRLEN(ErrorMsg));
+                InsertNewValidationText(
+                  OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+              END;
+              IF Item."Gen. Prod. Posting Group" = '' THEN BEGIN
+                ErrorFound := TRUE;
+                ErrorMsg := COPYSTR(STRSUBSTNO(Text001,Item.FIELDCAPTION("Gen. Prod. Posting Group"),
+                  Text004,ESALESLINE.GETPOSITION),1,
+                  MAXSTRLEN(ErrorMsg));
+                InsertNewValidationText(
+                  OrderValidationTextTmp,ESALESLINE."Web Site",ESALESLINE.ESALESNUMBER,ESALESLINE.LINENUMBER,ErrorMsg);
+              END;
+            END;
+          END;
+        UNTIL ESALESLINE.NEXT = 0;
+
+      IF ErrorFound THEN BEGIN
+        ESALESTABLE."Process Result" := ESALESTABLE."Process Result"::Error;
+        IF OrderValidationTextTmp.FINDFIRST THEN
+          REPEAT
+            OrderValidationText := OrderValidationTextTmp;
+            OrderValidationText.INSERT;
+          UNTIL OrderValidationTextTmp.NEXT = 0;
+        EXIT(FALSE);
+        ESALESTABLE.MODIFY(TRUE);
+      END;
+      EXIT(TRUE);
+    END;
+
+    PROCEDURE InsertNewValidationText@1000000001(VAR OrderValidationTextTmp@1000000004 : Record 61309;"Web Site"@1000000000 : Code[10];ESALESNUMBER@1000000001 : Code[10];LINENUMBER@1000000002 : Integer;Text@1000000003 : Text[1024]);
+    VAR
+      NewText@1000000006 : Text[1024];
+      NextValidLineNo@1000000005 : Integer;
+    BEGIN
+      OrderValidationTextTmp.SETRANGE("Web Site","Web Site");
+      OrderValidationTextTmp.SETRANGE("Text Type",OrderValidationTextTmp."Text Type"::Validation);
+      OrderValidationTextTmp.SETRANGE(ESALESNUMBER,ESALESNUMBER);
+      OrderValidationTextTmp.SETRANGE(LINENUMBER,LINENUMBER);
+      IF OrderValidationTextTmp.FINDLAST THEN
+        NextValidLineNo := OrderValidationTextTmp."Text Line No." + 10000
+      ELSE
+        NextValidLineNo := 10000;
+      OrderValidationTextTmp.INIT;
+      OrderValidationTextTmp."Web Site" := "Web Site";
+      OrderValidationTextTmp."Text Type" := OrderValidationTextTmp."Text Type"::Validation;
+      OrderValidationTextTmp.ESALESNUMBER := ESALESNUMBER;
+      OrderValidationTextTmp.LINENUMBER := LINENUMBER;
+      OrderValidationTextTmp."Text Line No." := NextValidLineNo;
+
+      IF STRLEN(Text) > MAXSTRLEN(OrderValidationTextTmp.Text) THEN
+        REPEAT
+          SplitTxtAtSpace(Text,MAXSTRLEN(OrderValidationTextTmp.Text),NewText,Text);
+          InsertTmpOrderTxt(OrderValidationTextTmp,NewText,NextValidLineNo);
+        UNTIL STRLEN(Text) <= MAXSTRLEN(OrderValidationTextTmp.Text);
+      InsertTmpOrderTxt(OrderValidationTextTmp,Text,NextValidLineNo);
+    END;
+
+    PROCEDURE SetValidatTxtFilterESALESTABLE@1000000005(ESALESTABLE@1000000001 : Record 61307;VAR OrderValidationText@1000000000 : Record 61309);
+    BEGIN
+      OrderValidationText.SETRANGE("Web Site",ESALESTABLE."Web Site");
+      OrderValidationText.SETRANGE("Text Type",OrderValidationText."Text Type"::Validation);
+      OrderValidationText.SETRANGE(ESALESNUMBER,ESALESTABLE.ESALESNUMBER);
+    END;
+
+    PROCEDURE SetValidatTxtFilterESALESLINE@1000000008(ESALESLINE@1000000000 : Record 61308;VAR OrderValidationText@1000000001 : Record 61309);
+    BEGIN
+      OrderValidationText.SETRANGE("Web Site",ESALESLINE."Web Site");
+      OrderValidationText.SETRANGE("Text Type",OrderValidationText."Text Type"::Validation);
+      OrderValidationText.SETRANGE(ESALESNUMBER,ESALESLINE.ESALESNUMBER);
+      OrderValidationText.SETRANGE(LINENUMBER,ESALESLINE.LINENUMBER);
+    END;
+
+    PROCEDURE InsertTmpOrderTxt@1000000007(VAR OrderValidationTextTmp@1000000000 : Record 61309;Text@1000000002 : Text[1024];VAR NextValidLineNo@1000000001 : Integer);
+    BEGIN
+      OrderValidationTextTmp."Text Line No." := NextValidLineNo;
+      OrderValidationTextTmp.Text := Text;
+      OrderValidationTextTmp.INSERT;
+      NextValidLineNo += 10000;
+    END;
+
+    PROCEDURE TransferTmpOrderTxtToDB@1000000010(VAR OrderValidationTextTmp@1000000000 : Record 61309);
+    VAR
+      OrderValidationText@1000000001 : Record 61309;
+      NextLineNo@1000000002 : Integer;
+    BEGIN
+      OrderValidationText.SETRANGE("Web Site",OrderValidationTextTmp."Web Site");
+      OrderValidationText.SETRANGE("Text Type",OrderValidationTextTmp."Text Type");
+      OrderValidationText.SETRANGE(ESALESNUMBER,OrderValidationTextTmp.ESALESNUMBER);
+      OrderValidationText.SETRANGE(LINENUMBER,OrderValidationTextTmp.LINENUMBER);
+      IF OrderValidationText.FINDLAST THEN
+        NextLineNo := OrderValidationText."Text Line No." + 10000
+      ELSE
+        NextLineNo := 10000;
+      IF OrderValidationTextTmp.FINDFIRST THEN
+        REPEAT
+          OrderValidationText := OrderValidationTextTmp;
+          OrderValidationText."Text Line No." := NextLineNo;
+          OrderValidationText.INSERT;
+          NextLineNo += 10000;
+        UNTIL OrderValidationTextTmp.NEXT = 0;
+    END;
+
+    PROCEDURE CommentsFromESALESTABLE2SH@1000000002(VAR ESALESTABLE@1000000000 : Record 61307;VAR SalesHeader@1000000001 : Record 36);
+    VAR
+      OrderText@1000000003 : Record 61309;
+      SalesCommentLine@1000000002 : Record 44;
+    BEGIN
+      OrderText."Web Site" := ESALESTABLE."Web Site";
+      OrderText."Text Type" := OrderText."Text Type"::Comment;
+      OrderText.ESALESNUMBER := ESALESTABLE.ESALESNUMBER;
+      OrderText.LINENUMBER := 0;
+
+      SalesCommentLine."Document Type" := SalesHeader."Document Type";
+      SalesCommentLine."No." := SalesHeader."No.";
+      SalesCommentLine."Document Line No." := 0;
+
+      CopyComments(OrderText,SalesCommentLine);
+    END;
+
+    PROCEDURE CommentsFromESALESLINE2SL@1000000003(VAR ESALESLINE@1000000000 : Record 61308;VAR SalesLine@1000000001 : Record 37);
+    VAR
+      OrderText@1000000003 : Record 61309;
+      SalesCommentLine@1000000002 : Record 44;
+    BEGIN
+      OrderText."Web Site" := ESALESLINE."Web Site";
+      OrderText."Text Type" := OrderText."Text Type"::Comment;
+      OrderText.ESALESNUMBER := ESALESLINE.ESALESNUMBER;
+      OrderText.LINENUMBER := ESALESLINE.LINENUMBER;
+
+      SalesCommentLine."Document Type" := SalesLine."Document Type";
+      SalesCommentLine."No." := SalesLine."Document No.";
+      SalesCommentLine."Document Line No." := SalesLine."Line No.";
+
+      CopyComments(OrderText,SalesCommentLine);
+    END;
+
+    PROCEDURE CopyComments@1000000006(VAR OrderText@1000000000 : Record 61309;VAR SalesCommentLine@1000000001 : Record 44);
+    VAR
+      SalesHeader@1000000003 : Record 36;
+      SalesLine@1000000004 : Record 37;
+      CommentTmp@1000000008 : Text[1024];
+      TextTmp@1000000009 : Text[1024];
+      NextLineNo@1000000005 : Integer;
+      i@1000000006 : Integer;
+      TextBreakFound@1000000007 : Boolean;
+    BEGIN
+      SalesCommentLine.SETRANGE("Document Type",SalesCommentLine."Document Type");
+      SalesCommentLine.SETRANGE("No.",SalesCommentLine."No.");
+      SalesCommentLine.SETRANGE("Document Line No.",SalesCommentLine."Line No.");
+      IF SalesCommentLine.FINDLAST THEN BEGIN
+        NextLineNo := SalesCommentLine."Line No." + 10000;
+      END ELSE BEGIN
+        NextLineNo := 10000;
+      END;
+
+      OrderText.SETRANGE("Web Site",OrderText."Web Site");
+      OrderText.SETRANGE("Text Type",OrderText."Text Type");
+      OrderText.SETRANGE(ESALESNUMBER,OrderText.ESALESNUMBER);
+      OrderText.SETRANGE(LINENUMBER,OrderText.LINENUMBER);
+
+      IF OrderText.FINDSET(FALSE,FALSE) THEN
+        REPEAT
+          CommentTmp := OrderText.Text;
+          IF STRLEN(CommentTmp) > MAXSTRLEN(SalesCommentLine.Comment) THEN
+            REPEAT
+              SplitTxtAtSpace(CommentTmp,MAXSTRLEN(SalesCommentLine.Comment),TextTmp,CommentTmp);
+              InsertComment(SalesCommentLine,NextLineNo,TextTmp);
+            UNTIL STRLEN(CommentTmp) <= MAXSTRLEN(SalesCommentLine.Comment);
+          InsertComment(SalesCommentLine,NextLineNo,CommentTmp);
+        UNTIL OrderText.NEXT = 0;
+    END;
+
+    PROCEDURE InsertComment@1000000009(VAR SalesCommentLine@1000000000 : Record 44;VAR NextLineNo@1000000001 : Integer;VAR CommentTxt@1000000002 : Text[1024]);
+    BEGIN
+      SalesCommentLine."Line No." := NextLineNo;
+      SalesCommentLine.Date := WORKDATE;
+      SalesCommentLine.Comment := CommentTxt;
+      SalesCommentLine.INSERT(TRUE);
+      NextLineNo += 10000;
+    END;
+
+    PROCEDURE SplitTxtAtSpace@1000000004(OldTxt@1000000000 : Text[1024];MaxStrLenNewTxt@1000000004 : Integer;VAR NewTxt@1000000002 : Text[1024];VAR RemainingOldText@1000000003 : Text[1024]);
+    VAR
+      SpaceTxt@1000000006 : Text[1];
+      i@1000000005 : Integer;
+      SpaceFound@1000000001 : Boolean;
+    BEGIN
+      IF MaxStrLenNewTxt >= STRLEN(OldTxt) THEN BEGIN
+        NewTxt := OldTxt;
+        RemainingOldText := '';
+      END;
+
+      SpaceTxt := ' ';
+      i := MaxStrLenNewTxt + 1;
+      REPEAT
+        IF COPYSTR(OldTxt,i,1) = SpaceTxt THEN
+          SpaceFound := TRUE;
+        i -= 1;
+      UNTIL SpaceFound OR (i = 1);
+      NewTxt := COPYSTR(OldTxt,1,i);
+      IF STRLEN(OldTxt) > STRLEN(NewTxt) + 1 THEN
+        RemainingOldText := COPYSTR(OldTxt,i + 1)
+      ELSE
+        RemainingOldText := '';
+      RemainingOldText := DELCHR(RemainingOldText,'<',SpaceTxt);
+    END;
+
+    PROCEDURE DeliveryAddressIsBlank@1000000014(VAR ESALESTABLE@1000000000 : Record 61307) : Boolean;
+    BEGIN
+      EXIT(
+        (ESALESTABLE.DELIVERYNAME = '') AND
+        (ESALESTABLE.DELIVERYADDRESS1 = '') AND
+        (ESALESTABLE.DELIVERYADDRESS2 = '') AND
+        (ESALESTABLE.DELIVERYADDRESS3 = '') AND
+        (ESALESTABLE.DELIVERYZIPCODE = ''));
+    END;
+
+    PROCEDURE OrderLineTextFromESALESLINE@1000000012(VAR ESALESLINE@1000000000 : Record 61308;VAR SalesHeader@1000000001 : Record 36;VAR NextLineNo@1000000004 : Integer);
+    VAR
+      OrderText@1000000003 : Record 61309;
+      SalesLine@1000000002 : Record 37;
+      CommentTmp@1000000005 : Text[1024];
+      TextTmp@1000000006 : Text[1024];
+    BEGIN
+      OrderText.SETRANGE("Web Site",ESALESLINE."Web Site");
+      OrderText.SETRANGE("Text Type",OrderText."Text Type"::"Order Line Text");
+      OrderText.SETRANGE(ESALESNUMBER,ESALESLINE.ESALESNUMBER);
+      OrderText.SETRANGE(LINENUMBER,ESALESLINE.LINENUMBER);
+      IF OrderText.FINDFIRST THEN BEGIN
+        REPEAT
+          CommentTmp := OrderText.Text;
+          IF STRLEN(CommentTmp) > MAXSTRLEN(SalesLine.Description) THEN
+            REPEAT
+              SplitTxtAtSpace(CommentTmp,MAXSTRLEN(SalesLine.Description),TextTmp,CommentTmp);
+              CreateTextOrderLine(TextTmp,SalesHeader,NextLineNo);
+            UNTIL STRLEN(CommentTmp) <= MAXSTRLEN(SalesLine.Description);
+          CreateTextOrderLine(CommentTmp,SalesHeader,NextLineNo);
+        UNTIL OrderText.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE OrderLineTextFromESALESTABLE@1000000013(VAR ESALESTABLE@1000000000 : Record 61307;VAR SalesHeader@1000000001 : Record 36;VAR NextLineNo@1000000004 : Integer);
+    VAR
+      OrderText@1000000003 : Record 61309;
+      SalesLine@1000000002 : Record 37;
+      CommentTmp@1000000005 : Text[1024];
+      TextTmp@1000000006 : Text[1024];
+    BEGIN
+      OrderText.SETRANGE("Web Site",ESALESTABLE."Web Site");
+      OrderText.SETRANGE("Text Type",OrderText."Text Type"::"Order Line Text");
+      OrderText.SETRANGE(ESALESNUMBER,ESALESTABLE.ESALESNUMBER);
+      OrderText.SETRANGE(LINENUMBER,0);
+      IF OrderText.FINDFIRST THEN BEGIN
+        REPEAT
+          CommentTmp := OrderText.Text;
+          IF STRLEN(CommentTmp) > MAXSTRLEN(SalesLine.Description) THEN
+            REPEAT
+              SplitTxtAtSpace(CommentTmp,MAXSTRLEN(SalesLine.Description),TextTmp,CommentTmp);
+              CreateTextOrderLine(TextTmp,SalesHeader,NextLineNo);
+            UNTIL STRLEN(CommentTmp) <= MAXSTRLEN(SalesLine.Description);
+          CreateTextOrderLine(CommentTmp,SalesHeader,NextLineNo);
+        UNTIL OrderText.NEXT = 0;
+      END;
+    END;
+
+    PROCEDURE CreateTextOrderLine@1000000011(VAR TempText@1000000001 : Text[1024];VAR SalesHeader@1000000003 : Record 36;VAR NextLineNo@1000000002 : Integer);
+    VAR
+      SalesLine@1000000000 : Record 37;
+    BEGIN
+      SalesLine.VALIDATE("Document Type",SalesHeader."Document Type");
+      SalesLine.VALIDATE("Document No.",SalesHeader."No.");
+      SalesLine."Line No." := NextLineNo;
+      NextLineNo += 10000;
+      SalesLine.INSERT(TRUE);
+      SalesLine.VALIDATE(Type,SalesLine.Type::" ");
+      SalesLine.VALIDATE(Description,TempText);
+      SalesLine.MODIFY(TRUE);
+    END;
+
+    PROCEDURE GetGLSetup@1000000015();
+    BEGIN
+      IF NOT GLSetupAlreadyRetrieved THEN BEGIN
+        GeneralLedgerSetup.GET;
+        GLSetupAlreadyRetrieved := TRUE;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

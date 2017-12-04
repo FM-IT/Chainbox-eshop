@@ -1,0 +1,78 @@
+OBJECT Form 61309 eCategory List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=15100;
+    Height=6710;
+    Editable=No;
+    CaptionML=[DAN=Kategori Liste;
+               ENU=Category List];
+    TableBoxID=1106000000;
+    SourceTable=Table61305;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;14660;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000007;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=CATEGORY }
+    { 1106000008;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000007;
+                                                 InColumnHeading=Yes }
+    { 1106000009;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=UPPERCATEGORY }
+    { 1106000010;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000009;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LASTCHANGED }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000011;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1106000012;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000011;
+                                                 InColumnHeading=Yes }
+    { 1106000015;CommandButton;7840;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000016;CommandButton;10260;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000017;CommandButton;12680;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

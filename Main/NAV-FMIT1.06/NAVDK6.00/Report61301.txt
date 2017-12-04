@@ -1,0 +1,100 @@
+OBJECT Report 61301 Transfer eSalesOrder
+{
+  OBJECT-PROPERTIES
+  {
+    Date=24-09-09;
+    Time=17:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    CaptionML=ENU=Transfer eSalesOrder;
+    ProcessingOnly=Yes;
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table61307;
+        DataItemTableView=SORTING(Web Site,ACCEPT,ESALESNUMBER)
+                          ORDER(Ascending)
+                          WHERE(ACCEPT=FILTER(Accepted));
+        OnAfterGetRecord=VAR
+                           ESALESTABLE2@1000000000 : Record 61307;
+                           OrderValidationTextTmp@1000000002 : TEMPORARY Record 61309;
+                           OrderValidationText@1000000003 : Record 61309;
+                           eShopTranferEOrder@1000000001 : Codeunit 61301;
+                           LastError@1000000004 : Text[1024];
+                           NextLineNo@1000000005 : Integer;
+                         BEGIN
+                           CLEARLASTERROR;
+                           CLEAR(eShopTranferEOrder);
+                           IF eShopTranferEOrder.RUN(ESALESTABLE) THEN BEGIN
+                             CounterOK := CounterOK + 1;
+                             IF MARKEDONLY THEN
+                               MARK(FALSE);
+                             COMMIT;
+                           END ELSE BEGIN
+                             LastError := GETLASTERRORTEXT;
+                             IF LastError <> '' THEN BEGIN
+                               eShopTranferEOrder.InsertNewValidationText(OrderValidationTextTmp,"Web Site",ESALESNUMBER,0,LastError);
+                               eShopTranferEOrder.TransferTmpOrderTxtToDB(OrderValidationTextTmp);
+                               CounterError += 1;
+                             END;
+                             ESALESTABLE2."Process Result" := ESALESTABLE2."Process Result"::Error;
+                             ESALESTABLE2.MODIFY(TRUE);
+                             COMMIT;
+                           END;
+                         END;
+
+        ReqFilterFields=ESALESNUMBER,Web Site;
+      }
+      SECTIONS
+      {
+        { PROPERTIES
+          {
+            SectionType=Body;
+            SectionWidth=12000;
+            SectionHeight=846;
+          }
+          CONTROLS
+          {
+          }
+           }
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9020;
+      Height=3410;
+    }
+    CONTROLS
+    {
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      CounterOK@1000000001 : Integer;
+      CounterError@1000000002 : Integer;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

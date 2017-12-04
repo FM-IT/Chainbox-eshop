@@ -1,0 +1,106 @@
+OBJECT Codeunit 50100 NAS
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13-06-06;
+    Time=22:42:34;
+    Modified=Yes;
+    Version List=FMIT;
+  }
+  PROPERTIES
+  {
+    SingleInstance=Yes;
+    OnRun=BEGIN
+            CLEARALL;
+
+            GLOBALLANGUAGE(1033);
+
+            FindProcessTypeNode := 'PROCESS_TYPE';
+            InMSMQueue := '.\private$\NAVIIN';
+            // OutMSMQueue := '.\private$\WEBIN';
+
+            IF ISCLEAR(MQBus) THEN
+              CREATE(MQBus);
+
+            IF ISCLEAR(CC2) THEN
+              CREATE(CC2);
+
+            IF ISCLEAR(XMLDoc) THEN
+              CREATE(XMLDoc);
+
+            CC2.AddBusAdapter(MQBus,1);
+            MQBus.OpenReceiveQueue(InMSMQueue, 0, 0);
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      CC2@1000000000 : Automation "{F9A57667-8AC5-45C5-9416-99D3955BCAC0} 1.0:{01018FA5-E4B4-413C-A47C-AD34B0CC2647}:'Navision Communication Component version 2'.CommunicationComponent" WITHEVENTS;
+      MQBus@1000000001 : Automation "{B8BD635A-E191-47EF-84A0-02921E2A44A6} 1.0:{CD49794B-0E84-4A2E-9522-C518C825D390}:'Navision MS-Message Queue Bus Adapter'.MSMQBusAdapter";
+      XMLDoc@1000000002 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{F6D90F11-9C73-11D3-B32E-00C04F990BB4}:'Microsoft XML, v3.0'.DOMDocument";
+      InMsg@1000000010 : Automation "{F9A57667-8AC5-45C5-9416-99D3955BCAC0} 1.0:{D184D0AC-61C9-4AC1-B537-0D28C277FEDE}:'Navision Communication Component version 2'.InMessage";
+      OutMsg@1000000009 : Automation "{F9A57667-8AC5-45C5-9416-99D3955BCAC0} 1.0:{6CB9762C-E61C-4F96-BA34-8B20D3A5B46E}:'Navision Communication Component version 2'.OutMessage";
+      XMLNode@1000000013 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      XMLNodeReturn@1000000011 : Automation "{F5078F18-C551-11D3-89B9-0000F81FE221} 3.0:{2933BF80-7B36-11D2-B20E-00C04F983E60}:'Microsoft XML, v3.0'.IXMLDOMNode";
+      Navision2IBFBiz@1000000012 : Codeunit 50101;
+      Parameters@1000000004 : ARRAY [10] OF Text[250];
+      Request@1000000003 : Text[250];
+      FindProcessTypeNode@1000000005 : Text[30];
+      InMSMQueue@1000000006 : Text[80];
+      OutMSMQueue@1000000007 : Text[80];
+
+    EVENT CC2@1000000000::MessageReceived@1(VAR InMessage@1000000000 : Automation ":{00020400-0000-0000-C000-000000000046}:''.IDISPATCH");
+    VAR
+      InStreamQueue@1000000002 : InStream;
+      ProcessType@1000000007 : Text[250];
+    BEGIN
+      // Get the message
+      InMsg := InMessage;
+      InStreamQueue := InMsg.GetStream();
+
+      // Load the message into an XML document and find a node
+      IF ISCLEAR(XMLDoc) THEN
+          CREATE(XMLDoc);
+
+      XMLDoc.load(InStreamQueue);
+
+      XMLNode := XMLDoc.documentElement;
+
+      Navision2IBFBiz.SetNormalCase;
+      IF Navision2IBFBiz.FindNode(XMLNode, FindProcessTypeNode, XMLNodeReturn) THEN
+        IF STRLEN(XMLNodeReturn.text) > 0 THEN
+          ProcessType := XMLNodeReturn.text;
+
+      Navision2IBFBiz.ParseXMLDocument(XMLDoc, ProcessType);
+
+      IF InMsg.ExpectReply THEN BEGIN
+        // Open the response queue and create a new message
+        // MQBus.OpenWriteQueue(OutMSMQueue, 0, 0);
+
+        // MQBus.OpenReplyQueue(OutMSMQueue, 0, 0);
+        // OutMsg := CC2.CreateoutMessage('Message queue://' + OutMSMQueue);
+
+        OutMsg := InMsg.CreateReply;
+
+        // <<
+        IF NOT ISCLEAR(XMLDoc) THEN BEGIN
+          XMLDoc.save(OutMsg.GetStream());
+          OutMsg.Send(0);
+        END;
+      END;
+    END;
+
+    EVENT XMLDoc@1000000002::ondataavailable@198();
+    BEGIN
+    END;
+
+    EVENT XMLDoc@1000000002::onreadystatechange@-609();
+    BEGIN
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

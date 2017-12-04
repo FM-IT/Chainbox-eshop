@@ -1,0 +1,64 @@
+OBJECT Table 61308 ESALESLINE
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    OnInsert=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnModify=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    CaptionML=[DAN=Salgs Ordre Journal Linje;
+               ENU=Sales Order Journal Line];
+  }
+  FIELDS
+  {
+    { 1   ;   ;DATASET             ;Code3          }
+    { 2   ;   ;ROWNUMBER           ;Integer        }
+    { 3   ;   ;LASTCHANGED         ;DateTime      ;CaptionML=ENU=Last Changed }
+    { 4   ;   ;ESALESNUMBER        ;Code10        ;CaptionML=ENU=Order No. }
+    { 5   ;   ;LINENUMBER          ;Integer       ;CaptionML=ENU=Order Line No. }
+    { 6   ;   ;ITEMNUMBER          ;Code20        ;CaptionML=ENU=Item No. }
+    { 7   ;   ;QUANTITY            ;Decimal       ;CaptionML=ENU=Quantity }
+    { 8   ;   ;SALESPRICE          ;Decimal       ;CaptionML=ENU=Sales Price }
+    { 9   ;   ;DELIVERYDATE        ;DateTime      ;CaptionML=ENU=Delivery Date }
+    { 10  ;   ;VARIANT             ;Code10        ;CaptionML=ENU=Variant }
+    { 11  ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+    { 12  ;   ;Process Result      ;Option        ;CaptionML=ENU=Process Result;
+                                                   OptionString=Not Processed,Order Created,Error }
+    { 13  ;   ;Sales Document Type ;Option        ;CaptionML=ENU=Sales Document Type;
+                                                   OptionCaptionML=[DAN=Tilbud,Ordre,Faktura,Kreditnota,Rammeordre,Returv.ordre;
+                                                                    ENU=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order];
+                                                   OptionString=Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order }
+    { 14  ;   ;Sales Document No.  ;Code20        ;CaptionML=ENU=Sales Document No. }
+    { 15  ;   ;Sales Document Line No.;Integer    ;CaptionML=ENU=Sales Document Line No. }
+    { 48  ;   ;Total Line Amount Excl. VAT;Decimal }
+    { 49  ;   ;Total Line Amount Incl. VAT;Decimal }
+  }
+  KEYS
+  {
+    {    ;Web Site,ROWNUMBER                      ;Clustered=Yes }
+    {    ;Web Site,ESALESNUMBER,LINENUMBER         }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

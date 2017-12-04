@@ -1,0 +1,130 @@
+OBJECT Form 61308 eCategory List Sorted
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16280;
+    Height=10230;
+    Editable=No;
+    CaptionML=[DAN=Kategori Liste Sorteret;
+               ENU=Category List Sorted];
+    TableBoxID=1106000000;
+    SourceTable=Table61305;
+    SourceTableTemporary=Yes;
+    SourceTableView=SORTING(ROWNUMBER)
+                    ORDER(Ascending);
+    OnOpenForm=BEGIN
+                 InitFrm;
+                 InitTempTable;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;16060;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000010;TextBox;6112 ;880  ;1700 ;440  ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1106000011;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000010;
+                                                 InColumnHeading=Yes }
+    { 1106000003;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=CATEGORY;
+                                                 OnFormat=BEGIN
+                                                            CurrForm.CATEGORY.UPDATEINDENT := Indentation * 220;
+                                                            IF UPPERCATEGORY = '' THEN
+                                                              CurrForm.CATEGORY.UPDATEFONTBOLD := TRUE;
+                                                          END;
+                                                           }
+    { 1106000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000003;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;2750 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=LASTCHANGED }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000001;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ROWNUMBER }
+    { 1106000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000001;
+                                                 InColumnHeading=Yes }
+    { 1106000007;CommandButton;9130;9460;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000008;CommandButton;11550;9460;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000009;CommandButton;13970;9460;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1000000000;SubForm;220  ;5940 ;16060;3300 ;HorzGlue=Both;
+                                                 VertGlue=Bottom;
+                                                 Border=No;
+                                                 SubFormID=Form61307;
+                                                 SubFormLink=CATEGORY=FIELD(CATEGORY) }
+  }
+  CODE
+  {
+
+    PROCEDURE InitTempTable@1106000000();
+    VAR
+      ECATEGORY@1106000000 : Record 61305;
+      NextRowNo@1106000001 : Integer;
+    BEGIN
+      ECATEGORY.SETRANGE(UPPERCATEGORY,''); // Top Level.
+      IF ECATEGORY.FINDSET THEN
+        REPEAT
+          NextRowNo += 1;
+          Rec := ECATEGORY;
+          Rec.Indentation := 0;
+          Rec.ROWNUMBER := NextRowNo;
+          IF Rec.INSERT THEN;
+          AddSubCategory2TempRec(Rec,NextRowNo);
+        UNTIL ECATEGORY.NEXT = 0;
+    END;
+
+    PROCEDURE AddSubCategory2TempRec@1106000001(VAR ECATEGORYTmp@1106000000 : TEMPORARY Record 61305;VAR NextRowNo@1106000004 : Integer);
+    VAR
+      ECATEGORY@1106000001 : Record 61305;
+      eCategoryListFrm@1106000003 : Form 61308;
+      Indent@1106000002 : Integer;
+    BEGIN
+      Indent := ECATEGORYTmp.Indentation + 1;
+      ECATEGORY.SETCURRENTKEY("Web Site",UPPERCATEGORY,CATEGORY);
+      ECATEGORY.SETRANGE(UPPERCATEGORY,ECATEGORYTmp.CATEGORY);
+      IF ECATEGORY.FINDSET THEN
+        REPEAT
+          NextRowNo += 1;
+          ECATEGORYTmp := ECATEGORY;
+          ECATEGORYTmp.Indentation := Indent;
+          ECATEGORYTmp.ROWNUMBER := NextRowNo;
+          IF ECATEGORYTmp.INSERT THEN;
+          eCategoryListFrm.AddSubCategory2TempRec(ECATEGORYTmp,NextRowNo);
+        UNTIL ECATEGORY.NEXT = 0;
+    END;
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

@@ -1,0 +1,84 @@
+OBJECT Table 61300 eWeb Site Setup
+{
+  OBJECT-PROPERTIES
+  {
+    Date=26-09-09;
+    Time=20:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Web Side Ops�tning;
+               ENU=Web Site Setup];
+    LookupFormID=Form61301;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Web Site            ;Code10        ;CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Use Reservation     ;Boolean       ;CaptionML=[DAN=Brug Reservation;
+                                                              ENU=Use Reservation] }
+    { 3   ;   ;Location            ;Code10        ;TableRelation=Location;
+                                                   CaptionML=[DAN=Lokation;
+                                                              ENU=Location] }
+    { 4   ;   ;Use Item ID's       ;Boolean       ;CaptionML=ENU=Use Item ID's }
+    { 5   ;   ;Auto Save to Sales Archive;Boolean ;CaptionML=[DAN=Automatisk Gem i Salgs Arkiv;
+                                                              ENU=Auto Save to Sales Archive] }
+    { 6   ;   ;Std. Contact Company;Code20        ;TableRelation=Contact.No. WHERE (Type=FILTER(Company));
+                                                   CaptionML=[DAN=Standard Kontakt Virksomhed;
+                                                              ENU=Standard Contact Company] }
+    { 7   ;   ;Std. Contact User   ;Code20        ;TableRelation=Contact.No. WHERE (Company No.=FIELD(Std. Contact Company),
+                                                                                    Type=FILTER(Person));
+                                                   CaptionML=[DAN=Standard Kontakt Bruger;
+                                                              ENU=Standard Contact User] }
+    { 8   ;   ;Std. Customer       ;Code20        ;TableRelation=Customer;
+                                                   CaptionML=[DAN=Standard Debitor;
+                                                              ENU=Standard Customer] }
+    { 9   ;   ;Std. Language Item Cards;Code10    ;TableRelation=eLanguage.Code WHERE (Web Site=FIELD(Web Site));
+                                                   CaptionML=[DAN=Standard Sprog p� Varekort;
+                                                              ENU=Standard Language on Item Card] }
+    { 10  ;   ;Assign Location to Orders;Boolean  ;CaptionML=[DAN=P�f�r Lokation p� Ordrer;
+                                                              ENU=Assign Location to Orders] }
+    { 11  ;   ;Use Prices From Web ;Boolean       ;CaptionML=[DAN=Brug Web-Priser;
+                                                              ENU=Use Prices From Web] }
+  }
+  KEYS
+  {
+    {    ;Web Site                                ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    PROCEDURE ShowWebSiteField@1000000000() : Boolean;
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      EXIT(eWebSiteSetup.COUNT > 1);
+    END;
+
+    PROCEDURE GetWebSiteSetup@1000000001(WebSite@1000000000 : Code[10]) : Boolean;
+    VAR
+      eWebSiteSetup@1000000001 : Record 61300;
+    BEGIN
+      IF WebSite = '' THEN BEGIN
+        IF eWebSiteSetup.COUNT = 1 THEN BEGIN
+          eWebSiteSetup.FINDFIRST;
+          Rec := eWebSiteSetup;
+          EXIT(TRUE);
+        END;
+      END ELSE BEGIN
+        IF GET(WebSite) THEN
+          EXIT(TRUE);
+      END;
+      EXIT(FALSE);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

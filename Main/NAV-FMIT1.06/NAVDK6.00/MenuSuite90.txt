@@ -1,0 +1,117 @@
+OBJECT MenuSuite 90 Company
+{
+  OBJECT-PROPERTIES
+  {
+    Date=05-09-09;
+    Time=14:07:02;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+  }
+  MENUNODES
+  {
+    {                ;[{A56DFF5E-7306-43E8-B307-793D6B90F220}] ;NextNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}] }
+    { MenuGroup      ;[{47348F29-7FED-420A-A9C7-72C50FAEED04}] ;Name=eShop;
+                                                                CaptionML=DAN=eShop;
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                ParentNodeID=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{25954D9A-1A3E-41E0-9694-E03A9F06E5CB}] }
+    { MenuItem       ;[{25954D9A-1A3E-41E0-9694-E03A9F06E5CB}] ;Name=eCategory;
+                                                                CaptionML=[DAN=Kategori;
+                                                                           ENU=Category];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Form;
+                                                                RunObjectID=61306;
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{F7B62BC2-FA85-4018-B1C4-5FF7ACB975BE}] }
+    { MenuItem       ;[{F7B62BC2-FA85-4018-B1C4-5FF7ACB975BE}] ;Name=eSales Order Journal;
+                                                                CaptionML=[DAN=Salgs Ordre Journal;
+                                                                           ENU=Sales Order Journal];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Form;
+                                                                RunObjectID=61312;
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{81E8925E-E04A-4667-8F96-391F634756B4}] }
+    { MenuItem       ;[{81E8925E-E04A-4667-8F96-391F634756B4}] ;Name=eCategory List Sorted;
+                                                                CaptionML=[DAN=Kategori Liste Sorteret;
+                                                                           ENU=Category List Sorted];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Form;
+                                                                RunObjectID=61308;
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{890C8AB1-E6EA-441E-84AF-AB064C66C8E1}] }
+    { MenuItem       ;[{890C8AB1-E6EA-441E-84AF-AB064C66C8E1}] ;Name=eItem Card;
+                                                                CaptionML=[DAN=Vare;
+                                                                           ENU=Item];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Form;
+                                                                RunObjectID=61304;
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{041235F8-3023-4157-90C8-6868D68F56FE}] }
+    { MenuItem       ;[{8750573D-2FF4-46FA-AB81-F39ED8807DA5}] ;Name=Web Site eSetup Card;
+                                                                CaptionML=[DAN=Web Site Setup;
+                                                                           ENU=Web Site Setup];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Form;
+                                                                RunObjectID=61300;
+                                                                ParentNodeID=[{041235F8-3023-4157-90C8-6868D68F56FE}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{F145E7B6-A899-4C72-A8F7-0942EEA13F76}] }
+    { MenuGroup      ;[{041235F8-3023-4157-90C8-6868D68F56FE}] ;Name=Ops�tning;
+                                                                CaptionML=[DAN=Ops�tning;
+                                                                           ENU=Setup];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{8A764D1D-187D-4B03-8771-E2D2E0318138}];
+                                                                FirstChild=[{8750573D-2FF4-46FA-AB81-F39ED8807DA5}] }
+    { MenuItem       ;[{F145E7B6-A899-4C72-A8F7-0942EEA13F76}] ;Name=Create Categories;
+                                                                CaptionML=ENU=Create Categories;
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=61302;
+                                                                ParentNodeID=[{041235F8-3023-4157-90C8-6868D68F56FE}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{D0DFBD69-DE64-4723-835E-A1926B184402}] }
+    { MenuGroup      ;[{8A764D1D-187D-4B03-8771-E2D2E0318138}] ;Name=Periodiske aktiviteter;
+                                                                CaptionML=[DAN=Periodiske aktiviteter;
+                                                                           ENU=Periodic Activities];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                ParentNodeID=[{47348F29-7FED-420A-A9C7-72C50FAEED04}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}];
+                                                                FirstChild=[{0879C141-D03C-46AC-A67A-C380E69681D1}] }
+    { MenuItem       ;[{0879C141-D03C-46AC-A67A-C380E69681D1}] ;Name=Update Item Inventory;
+                                                                CaptionML=[DAN=Opdater Vare Lager;
+                                                                           ENU=Update Item Inventory];
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=61300;
+                                                                ParentNodeID=[{8A764D1D-187D-4B03-8771-E2D2E0318138}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}] }
+    { MenuItem       ;[{D0DFBD69-DE64-4723-835E-A1926B184402}] ;Name=Export Item Language to Excel;
+                                                                CaptionML=ENU=Export Item Language to Excel;
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=61303;
+                                                                ParentNodeID=[{041235F8-3023-4157-90C8-6868D68F56FE}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{7DF1FF44-F12A-4682-AC8B-2213DECAC94A}] }
+    { MenuItem       ;[{7DF1FF44-F12A-4682-AC8B-2213DECAC94A}] ;Name=Import Item Lang. from Excel;
+                                                                CaptionML=ENU=Import Item Lang. from Excel;
+                                                                MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];
+                                                                RunObjectType=Report;
+                                                                RunObjectID=61304;
+                                                                ParentNodeID=[{041235F8-3023-4157-90C8-6868D68F56FE}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{00000000-0000-0000-0000-000000000000}] }
+  }
+}

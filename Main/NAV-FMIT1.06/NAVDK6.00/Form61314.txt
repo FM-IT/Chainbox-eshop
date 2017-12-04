@@ -1,0 +1,350 @@
+OBJECT Form 61314 eSales Order Card
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16500;
+    Height=12980;
+    CaptionML=[DAN=Salgs Ordre;
+               ENU=Sales Order];
+    InsertAllowed=No;
+    SourceTable=Table61307;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;TabControl;220;220 ;16060;8360 ;HorzGlue=Both;
+                                                 VertGlue=Top;
+                                                 PageNamesML=ENU=General,Shipment,Invoice }
+    { 1000000001;TextBox;3850 ;990  ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=ROWNUMBER }
+    { 1000000002;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1000000001 }
+    { 1000000003;TextBox;3850 ;1540 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=LASTCHANGED }
+    { 1000000004;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1000000003 }
+    { 1000000031;TextBox;3850 ;2090 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=ESALESNUMBER }
+    { 1000000032;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1000000031 }
+    { 1000000033;TextBox;3850 ;2640 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=EREFERENCE }
+    { 1000000034;Label  ;440  ;2640 ;3300 ;440  ;ParentControl=1000000033 }
+    { 1000000039;TextBox;3850 ;3190 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=STATUS }
+    { 1000000040;Label  ;440  ;3190 ;3300 ;440  ;ParentControl=1000000039 }
+    { 1000000041;TextBox;3850 ;3740 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=LINES }
+    { 1000000042;Label  ;440  ;3740 ;3300 ;440  ;ParentControl=1000000041 }
+    { 1000000043;TextBox;3850 ;4290 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CONTACTID }
+    { 1000000044;Label  ;440  ;4290 ;3300 ;440  ;ParentControl=1000000043 }
+    { 1000000045;TextBox;3850 ;4840 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CREATEDATE }
+    { 1000000046;Label  ;440  ;4840 ;3300 ;440  ;ParentControl=1000000045 }
+    { 1000000047;TextBox;3850 ;5390 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CREATETIME }
+    { 1000000048;Label  ;440  ;5390 ;3300 ;440  ;ParentControl=1000000047 }
+    { 1000000057;TextBox;3850 ;5940 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=ACCEPT }
+    { 1000000058;Label  ;440  ;5940 ;3300 ;440  ;ParentControl=1000000057 }
+    { 1000000059;TextBox;3850 ;6490 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=ESHOP }
+    { 1000000060;Label  ;440  ;6490 ;3300 ;440  ;ParentControl=1000000059 }
+    { 1000000063;TextBox;3850 ;7040 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=STATUS_ORIG }
+    { 1000000064;Label  ;440  ;7040 ;3300 ;440  ;ParentControl=1000000063 }
+    { 1000000075;TextBox;13310;990  ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=SALESNUMBER }
+    { 1000000076;Label  ;9900 ;990  ;3300 ;440  ;ParentControl=1000000075 }
+    { 1000000077;TextBox;13310;1540 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=DEPARTMENT }
+    { 1000000078;Label  ;9900 ;1540 ;3300 ;440  ;ParentControl=1000000077 }
+    { 1000000079;TextBox;13310;2090 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CENTRE }
+    { 1000000080;Label  ;9900 ;2090 ;3300 ;440  ;ParentControl=1000000079 }
+    { 1000000081;TextBox;13310;2640 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=PURPOSE }
+    { 1000000082;Label  ;9900 ;2640 ;3300 ;440  ;ParentControl=1000000081 }
+    { 1000000083;TextBox;13310;3190 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Web Site" }
+    { 1000000084;Label  ;9900 ;3190 ;3300 ;440  ;ParentControl=1000000083 }
+    { 1000000085;TextBox;13310;3740 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Process Status" }
+    { 1000000086;Label  ;9900 ;3740 ;3300 ;440  ;ParentControl=1000000085 }
+    { 1000000087;TextBox;13310;4290 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Process Result" }
+    { 1000000088;Label  ;9900 ;4290 ;3300 ;440  ;ParentControl=1000000087 }
+    { 1000000089;TextBox;13310;4840 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Sales Document Type" }
+    { 1000000090;Label  ;9900 ;4840 ;3300 ;440  ;ParentControl=1000000089 }
+    { 1000000091;TextBox;13310;5390 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Sales Document No." }
+    { 1000000092;Label  ;9900 ;5390 ;3300 ;440  ;ParentControl=1000000091 }
+    { 1000000021;TextBox;3850 ;990  ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYNAME }
+    { 1000000022;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1000000021 }
+    { 1000000023;TextBox;3850 ;1540 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYADDRESS1 }
+    { 1000000024;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1000000023 }
+    { 1000000025;TextBox;3850 ;2090 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYADDRESS2 }
+    { 1000000026;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1000000025 }
+    { 1000000027;TextBox;3850 ;2640 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYADDRESS3 }
+    { 1000000028;Label  ;440  ;2640 ;3300 ;440  ;ParentControl=1000000027 }
+    { 1000000029;TextBox;3850 ;3190 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYCOUNTRY }
+    { 1000000030;Label  ;440  ;3190 ;3300 ;440  ;ParentControl=1000000029 }
+    { 1000000037;TextBox;3850 ;3740 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYDATE }
+    { 1000000038;Label  ;440  ;3740 ;3300 ;440  ;ParentControl=1000000037 }
+    { 1000000071;TextBox;3850 ;4290 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYZIPCODE }
+    { 1000000072;Label  ;440  ;4290 ;3300 ;440  ;ParentControl=1000000071 }
+    { 1000000073;TextBox;3850 ;4840 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYREGION }
+    { 1000000074;Label  ;440  ;4840 ;3300 ;440  ;ParentControl=1000000073 }
+    { 1000000053;TextBox;3850 ;5390 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=FREIGHT }
+    { 1000000054;Label  ;440  ;5390 ;3300 ;440  ;ParentControl=1000000053 }
+    { 1000000017;TextBox;3850 ;5940 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=DELIVERYMODE }
+    { 1000000018;Label  ;440  ;5940 ;3300 ;440  ;ParentControl=1000000017 }
+    { 1000000065;TextBox;3850 ;6490 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=1;
+                                                 SourceExpr=POSTAGEFEE }
+    { 1000000066;Label  ;440  ;6490 ;3300 ;440  ;ParentControl=1000000065 }
+    { 1000000005;TextBox;3850 ;990  ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=NAME }
+    { 1000000006;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1000000005 }
+    { 1000000007;TextBox;3850 ;1540 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=ADDRESS1 }
+    { 1000000008;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1000000007 }
+    { 1000000009;TextBox;3850 ;2090 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=ADDRESS2 }
+    { 1000000010;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1000000009 }
+    { 1000000011;TextBox;3850 ;2640 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=ADDRESS3 }
+    { 1000000012;Label  ;440  ;2640 ;3300 ;440  ;ParentControl=1000000011 }
+    { 1000000013;TextBox;3850 ;3190 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=PHONE }
+    { 1000000014;Label  ;440  ;3190 ;3300 ;440  ;ParentControl=1000000013 }
+    { 1000000015;TextBox;3850 ;3740 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=EMAIL }
+    { 1000000016;Label  ;440  ;3740 ;3300 ;440  ;ParentControl=1000000015 }
+    { 1000000019;TextBox;3850 ;4290 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=PAYMENT }
+    { 1000000020;Label  ;440  ;4290 ;3300 ;440  ;ParentControl=1000000019 }
+    { 1000000061;TextBox;3850 ;4840 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=PAYMENTID }
+    { 1000000062;Label  ;440  ;4840 ;3300 ;440  ;ParentControl=1000000061 }
+    { 1000000067;TextBox;3850 ;5500 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=ZIPCODE }
+    { 1000000068;Label  ;440  ;5500 ;3300 ;440  ;ParentControl=1000000067 }
+    { 1000000069;TextBox;3850 ;6050 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=REGION }
+    { 1000000070;Label  ;440  ;6050 ;3300 ;440  ;ParentControl=1000000069 }
+    { 1000000049;TextBox;13310;990  ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=CURRENCY;
+                                                 OnValidate=BEGIN
+                                                              IF CURRENCY <> '' THEN BEGIN
+                                                                PopulateCurrencyTmp;
+                                                                CurrencyTmp.GET(CURRENCY);
+                                                                CURRENCY := CurrencyTmp.Code;
+                                                              END;
+                                                            END;
+
+                                                 OnLookup=BEGIN
+                                                            PopulateCurrencyTmp;
+                                                            IF FORM.RUNMODAL(0,CurrencyTmp) = ACTION::LookupOK THEN BEGIN
+                                                              CURRENCY := CurrencyTmp.Code;
+                                                            END;
+                                                          END;
+                                                           }
+    { 1000000050;Label  ;9900 ;990  ;3300 ;440  ;ParentControl=1000000049 }
+    { 1000000051;TextBox;13310;1540 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=FEE }
+    { 1000000052;Label  ;9900 ;1540 ;3300 ;440  ;ParentControl=1000000051 }
+    { 1000000055;TextBox;3850 ;6600 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=COUNTRY }
+    { 1000000056;Label  ;440  ;6600 ;3300 ;440  ;ParentControl=1000000055 }
+    { 1000000035;TextBox;3850 ;7150 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=2;
+                                                 SourceExpr=CUSTACCOUNT }
+    { 1000000036;Label  ;440  ;7150 ;3300 ;440  ;ParentControl=1000000035 }
+    { 1000000093;CommandButton;14080;12210;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1000000094;SubForm;220  ;8690 ;16060;3300 ;HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 Border=No;
+                                                 SubFormID=Form61315;
+                                                 SubFormView=SORTING(Web Site,ESALESNUMBER,LINENUMBER)
+                                                             ORDER(Ascending);
+                                                 SubFormLink=Web Site=FIELD(Web Site),
+                                                             ESALESNUMBER=FIELD(ESALESNUMBER) }
+    { 1000000095;MenuButton;9240;12210;2200;550 ;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=Web Ordre;
+                                                            ENU=Web Order];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000097;
+                                                     PushAction=RunObject;
+                                                     ShortCutKey=Shift+F5;
+                                                     CaptionML=[DAN=Kort;
+                                                                ENU=Card];
+                                                     RunObject=Form 61314;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormView=SORTING(Web Site,ESALESNUMBER);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER) }
+                                                   { ID=1000000098;
+                                                     PushAction=RunObject;
+                                                     ShortCutKey=Ctrl+F5;
+                                                     CaptionML=[DAN=Linjer;
+                                                                ENU=Lines];
+                                                     RunObject=Form 61313;
+                                                     RunFormView=SORTING(Web Site,ESALESNUMBER,LINENUMBER)
+                                                                 ORDER(Ascending);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER) }
+                                                   { ID=1000000099;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=Validation Description;
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormView=SORTING(Web Site,Text Type,ESALESNUMBER,LINENUMBER);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FIELD(ESALESNUMBER) }
+                                                 }
+                                                  }
+    { 1000000096;MenuButton;11660;12210;2200;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=Funktion;
+                                                            ENU=Function];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000100;
+                                                     CaptionML=[DAN=Transfer Accepted;
+                                                                ENU=Transfer Accepted];
+                                                     OnPush=VAR
+                                                              "eShop Tranfer eOrder"@1000000000 : Codeunit 61301;
+                                                            BEGIN
+                                                              IF NOT
+                                                                CONFIRM(Text001,FALSE,TABLECAPTION,ESALESNUMBER) THEN
+                                                                  ERROR(Text002);
+                                                              "eShop Tranfer eOrder".RUN(Rec);
+                                                              COMMIT;
+                                                            END;
+                                                             }
+                                                   { ID=1000000101;
+                                                     CaptionML=[DAN=Mass Transfer Accepted;
+                                                                ENU=Mass Transfer Accepted];
+                                                     OnPush=BEGIN
+                                                              REPORT.RUNMODAL(REPORT::"Transfer eSalesOrder",TRUE,TRUE,Rec);
+                                                              CurrForm.UPDATE(FALSE);
+                                                            END;
+                                                             }
+                                                   { ID=1000000102;
+                                                     CaptionML=[DAN=Delete Rejected;
+                                                                ENU=Delete Rejected] }
+                                                   { ID=1000000103;
+                                                     CaptionML=[DAN=Create Customer;
+                                                                ENU=Create Customer] }
+                                                   { ID=1000000104;
+                                                     CaptionML=[DAN=Create Contact;
+                                                                ENU=Create Contact] }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+    VAR
+      CurrencyTmp@1000000000 : TEMPORARY Record 4;
+      Text001@1000000002 : TextConst 'DAN=Skal %1 %2 overf�res til ordre?;ENU=Do you want to transfer %1 %2 to order?';
+      Text002@1000000001 : TextConst 'DAN=Intet blev overf�rt.;ENU=Nothing was transferred.';
+
+    PROCEDURE PopulateCurrencyTmp@1000000001();
+    VAR
+      Currency@1000000000 : Record 4;
+      GeneralLedgerSetup@1000000001 : Record 98;
+    BEGIN
+      IF NOT CurrencyTmp.ISEMPTY THEN
+        EXIT;
+      IF Currency.FIND('-') THEN
+        REPEAT
+          CurrencyTmp := Currency;
+          IF CurrencyTmp.INSERT THEN;
+        UNTIL Currency.NEXT = 0;
+      GeneralLedgerSetup.GET;
+      CurrencyTmp.INIT;
+      CurrencyTmp.Code := GeneralLedgerSetup."LCY Code";
+      CurrencyTmp.Description := GeneralLedgerSetup.FIELDCAPTION("LCY Code");
+      IF CurrencyTmp.INSERT THEN;
+    END;
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

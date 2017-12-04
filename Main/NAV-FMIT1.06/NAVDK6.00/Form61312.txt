@@ -1,0 +1,290 @@
+OBJECT Form 61312 eSales Order Journal
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21-09-09;
+    Time=21:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=16500;
+    Height=6710;
+    CaptionML=[DAN=Salgs Ordre Journal;
+               ENU=Sales Order Journal];
+    TableBoxID=1106000000;
+    SourceTable=Table61307;
+    SourceTableView=SORTING(Web Site,Process Status,Process Result,ACCEPT);
+    OnOpenForm=BEGIN
+                 FilterType := FilterType::"All Non-Processed";
+                 SetAcceptFilter;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;16060;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1000000003;TextBox;0    ;770  ;1870 ;440  ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ACCEPT }
+    { 1000000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1000000003;
+                                                 InColumnHeading=Yes }
+    { 1106000001;TextBox;0    ;0    ;2200 ;0    ;HorzGlue=Both;
+                                                 Editable=No;
+                                                 ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=ESALESNUMBER }
+    { 1106000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000001;
+                                                 InColumnHeading=Yes }
+    { 1106000003;TextBox;0    ;0    ;2200 ;0    ;Editable=No;
+                                                 ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=CUSTACCOUNT }
+    { 1106000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000003;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;3251 ;0    ;Editable=No;
+                                                 ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=NAME }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000007;TextBox;0    ;0    ;2200 ;0    ;Editable=No;
+                                                 ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=CURRENCY }
+    { 1106000008;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000007;
+                                                 InColumnHeading=Yes }
+    { 1106000009;CommandButton;4400;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000010;CommandButton;6820;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000011;CommandButton;14080;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1106000012;MenuButton;11660;5940;2200;550 ;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=Funktion;
+                                                            ENU=Function];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000000;
+                                                     ShortCutKey=F11;
+                                                     CaptionML=[DAN=Overf�r;
+                                                                ENU=Transfer];
+                                                     OnPush=VAR
+                                                              "eShop Tranfer eOrder"@1000000000 : Codeunit 61301;
+                                                            BEGIN
+                                                              IF NOT
+                                                                CONFIRM(Text001,FALSE,TABLECAPTION,ESALESNUMBER) THEN
+                                                                  ERROR(Text002);
+                                                              "eShop Tranfer eOrder".RUN(Rec);
+                                                              COMMIT;
+                                                            END;
+                                                             }
+                                                   { ID=1000000001;
+                                                     CaptionML=[DAN=Masse Overf�r;
+                                                                ENU=Batch Transfer];
+                                                     OnPush=VAR
+                                                              ESALESTABLE@1000000001 : Record 61307;
+                                                            BEGIN
+                                                              ESALESTABLE.SETRANGE(ACCEPT,ESALESTABLE.ACCEPT::Accepted);
+                                                              REPORT.RUNMODAL(REPORT::"Transfer eSalesOrder",TRUE,TRUE,ESALESTABLE);
+                                                              CurrForm.UPDATE(FALSE);
+                                                            END;
+                                                             }
+                                                   { ID=1000000015;
+                                                     CaptionML=ENU=Accept Selected;
+                                                     OnPush=VAR
+                                                              ESALESTABLE@1000000000 : Record 61307;
+                                                              ESALESTABLE2@1000000001 : Record 61307;
+                                                              ESALESTABLE3@1000000003 : Record 61307;
+                                                            BEGIN
+                                                              ESALESTABLE2.ACCEPT := ESALESTABLE2.ACCEPT::Accepted;
+                                                              CurrForm.SETSELECTIONFILTER(Rec);
+                                                              ESALESTABLE.COPY(Rec);
+                                                              IF CONFIRM(STRSUBSTNO(Text003,ESALESTABLE2.FIELDCAPTION(ACCEPT),ESALESTABLE2.ACCEPT,ESALESTABLE2.TABLECAPTION)) THEN BEGIN
+                                                                ESALESTABLE.FINDFIRST;
+                                                                REPEAT
+                                                                  IF ESALESTABLE.ACCEPT = ACCEPT::New THEN BEGIN
+                                                                    ESALESTABLE3 := ESALESTABLE;
+                                                                    ESALESTABLE3.VALIDATE(ACCEPT,ESALESTABLE2.ACCEPT);
+                                                                    ESALESTABLE3.MODIFY(TRUE);
+                                                                  END;
+                                                                UNTIL ESALESTABLE.NEXT = 0;
+                                                              END;
+                                                              CLEARMARKS;
+                                                              MARKEDONLY(FALSE);
+                                                              CurrForm.UPDATE;
+                                                            END;
+                                                             }
+                                                   { ID=1000000002;
+                                                     Visible=No;
+                                                     CaptionML=[DAN=Slet Afviste;
+                                                                ENU=Delete Rejected] }
+                                                   { ID=1000000005;
+                                                     Visible=No;
+                                                     CaptionML=[DAN=Opret Debitor;
+                                                                ENU=Create Customer] }
+                                                   { ID=1000000006;
+                                                     Visible=No;
+                                                     CaptionML=[DAN=Opret Kontakt;
+                                                                ENU=Create Contact] }
+                                                 }
+                                                  }
+    { 1106000013;MenuButton;9240;5940;2200;550  ;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=Web Ordre;
+                                                            ENU=Web Order];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1106000014;
+                                                     PushAction=RunObject;
+                                                     ShortCutKey=Shift+F5;
+                                                     CaptionML=[DAN=Kort;
+                                                                ENU=Card];
+                                                     RunObject=Form 61314;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormView=SORTING(Web Site,ESALESNUMBER);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER) }
+                                                   { ID=1106000015;
+                                                     PushAction=RunObject;
+                                                     ShortCutKey=Ctrl+F5;
+                                                     CaptionML=[DAN=Linjer;
+                                                                ENU=Lines];
+                                                     RunObject=Form 61313;
+                                                     RunFormView=SORTING(Web Site,ESALESNUMBER,LINENUMBER)
+                                                                 ORDER(Ascending);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER) }
+                                                   { ID=1000000007;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=Validation Description;
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Validation),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER) }
+                                                   { ID=1000000013;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Kommentar;
+                                                                ENU=Comment];
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Comment),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER),
+                                                                 LINENUMBER=FILTER(0) }
+                                                   { ID=1000000014;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Linjekommentar;
+                                                                ENU=Line Comment];
+                                                     RunObject=Form 61316;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormView=SORTING(Web Site,Text Type,ESALESNUMBER,LINENUMBER,Text Line No.);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 Text Type=FILTER(Order Line Text),
+                                                                 ESALESNUMBER=FIELD(ESALESNUMBER),
+                                                                 LINENUMBER=FILTER(0) }
+                                                 }
+                                                  }
+    { 1000000008;CommandButton;440;5940;550;550 ;VertGlue=Bottom;
+                                                 CaptionML=[DAN=Alle Ikke-Behandlede;
+                                                            ENU=All Non-Processed];
+                                                 OnPush=BEGIN
+                                                          FilterType := FilterType::"All Non-Processed";
+                                                          SetAcceptFilter;
+                                                        END;
+                                                         }
+    { 1000000010;CommandButton;1100;5940;550;550;VertGlue=Bottom;
+                                                 CaptionML=[DAN=Nye;
+                                                            ENU=New];
+                                                 OnPush=BEGIN
+                                                          FilterType := FilterType::New;
+                                                          SetAcceptFilter;
+                                                        END;
+                                                         }
+    { 1000000011;CommandButton;2420;5940;550;550;VertGlue=Bottom;
+                                                 CaptionML=[DAN=Behandlede;
+                                                            ENU=Processed];
+                                                 OnPush=BEGIN
+                                                          FilterType := FilterType::ProcessedOK;
+                                                          SetAcceptFilter;
+                                                        END;
+                                                         }
+    { 1000000012;CommandButton;3080;5940;550;550;VertGlue=Bottom;
+                                                 CaptionML=[DAN=Fejl;
+                                                            ENU=Error];
+                                                 OnPush=BEGIN
+                                                          FilterType := FilterType::ProcessedError;
+                                                          SetAcceptFilter;
+                                                        END;
+                                                         }
+    { 1000000009;CommandButton;1760;5940;550;550;VertGlue=Bottom;
+                                                 CaptionML=[DAN=Accepterede;
+                                                            ENU=Accepted];
+                                                 OnPush=BEGIN
+                                                          FilterType := FilterType::Accepted;
+                                                          SetAcceptFilter;
+                                                        END;
+                                                         }
+  }
+  CODE
+  {
+    VAR
+      Text001@1000000000 : TextConst 'DAN=Skal %1 %2 overf�res til ordre?;ENU=Do you want to transfer %1 %2 to order?';
+      Text002@1000000001 : TextConst 'DAN=Intet blev overf�rt.;ENU=Nothing was transferred.';
+      FilterType@1000000002 : 'All Non-Processed,New,Accepted,ProcessedOK,ProcessedError';
+      Text003@1000000003 : TextConst 'DAN=S�t %1 til %2 p� alle valgte %3?;ENU=Set %1 to %2 on all selected %3?';
+
+    LOCAL PROCEDURE SetAcceptFilter@1000000000();
+    BEGIN
+      CASE FilterType OF
+        FilterType::"All Non-Processed" :
+          BEGIN
+            SETFILTER(ACCEPT,'%1..%2',ACCEPT::New,ACCEPT::Accepted);
+            SETFILTER("Process Status",'%1..%2',"Process Status"::New,"Process Status"::"Being Processed");
+            SETRANGE("Process Result");
+          END;
+        FilterType::New :
+          BEGIN
+            SETRANGE(ACCEPT,ACCEPT::New);
+            SETRANGE("Process Status","Process Status"::New);
+            SETRANGE("Process Result");
+          END;
+        FilterType::Accepted :
+          BEGIN
+            SETRANGE(ACCEPT,ACCEPT::Accepted);
+            SETRANGE("Process Status");
+            SETRANGE("Process Result");
+          END;
+        FilterType::ProcessedOK :
+          BEGIN
+            SETRANGE(ACCEPT,ACCEPT::Accepted);
+            SETRANGE("Process Status","Process Status"::Processed);
+            SETRANGE("Process Result","Process Result"::"Order Created");
+          END;
+        FilterType::ProcessedError :
+          BEGIN
+            SETRANGE(ACCEPT);
+            SETRANGE("Process Status","Process Status"::Processed);
+            SETRANGE("Process Result","Process Result"::Error);
+          END;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

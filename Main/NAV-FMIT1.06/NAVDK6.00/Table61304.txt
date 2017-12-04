@@ -1,0 +1,151 @@
+OBJECT Table 61304 EINVENTABLE
+{
+  OBJECT-PROPERTIES
+  {
+    Date=10-09-09;
+    Time=20:56:09;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    OnInsert=VAR
+               EINVENTABLE@1000000000 : Record 61304;
+             BEGIN
+               EINVENTABLE.SETCURRENTKEY(ROWNUMBER);
+               IF EINVENTABLE.FIND('+') THEN
+                 ROWNUMBER := EINVENTABLE.ROWNUMBER + 1
+               ELSE
+                 ROWNUMBER := 1;
+               InsertDescriptionInTranslation(Rec);
+
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnModify=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnDelete=VAR
+               eTranslation@1000000000 : Record 61301;
+               EINVENCATEGORY@1000000001 : Record 61306;
+             BEGIN
+               // Delete reservations
+
+               // Delete category-item link
+               EINVENCATEGORY.SETCURRENTKEY("Web Site",CATEGORY,ITEMNUMBER);
+               EINVENCATEGORY.SETRANGE("Web Site","Web Site");
+               EINVENCATEGORY.SETRANGE(ITEMNUMBER,"Item No.");
+               EINVENCATEGORY.DELETEALL;
+
+               // Delete translations
+               eTranslation.SETRANGE("Table No.",eTranslation."Table No."::eItem);
+               eTranslation.SETRANGE("Web Site","Web Site");
+               eTranslation.SETRANGE(Code,"Item No.");
+               eTranslation.DELETEALL;
+             END;
+
+    CaptionML=[DAN=Vare;
+               ENU=Item];
+    LookupFormID=Form61305;
+  }
+  FIELDS
+  {
+    { 1   ;   ;DATASET             ;Text3          }
+    { 2   ;   ;ROWNUMBER           ;Integer        }
+    { 3   ;   ;LASTCHANGED         ;DateTime       }
+    { 4   ;   ;ITEMNUMBER          ;Text20         }
+    { 5   ;   ;PRICEGROUP          ;Code10         }
+    { 6   ;   ;WEIGHT              ;Decimal        }
+    { 7   ;   ;EINVENTORY          ;Decimal        }
+    { 8   ;   ;CAMPAIGN            ;Code10         }
+    { 9   ;   ;CAMPAIGNSTART       ;Date           }
+    { 10  ;   ;CAMPAIGNEND         ;Date           }
+    { 11  ;   ;DELIVERYDATE        ;Date           }
+    { 12  ;   ;IMAGEFILE           ;Text250        }
+    { 13  ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+    { 14  ;   ;Item No.            ;Code20        ;TableRelation=Item;
+                                                   CaptionML=ENU=Item No. }
+    { 15  ;   ;Reserved Qty        ;Decimal       ;CaptionML=ENU=Reserved Qty }
+    { 16  ;   ;Fixed Qty           ;Decimal       ;CaptionML=ENU=Fixed Qty }
+    { 17  ;   ;In eCategory        ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Count(EINVENCATEGORY WHERE (ITEMNUMBER=FIELD(ITEMNUMBER)));
+                                                   CaptionML=ENU=In Category }
+    { 18  ;   ;Variant             ;Code20        ;CaptionML=ENU=Variant }
+    { 19  ;   ;UOM                 ;Code10        ;CaptionML=ENU=UOM }
+  }
+  KEYS
+  {
+    {    ;Web Site,Item No.,ITEMNUMBER            ;Clustered=Yes }
+    {    ;ROWNUMBER                                }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    PROCEDURE IsItemIdentifier@1000000000() : Boolean;
+    BEGIN
+      EXIT((ITEMNUMBER <> "Item No.") AND (Variant <> ''));
+    END;
+
+    PROCEDURE UpdateInventory@1000000001();
+    VAR
+      eShopMgt@1000000002 : Codeunit 61300;
+    BEGIN
+      eShopMgt.UpdateEINVENTABLEInventory(Rec);
+    END;
+
+    PROCEDURE InsertDescriptionInTranslation@1000000002(VAR EINVENTABLE@1000000001 : Record 61304);
+    VAR
+      eTranslation@1000000000 : Record 61301;
+      eWebSiteSetup@1000000002 : Record 61300;
+      Item@1000000003 : Record 27;
+      ItemIdentifier@1000000004 : Record 7704;
+      ItemVariant@1000000005 : Record 5401;
+    BEGIN
+      IF EINVENTABLE."Web Site" = '' THEN
+        EXIT;
+      IF EINVENTABLE."Item No." = '' THEN
+        EXIT;
+
+      // Delete translations
+      eTranslation.SETRANGE("Table No.",eTranslation."Table No."::eItem);
+      eTranslation.SETRANGE("Web Site",EINVENTABLE."Web Site");
+      eTranslation.SETRANGE(Code,EINVENTABLE."Item No.");
+      eTranslation.SETRANGE(Type,eTranslation.Type::Description);
+      eTranslation.DELETEALL;
+
+      //Insert New Description Translations
+      eWebSiteSetup.GET(EINVENTABLE."Web Site");
+      IF eWebSiteSetup."Std. Language Item Cards" <> '' THEN BEGIN
+        eTranslation."Table No." := eTranslation."Table No."::eItem;
+        eTranslation."Web Site" := EINVENTABLE."Web Site";
+        eTranslation."Language Code" := eWebSiteSetup."Std. Language Item Cards";
+        eTranslation.Code := EINVENTABLE."Item No.";
+        eTranslation.Type := eTranslation.Type::Description;
+        eTranslation."Line No." := 10000;
+        IF NOT EINVENTABLE.IsItemIdentifier THEN BEGIN
+          IF Item.GET(EINVENTABLE."Item No.") THEN BEGIN
+            eTranslation.Text := COPYSTR(Item.Description,1,MAXSTRLEN(eTranslation.Text));
+          END;
+        END ELSE BEGIN
+          IF ItemIdentifier.GET(EINVENTABLE."Item No.") THEN
+            IF ItemIdentifier."Variant Code" <> '' THEN
+              IF ItemVariant.GET(ItemIdentifier."Item No.",ItemIdentifier."Variant Code") THEN BEGIN
+                eTranslation.Text := COPYSTR(ItemVariant.Description,1,MAXSTRLEN(eTranslation.Text));
+              END;
+        END;
+        IF eTranslation.Text <> '' THEN
+          eTranslation.INSERT(TRUE);
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

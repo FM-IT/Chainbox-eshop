@@ -1,0 +1,58 @@
+OBJECT Table 61306 EINVENCATEGORY
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    OnInsert=VAR
+               EINVENCATEGORY@1000000000 : Record 61306;
+             BEGIN
+               EINVENCATEGORY.SETCURRENTKEY(ROWNUMBER);
+               IF EINVENCATEGORY.FIND('+') THEN
+                 ROWNUMBER := EINVENCATEGORY.ROWNUMBER + 1
+               ELSE
+                 ROWNUMBER := 1;
+
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnModify=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    CaptionML=[DAN=Vare Kategori;
+               ENU=Item Category];
+  }
+  FIELDS
+  {
+    { 1   ;   ;DATASET             ;Text3          }
+    { 2   ;   ;ROWNUMBER           ;Integer        }
+    { 3   ;   ;LASTCHANGED         ;DateTime       }
+    { 4   ;   ;ITEMNUMBER          ;Code20        ;TableRelation=EINVENTABLE.ITEMNUMBER }
+    { 5   ;   ;CATEGORY            ;Code10        ;TableRelation=ECATEGORY.CATEGORY }
+    { 6   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes }
+  }
+  KEYS
+  {
+    {    ;Web Site,CATEGORY,ITEMNUMBER            ;Clustered=Yes }
+    {    ;ROWNUMBER                                }
+    {    ;ITEMNUMBER,Web Site,CATEGORY             }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

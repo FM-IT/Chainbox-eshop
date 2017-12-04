@@ -1,0 +1,1895 @@
+OBJECT Table 27 Item
+{
+  OBJECT-PROPERTIES
+  {
+    Date=15-09-09;
+    Time=20:00:00;
+    Version List=NAVW16.00,FMIT1.01;
+  }
+  PROPERTIES
+  {
+    Permissions=;
+    DataCaptionFields=No.,Description;
+    OnInsert=BEGIN
+               IF "No." = '' THEN BEGIN
+                 GetInvtSetup;
+                 InvtSetup.TESTFIELD("Item Nos.");
+                 NoSeriesMgt.InitSeries(InvtSetup."Item Nos.",xRec."No. Series",0D,"No.","No. Series");
+               END;
+
+               DimMgt.UpdateDefaultDim(
+                 DATABASE::Item,"No.",
+                 "Global Dimension 1 Code","Global Dimension 2 Code");
+             END;
+
+    OnModify=BEGIN
+               "Last Date Modified" := TODAY;
+
+               PlanningAssignment.ItemChange(Rec,xRec);
+             END;
+
+    OnDelete=VAR
+               BinContent@1000 : Record 7302;
+             BEGIN
+               BOMComp.RESET;
+               BOMComp.SETCURRENTKEY(Type,"No.");
+               BOMComp.SETRANGE(Type,BOMComp.Type::Item);
+               BOMComp.SETRANGE("No.","No.");
+               IF BOMComp.FIND('-') THEN
+                 ERROR(Text023,TABLECAPTION,"No.",BOMComp.TABLECAPTION);
+
+               ItemJnlLine.SETRANGE("Item No.","No.");
+               IF ItemJnlLine.FIND('-') THEN
+                 ERROR(Text023,TABLECAPTION,"No.",ItemJnlLine.TABLECAPTION);
+
+               RequisitionLine.SETCURRENTKEY(Type,"No.");
+               RequisitionLine.SETRANGE(Type,RequisitionLine.Type::Item);
+               RequisitionLine.SETRANGE("No.","No.");
+               IF NOT RequisitionLine.ISEMPTY THEN
+                 ERROR(Text023,TABLECAPTION,"No.",RequisitionLine.TABLECAPTION);
+
+               PurchOrderLine.SETCURRENTKEY(Type,"No.");
+               PurchOrderLine.SETRANGE(Type,PurchOrderLine.Type::Item);
+               PurchOrderLine.SETRANGE("No.","No.");
+               IF PurchOrderLine.FIND('-') THEN
+                 ERROR(Text000,TABLECAPTION,"No.",PurchOrderLine."Document Type");
+
+               SalesOrderLine.SETCURRENTKEY(Type,"No.");
+               SalesOrderLine.SETRANGE(Type,SalesOrderLine.Type::Item);
+               SalesOrderLine.SETRANGE("No.","No.");
+               IF SalesOrderLine.FIND('-') THEN
+                 ERROR(Text001,TABLECAPTION,"No.",SalesOrderLine."Document Type");
+
+               IF ProdOrderExist THEN
+                 ERROR(Text002,TABLECAPTION,"No.");
+
+               ProdOrderComp.SETCURRENTKEY(Status,"Item No.");
+               ProdOrderComp.SETFILTER(Status,'..%1',ProdOrderComp.Status::Released);
+               ProdOrderComp.SETRANGE("Item No.","No.");
+               IF ProdOrderComp.FIND('-') THEN
+                 ERROR(Text014,TABLECAPTION,"No.");
+
+               TransLine.SETCURRENTKEY("Item No.");
+               TransLine.SETRANGE("Item No.","No.");
+               IF TransLine.FIND('-') THEN
+                 ERROR(Text016,TABLECAPTION,"No.");
+
+               ServInvLine.RESET;
+               ServInvLine.SETCURRENTKEY(Type,"No.");
+               ServInvLine.SETRANGE(Type,ServInvLine.Type::Item);
+               ServInvLine.SETRANGE("No.","No.");
+               IF ServInvLine.FIND('-') THEN
+                 ERROR(Text017,TABLECAPTION,"No.",ServInvLine."Document Type");
+
+               ProdBOMLine.RESET;
+               ProdBOMLine.SETCURRENTKEY(Type,"No.");
+               ProdBOMLine.SETRANGE(Type,ProdBOMLine.Type::Item);
+               ProdBOMLine.SETRANGE("No.","No.");
+               IF ProdBOMLine.FIND('-') THEN
+                 REPEAT
+                   IF ProdBOMHeader.GET(ProdBOMLine."Production BOM No.") AND
+                      (ProdBOMHeader.Status = ProdBOMHeader.Status::Certified)
+                   THEN
+                     ERROR(Text004,TABLECAPTION,"No.");
+                 UNTIL ProdBOMLine.NEXT = 0;
+
+               ServiceContractLine.RESET;
+               ServiceContractLine.SETRANGE("Item No.","No.");
+               IF ServiceContractLine.FIND('-') THEN
+                 ERROR(Text023,TABLECAPTION,"No.",ServiceContractLine.TABLECAPTION);
+
+               ServiceItem.RESET;
+               ServiceItem.SETRANGE("Item No.","No.");
+               IF ServiceItem.FIND('-') THEN
+                 REPEAT
+                   ServiceItem.VALIDATE("Item No.",'');
+                   ServiceItem.MODIFY(TRUE);
+                 UNTIL ServiceItem.NEXT = 0;
+
+               MoveEntries.MoveItemEntries(Rec);
+
+               ItemBudgetEntry.SETCURRENTKEY("Analysis Area","Budget Name","Item No.");
+               ItemBudgetEntry.SETRANGE("Item No.","No.");
+               ItemBudgetEntry.DELETEALL(TRUE);
+
+               ItemSub.RESET;
+               ItemSub.SETRANGE(Type,ItemSub.Type::Item);
+               ItemSub.SETRANGE("No.","No.");
+               ItemSub.DELETEALL;
+
+               ItemSub.RESET;
+               ItemSub.SETRANGE("Substitute Type",ItemSub."Substitute Type"::Item);
+               ItemSub.SETRANGE("Substitute No.","No.");
+               ItemSub.DELETEALL;
+
+               SKU.RESET;
+               SKU.SETCURRENTKEY("Item No.");
+               SKU.SETRANGE("Item No.","No.");
+               SKU.DELETEALL;
+
+               NonstockItemMgt.NonstockItemDel(Rec);
+               CommentLine.SETRANGE("Table Name",CommentLine."Table Name"::Item);
+               CommentLine.SETRANGE("No.","No.");
+               CommentLine.DELETEALL;
+
+               ItemVend.SETCURRENTKEY("Item No.");
+               ItemVend.SETRANGE("Item No.","No.");
+               ItemVend.DELETEALL;
+
+               SalesPrice.SETRANGE("Item No.","No.");
+               SalesPrice.DELETEALL;
+
+               SalesLineDisc.SETRANGE(Type,SalesLineDisc.Type::Item);
+               SalesLineDisc.SETRANGE(Code,"No.");
+               SalesLineDisc.DELETEALL;
+
+               SalesPrepmtPct.SETRANGE("Item No.","No.");
+               SalesPrepmtPct.DELETEALL;
+
+               PurchPrice.SETRANGE("Item No.","No.");
+               PurchPrice.DELETEALL;
+
+               PurchLineDisc.SETRANGE("Item No.","No.");
+               PurchLineDisc.DELETEALL;
+
+               PurchPrepmtPct.SETRANGE("Item No.","No.");
+               PurchPrepmtPct.DELETEALL;
+
+               ItemTranslation.SETRANGE("Item No.","No.");
+               ItemTranslation.DELETEALL;
+
+               ItemUnitOfMeasure.SETRANGE("Item No.","No.");
+               ItemUnitOfMeasure.DELETEALL;
+
+               ItemVariant.SETRANGE("Item No.","No.");
+               ItemVariant.DELETEALL;
+
+               ExtTextHeader.SETRANGE("Table Name",ExtTextHeader."Table Name"::Item);
+               ExtTextHeader.SETRANGE("No.","No.");
+               ExtTextHeader.DELETEALL(TRUE);
+
+               ItemAnalysisViewEntry.SETRANGE("Item No.","No.");
+               ItemAnalysisViewEntry.DELETEALL;
+
+               ItemAnalysisBudgViewEntry.SETRANGE("Item No.","No.");
+               ItemAnalysisBudgViewEntry.DELETEALL;
+
+               PlanningAssignment.SETRANGE("Item No.","No.");
+               PlanningAssignment.DELETEALL;
+
+               BOMComp.SETRANGE("Parent Item No.","No.");
+               BOMComp.DELETEALL;
+
+               TroubleshSetup.RESET;
+               TroubleshSetup.SETRANGE(Type,TroubleshSetup.Type::Item);
+               TroubleshSetup.SETRANGE("No.","No.");
+               TroubleshSetup.DELETEALL;
+
+               ResSkillMgt.DeleteItemResSkills("No.");
+               DimMgt.DeleteDefaultDim(DATABASE::Item,"No.");
+
+               ItemIdent.RESET;
+               ItemIdent.SETCURRENTKEY("Item No.");
+               ItemIdent.SETRANGE("Item No.","No.");
+               ItemIdent.DELETEALL;
+
+               ServiceItemComponent.RESET;
+               ServiceItemComponent.SETRANGE(Type,ServiceItemComponent.Type::Item);
+               ServiceItemComponent.SETRANGE("No.","No.");
+               ServiceItemComponent.MODIFYALL("No.",'');
+
+               BinContent.SETCURRENTKEY("Item No.");
+               BinContent.SETRANGE("Item No.","No.");
+               BinContent.DELETEALL;
+
+               MobSalesMgt.ItemOnDelete(Rec);
+             END;
+
+    OnRename=BEGIN
+               "Last Date Modified" := TODAY;
+             END;
+
+    CaptionML=[DAN=Vare;
+               ENU=Item];
+    LookupFormID=Form31;
+    DrillDownFormID=Form31;
+  }
+  FIELDS
+  {
+    { 1   ;   ;No.                 ;Code20        ;AltSearchField=Search Description;
+                                                   OnValidate=BEGIN
+                                                                IF "No." <> xRec."No." THEN BEGIN
+                                                                  GetInvtSetup;
+                                                                  NoSeriesMgt.TestManual(InvtSetup."Item Nos.");
+                                                                  "No. Series" := '';
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Nummer;
+                                                              ENU=No.] }
+    { 2   ;   ;No. 2               ;Code20        ;CaptionML=[DAN=Nr. 2;
+                                                              ENU=No. 2] }
+    { 3   ;   ;Description         ;Text30        ;OnValidate=BEGIN
+                                                                IF ("Search Description" = UPPERCASE(xRec.Description)) OR ("Search Description" = '') THEN
+                                                                  "Search Description" := Description;
+
+                                                                IF "Created From Nonstock Item" THEN BEGIN
+                                                                  NonstockItem.SETCURRENTKEY("Item No.");
+                                                                  NonstockItem.SETRANGE("Item No.","No.");
+                                                                  IF NonstockItem.FIND('-') THEN
+                                                                    IF NonstockItem.Description = '' THEN BEGIN
+                                                                      NonstockItem.Description := Description;
+                                                                      NonstockItem.MODIFY;
+                                                                    END;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskrivelse;
+                                                              ENU=Description] }
+    { 4   ;   ;Search Description  ;Code30        ;CaptionML=[DAN=S�gebeskrivelse;
+                                                              ENU=Search Description] }
+    { 5   ;   ;Description 2       ;Text30        ;CaptionML=[DAN=Beskrivelse 2;
+                                                              ENU=Description 2] }
+    { 6   ;   ;Bill of Materials   ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("BOM Component" WHERE (Parent Item No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Stykliste;
+                                                              ENU=Bill of Materials];
+                                                   Editable=No }
+    { 8   ;   ;Base Unit of Measure;Code10        ;TableRelation="Item Unit of Measure".Code WHERE (Item No.=FIELD(No.));
+                                                   OnValidate=BEGIN
+                                                                TestNoOpenEntriesExist(FIELDCAPTION("Base Unit of Measure"));
+
+                                                                "Sales Unit of Measure" := "Base Unit of Measure";
+                                                                "Purch. Unit of Measure" := "Base Unit of Measure";
+                                                                IF "Base Unit of Measure" <> '' THEN BEGIN
+                                                                  ItemUnitOfMeasure.GET("No.","Base Unit of Measure");
+                                                                  ItemUnitOfMeasure.TESTFIELD("Qty. per Unit of Measure",1);
+                                                                END;
+                                                                IF CurrFieldNo <> 0 THEN
+                                                                  MODIFY(TRUE);
+                                                              END;
+
+                                                   CaptionML=[DAN=Basisenhed;
+                                                              ENU=Base Unit of Measure] }
+    { 9   ;   ;Price Unit Conversion;Integer      ;CaptionML=[DAN=Prisfaktor;
+                                                              ENU=Price Unit Conversion] }
+    { 11  ;   ;Inventory Posting Group;Code10     ;TableRelation="Inventory Posting Group";
+                                                   CaptionML=[DAN=Varebogf�ringsgruppe;
+                                                              ENU=Inventory Posting Group] }
+    { 12  ;   ;Shelf No.           ;Code10        ;CaptionML=[DAN=Placeringsnr.;
+                                                              ENU=Shelf No.] }
+    { 14  ;   ;Item Disc. Group    ;Code10        ;TableRelation="Item Discount Group";
+                                                   CaptionML=[DAN=Varerabatgruppe;
+                                                              ENU=Item Disc. Group] }
+    { 15  ;   ;Allow Invoice Disc. ;Boolean       ;InitValue=Yes;
+                                                   CaptionML=[DAN=Tillad fakturarabat;
+                                                              ENU=Allow Invoice Disc.] }
+    { 16  ;   ;Statistics Group    ;Integer       ;CaptionML=[DAN=Statistikgruppe;
+                                                              ENU=Statistics Group] }
+    { 17  ;   ;Commission Group    ;Integer       ;CaptionML=[DAN=Provisionsgruppe;
+                                                              ENU=Commission Group] }
+    { 18  ;   ;Unit Price          ;Decimal       ;OnValidate=BEGIN
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Salgspris;
+                                                              ENU=Unit Price];
+                                                   MinValue=0;
+                                                   AutoFormatType=2 }
+    { 19  ;   ;Price/Profit Calculation;Option    ;OnValidate=BEGIN
+                                                                IF "Price Includes VAT" AND
+                                                                   ("Price/Profit Calculation" < "Price/Profit Calculation"::"No Relationship")
+                                                                THEN BEGIN
+                                                                  VATPostingSetup.GET("VAT Bus. Posting Gr. (Price)","VAT Prod. Posting Group");
+                                                                  CASE VATPostingSetup."VAT Calculation Type" OF
+                                                                    VATPostingSetup."VAT Calculation Type"::"Reverse Charge VAT":
+                                                                      VATPostingSetup."VAT %" := 0;
+                                                                    VATPostingSetup."VAT Calculation Type"::"Sales Tax":
+                                                                      ERROR(
+                                                                        Text006,
+                                                                        VATPostingSetup.FIELDCAPTION("VAT Calculation Type"),
+                                                                        VATPostingSetup."VAT Calculation Type");
+                                                                  END;
+                                                                END ELSE
+                                                                  CLEAR(VATPostingSetup);
+
+                                                                CASE "Price/Profit Calculation" OF
+                                                                  "Price/Profit Calculation"::"Profit=Price-Cost":
+                                                                    IF "Unit Price" <> 0 THEN
+                                                                      "Profit %" :=
+                                                                        ROUND(
+                                                                          100 * (1 - "Unit Cost" / ("Unit Price" /
+                                                                          (1 + VATPostingSetup."VAT %" / 100))),0.00001)
+                                                                    ELSE
+                                                                      "Profit %" := 0;
+                                                                  "Price/Profit Calculation"::"Price=Cost+Profit":
+                                                                    IF "Profit %" < 100 THEN BEGIN
+                                                                      GetGLSetup;
+                                                                      "Unit Price" :=
+                                                                        ROUND(
+                                                                          ("Unit Cost" / (1 - "Profit %" / 100)) *
+                                                                          (1 + VATPostingSetup."VAT %" / 100),GLSetup."Unit-Amount Rounding Precision");
+                                                                    END;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Avancepct.beregning;
+                                                              ENU=Price/Profit Calculation];
+                                                   OptionCaptionML=[DAN="Avance=Salgspris-Kostpris,Salgspris=Kostpris+Avance,Ingen";
+                                                                    ENU="Profit=Price-Cost,Price=Cost+Profit,No Relationship"];
+                                                   OptionString=Profit=Price-Cost,Price=Cost+Profit,No Relationship }
+    { 20  ;   ;Profit %            ;Decimal       ;OnValidate=BEGIN
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Avancepct.;
+                                                              ENU=Profit %];
+                                                   DecimalPlaces=0:5;
+                                                   MaxValue=99,99999 }
+    { 21  ;   ;Costing Method      ;Option        ;OnValidate=BEGIN
+                                                                IF "Costing Method" = xRec."Costing Method" THEN
+                                                                  EXIT;
+
+                                                                IF "Costing Method" = "Costing Method"::Specific THEN BEGIN
+                                                                  TESTFIELD("Item Tracking Code");
+
+                                                                  ItemTrackingCode.GET("Item Tracking Code");
+                                                                  IF NOT ItemTrackingCode."SN Specific Tracking" THEN
+                                                                    ERROR(
+                                                                      Text018,
+                                                                      ItemTrackingCode.FIELDCAPTION("SN Specific Tracking"),
+                                                                      FORMAT(TRUE),ItemTrackingCode.TABLECAPTION,ItemTrackingCode.Code,
+                                                                      FIELDCAPTION("Costing Method"),"Costing Method");
+                                                                END;
+
+                                                                TestNoEntriesExist(FIELDCAPTION("Costing Method"));
+
+                                                                ItemCostMgt.UpdateUnitCost(Rec,'','',0,0,FALSE,FALSE,TRUE,FIELDNO("Costing Method"));
+                                                              END;
+
+                                                   CaptionML=[DAN=Kostmetode;
+                                                              ENU=Costing Method];
+                                                   OptionCaptionML=[DAN=FIFO,LIFO,Serienummer,Gennemsnit,Standard;
+                                                                    ENU=FIFO,LIFO,Specific,Average,Standard];
+                                                   OptionString=FIFO,LIFO,Specific,Average,Standard }
+    { 22  ;   ;Unit Cost           ;Decimal       ;OnValidate=BEGIN
+                                                                IF ("Costing Method" = "Costing Method"::Standard) THEN
+                                                                  VALIDATE("Standard Cost","Unit Cost")
+                                                                ELSE
+                                                                  TestNoEntriesExist(FIELDCAPTION("Unit Cost"));
+                                                              END;
+
+                                                   CaptionML=[DAN=Kostpris;
+                                                              ENU=Unit Cost];
+                                                   MinValue=0;
+                                                   AutoFormatType=2 }
+    { 24  ;   ;Standard Cost       ;Decimal       ;OnValidate=BEGIN
+                                                                IF ("Costing Method" = "Costing Method"::Standard) AND (CurrFieldNo <> 0) THEN
+                                                                  IF NOT GUIALLOWED THEN BEGIN
+                                                                    "Standard Cost" := xRec."Standard Cost";
+                                                                    EXIT;
+                                                                  END ELSE
+                                                                    IF NOT
+                                                                       CONFIRM(
+                                                                         Text020 +
+                                                                         Text021 +
+                                                                         Text022,FALSE,
+                                                                         FIELDCAPTION("Standard Cost"))
+                                                                    THEN BEGIN
+                                                                      "Standard Cost" := xRec."Standard Cost";
+                                                                      EXIT;
+                                                                    END;
+
+                                                                ItemCostMgt.UpdateUnitCost(Rec,'','',0,0,FALSE,FALSE,TRUE,FIELDNO("Standard Cost"));
+                                                              END;
+
+                                                   CaptionML=[DAN=Kostpris (standard);
+                                                              ENU=Standard Cost];
+                                                   MinValue=0;
+                                                   AutoFormatType=2 }
+    { 25  ;   ;Last Direct Cost    ;Decimal       ;CaptionML=[DAN=Sidste k�bspris;
+                                                              ENU=Last Direct Cost];
+                                                   MinValue=0;
+                                                   AutoFormatType=2 }
+    { 28  ;   ;Indirect Cost %     ;Decimal       ;OnValidate=BEGIN
+                                                                ItemCostMgt.UpdateUnitCost(Rec,'','',0,0,FALSE,FALSE,TRUE,FIELDNO("Indirect Cost %"));
+                                                              END;
+
+                                                   CaptionML=[DAN=Indir. omkost.pct.;
+                                                              ENU=Indirect Cost %];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 29  ;   ;Cost is Adjusted    ;Boolean       ;InitValue=Yes;
+                                                   CaptionML=[DAN=Kostv�rdien er reguleret;
+                                                              ENU=Cost is Adjusted];
+                                                   Editable=No }
+    { 30  ;   ;Allow Online Adjustment;Boolean    ;InitValue=Yes;
+                                                   CaptionML=[DAN=Tillad onlineregulering;
+                                                              ENU=Allow Online Adjustment];
+                                                   Editable=No }
+    { 31  ;   ;Vendor No.          ;Code20        ;TableRelation=Vendor;
+                                                   OnValidate=BEGIN
+                                                                IF (xRec."Vendor No." <> "Vendor No.") AND
+                                                                   ("Vendor No." <> '')
+                                                                THEN
+                                                                  IF Vend.GET("Vendor No.") THEN
+                                                                    "Lead Time Calculation" := Vend."Lead Time Calculation";
+                                                              END;
+
+                                                   ValidateTableRelation=Yes;
+                                                   TestTableRelation=Yes;
+                                                   CaptionML=[DAN=Leverand�rnr.;
+                                                              ENU=Vendor No.] }
+    { 32  ;   ;Vendor Item No.     ;Text20        ;CaptionML=[DAN=Leverand�rs varenr.;
+                                                              ENU=Vendor Item No.] }
+    { 33  ;   ;Lead Time Calculation;DateFormula  ;CaptionML=[DAN=Leveringstid;
+                                                              ENU=Lead Time Calculation] }
+    { 34  ;   ;Reorder Point       ;Decimal       ;CaptionML=[DAN=Genbestillingspunkt;
+                                                              ENU=Reorder Point];
+                                                   DecimalPlaces=0:5 }
+    { 35  ;   ;Maximum Inventory   ;Decimal       ;CaptionML=[DAN=Maks. lagerbeholdning;
+                                                              ENU=Maximum Inventory];
+                                                   DecimalPlaces=0:5 }
+    { 36  ;   ;Reorder Quantity    ;Decimal       ;CaptionML=[DAN=Ordrekvantum;
+                                                              ENU=Reorder Quantity];
+                                                   DecimalPlaces=0:5 }
+    { 37  ;   ;Alternative Item No.;Code20        ;TableRelation=Item;
+                                                   CaptionML=[DAN=Alternativt varenr.;
+                                                              ENU=Alternative Item No.] }
+    { 38  ;   ;Unit List Price     ;Decimal       ;CaptionML=[DAN=Vejledende pris;
+                                                              ENU=Unit List Price];
+                                                   MinValue=0;
+                                                   AutoFormatType=2 }
+    { 39  ;   ;Duty Due %          ;Decimal       ;CaptionML=[DAN=Afgiftspct.;
+                                                              ENU=Duty Due %];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0;
+                                                   MaxValue=100 }
+    { 40  ;   ;Duty Code           ;Code10        ;CaptionML=[DAN=Afgiftskode;
+                                                              ENU=Duty Code] }
+    { 41  ;   ;Gross Weight        ;Decimal       ;CaptionML=[DAN=Bruttov�gt;
+                                                              ENU=Gross Weight];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 42  ;   ;Net Weight          ;Decimal       ;CaptionML=[DAN=Nettov�gt;
+                                                              ENU=Net Weight];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 43  ;   ;Units per Parcel    ;Decimal       ;CaptionML=[DAN=Antal pr. kolli;
+                                                              ENU=Units per Parcel];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 44  ;   ;Unit Volume         ;Decimal       ;CaptionML=[DAN=Rumfang;
+                                                              ENU=Unit Volume];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 45  ;   ;Durability          ;Code10        ;CaptionML=[DAN=Holdbarhed;
+                                                              ENU=Durability] }
+    { 46  ;   ;Freight Type        ;Code10        ;CaptionML=[DAN=Fragtform;
+                                                              ENU=Freight Type] }
+    { 47  ;   ;Tariff No.          ;Code10        ;TableRelation="Tariff Number";
+                                                   CaptionML=[DAN=Brugstarifnr.;
+                                                              ENU=Tariff No.] }
+    { 48  ;   ;Duty Unit Conversion;Decimal       ;CaptionML=[DAN=Toldfaktor;
+                                                              ENU=Duty Unit Conversion];
+                                                   DecimalPlaces=0:5 }
+    { 49  ;   ;Country/Region Purchased Code;Code10;
+                                                   TableRelation=Country/Region;
+                                                   CaptionML=[DAN=Lande-/omr�dekode for k�b;
+                                                              ENU=Country/Region Purchased Code] }
+    { 50  ;   ;Budget Quantity     ;Decimal       ;CaptionML=[DAN=Budget (antal);
+                                                              ENU=Budget Quantity];
+                                                   DecimalPlaces=0:5 }
+    { 51  ;   ;Budgeted Amount     ;Decimal       ;CaptionML=[DAN=Budgetteret bel�b;
+                                                              ENU=Budgeted Amount];
+                                                   AutoFormatType=1 }
+    { 52  ;   ;Budget Profit       ;Decimal       ;CaptionML=[DAN=Budget (avance);
+                                                              ENU=Budget Profit];
+                                                   AutoFormatType=1 }
+    { 53  ;   ;Comment             ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("Comment Line" WHERE (Table Name=CONST(Item),
+                                                                                           No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Bem�rkning;
+                                                              ENU=Comment];
+                                                   Editable=No }
+    { 54  ;   ;Blocked             ;Boolean       ;CaptionML=[DAN=Sp�rret;
+                                                              ENU=Blocked] }
+    { 55  ;   ;Cost is Posted to G/L;Boolean      ;FieldClass=FlowField;
+                                                   CalcFormula=-Exist("Post Value Entry to G/L" WHERE (Item No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Bogf�rt kostpris;
+                                                              ENU=Cost is Posted to G/L];
+                                                   Editable=No }
+    { 62  ;   ;Last Date Modified  ;Date          ;CaptionML=[DAN=Rettet den;
+                                                              ENU=Last Date Modified];
+                                                   Editable=No }
+    { 64  ;   ;Date Filter         ;Date          ;FieldClass=FlowFilter;
+                                                   CaptionML=[DAN=Datofilter;
+                                                              ENU=Date Filter] }
+    { 65  ;   ;Global Dimension 1 Filter;Code20   ;FieldClass=FlowFilter;
+                                                   TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
+                                                   CaptionML=[DAN=Global dimension 1-filter;
+                                                              ENU=Global Dimension 1 Filter];
+                                                   CaptionClass='1,3,1' }
+    { 66  ;   ;Global Dimension 2 Filter;Code20   ;FieldClass=FlowFilter;
+                                                   TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(2));
+                                                   CaptionML=[DAN=Global dimension 2-filter;
+                                                              ENU=Global Dimension 2 Filter];
+                                                   CaptionClass='1,3,2' }
+    { 67  ;   ;Location Filter     ;Code10        ;FieldClass=FlowFilter;
+                                                   TableRelation=Location;
+                                                   CaptionML=[DAN=Lokationsfilter;
+                                                              ENU=Location Filter] }
+    { 68  ;   ;Inventory           ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry".Quantity WHERE (Item No.=FIELD(No.),
+                                                                                                       Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                       Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                       Location Code=FIELD(Location Filter),
+                                                                                                       Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                       Variant Code=FIELD(Variant Filter),
+                                                                                                       Lot No.=FIELD(Lot No. Filter),
+                                                                                                       Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Lager;
+                                                              ENU=Inventory];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 69  ;   ;Net Invoiced Qty.   ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry"."Invoiced Quantity" WHERE (Item No.=FIELD(No.),
+                                                                                                                  Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                  Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                  Location Code=FIELD(Location Filter),
+                                                                                                                  Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                  Variant Code=FIELD(Variant Filter),
+                                                                                                                  Lot No.=FIELD(Lot No. Filter),
+                                                                                                                  Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Faktureret beholdn.;
+                                                              ENU=Net Invoiced Qty.];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 70  ;   ;Net Change          ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry".Quantity WHERE (Item No.=FIELD(No.),
+                                                                                                       Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                       Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                       Location Code=FIELD(Location Filter),
+                                                                                                       Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                       Posting Date=FIELD(Date Filter),
+                                                                                                       Variant Code=FIELD(Variant Filter),
+                                                                                                       Lot No.=FIELD(Lot No. Filter),
+                                                                                                       Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Bev�gelse;
+                                                              ENU=Net Change];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 71  ;   ;Purchases (Qty.)    ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry"."Invoiced Quantity" WHERE (Entry Type=CONST(Purchase),
+                                                                                                                  Item No.=FIELD(No.),
+                                                                                                                  Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                  Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                  Location Code=FIELD(Location Filter),
+                                                                                                                  Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                  Variant Code=FIELD(Variant Filter),
+                                                                                                                  Posting Date=FIELD(Date Filter),
+                                                                                                                  Lot No.=FIELD(Lot No. Filter),
+                                                                                                                  Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=K�b (antal);
+                                                              ENU=Purchases (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 72  ;   ;Sales (Qty.)        ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Value Entry"."Invoiced Quantity" WHERE (Item Ledger Entry Type=CONST(Sale),
+                                                                                                             Item No.=FIELD(No.),
+                                                                                                             Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                             Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                             Location Code=FIELD(Location Filter),
+                                                                                                             Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                             Variant Code=FIELD(Variant Filter),
+                                                                                                             Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Salg (antal);
+                                                              ENU=Sales (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 73  ;   ;Positive Adjmt. (Qty.);Decimal     ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry"."Invoiced Quantity" WHERE (Entry Type=CONST(Positive Adjmt.),
+                                                                                                                  Item No.=FIELD(No.),
+                                                                                                                  Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                  Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                  Location Code=FIELD(Location Filter),
+                                                                                                                  Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                  Variant Code=FIELD(Variant Filter),
+                                                                                                                  Posting Date=FIELD(Date Filter),
+                                                                                                                  Lot No.=FIELD(Lot No. Filter),
+                                                                                                                  Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Opregulering (antal);
+                                                              ENU=Positive Adjmt. (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 74  ;   ;Negative Adjmt. (Qty.);Decimal     ;FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Item Ledger Entry"."Invoiced Quantity" WHERE (Entry Type=CONST(Negative Adjmt.),
+                                                                                                                   Item No.=FIELD(No.),
+                                                                                                                   Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                   Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                   Location Code=FIELD(Location Filter),
+                                                                                                                   Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                   Variant Code=FIELD(Variant Filter),
+                                                                                                                   Posting Date=FIELD(Date Filter),
+                                                                                                                   Lot No.=FIELD(Lot No. Filter),
+                                                                                                                   Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Nedregulering (antal);
+                                                              ENU=Negative Adjmt. (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 77  ;   ;Purchases (LCY)     ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Value Entry"."Purchase Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Purchase),
+                                                                                                                   Item No.=FIELD(No.),
+                                                                                                                   Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                   Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                   Location Code=FIELD(Location Filter),
+                                                                                                                   Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                   Variant Code=FIELD(Variant Filter),
+                                                                                                                   Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=K�b (RV);
+                                                              ENU=Purchases (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 78  ;   ;Sales (LCY)         ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Value Entry"."Sales Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Sale),
+                                                                                                                Item No.=FIELD(No.),
+                                                                                                                Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Salg (RV);
+                                                              ENU=Sales (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 79  ;   ;Positive Adjmt. (LCY);Decimal      ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Value Entry"."Cost Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Positive Adjmt.),
+                                                                                                               Item No.=FIELD(No.),
+                                                                                                               Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Opregulering (bel�b);
+                                                              ENU=Positive Adjmt. (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 80  ;   ;Negative Adjmt. (LCY);Decimal      ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Value Entry"."Cost Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Negative Adjmt.),
+                                                                                                               Item No.=FIELD(No.),
+                                                                                                               Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Nedregulering (bel�b);
+                                                              ENU=Negative Adjmt. (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 83  ;   ;COGS (LCY)          ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Value Entry"."Cost Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Sale),
+                                                                                                                Item No.=FIELD(No.),
+                                                                                                                Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Vareforbrug (RV);
+                                                              ENU=COGS (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 84  ;   ;Qty. on Purch. Order;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Purchase Line"."Outstanding Qty. (Base)" WHERE (Document Type=CONST(Order),
+                                                                                                                    Type=CONST(Item),
+                                                                                                                    No.=FIELD(No.),
+                                                                                                                    Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                    Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                    Location Code=FIELD(Location Filter),
+                                                                                                                    Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                    Variant Code=FIELD(Variant Filter),
+                                                                                                                    Expected Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal i k�bsordre;
+                                                              ENU=Qty. on Purch. Order];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 85  ;   ;Qty. on Sales Order ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Sales Line"."Outstanding Qty. (Base)" WHERE (Document Type=CONST(Order),
+                                                                                                                 Type=CONST(Item),
+                                                                                                                 No.=FIELD(No.),
+                                                                                                                 Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                 Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                 Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                 Variant Code=FIELD(Variant Filter),
+                                                                                                                 Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal i salgsordre;
+                                                              ENU=Qty. on Sales Order];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 87  ;   ;Price Includes VAT  ;Boolean       ;OnValidate=VAR
+                                                                VATPostingSetup@1000 : Record 325;
+                                                              BEGIN
+                                                                IF "Price Includes VAT" THEN BEGIN
+                                                                  IF NOT VATPostingSetup.GET("VAT Bus. Posting Gr. (Price)","VAT Prod. Posting Group") THEN
+                                                                    FIELDERROR("VAT Bus. Posting Gr. (Price)");
+                                                                END;
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Salgspris inkl. moms;
+                                                              ENU=Price Includes VAT] }
+    { 89  ;   ;Drop Shipment Filter;Boolean       ;FieldClass=FlowFilter;
+                                                   CaptionML=[DAN=Direkte lev. filter;
+                                                              ENU=Drop Shipment Filter] }
+    { 90  ;   ;VAT Bus. Posting Gr. (Price);Code10;TableRelation="VAT Business Posting Group";
+                                                   OnValidate=BEGIN
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Momsvirks.bogf.gruppe (pris);
+                                                              ENU=VAT Bus. Posting Gr. (Price)] }
+    { 91  ;   ;Gen. Prod. Posting Group;Code10    ;TableRelation="Gen. Product Posting Group";
+                                                   OnValidate=BEGIN
+                                                                IF xRec."Gen. Prod. Posting Group" <> "Gen. Prod. Posting Group" THEN BEGIN
+                                                                  IF CurrFieldNo <> 0 THEN
+                                                                    IF ProdOrderExist THEN
+                                                                      IF NOT
+                                                                        CONFIRM(
+                                                                          Text024 +
+                                                                          Text022,FALSE,
+                                                                          FIELDCAPTION("Gen. Prod. Posting Group"))
+                                                                      THEN BEGIN
+                                                                        "Gen. Prod. Posting Group" := xRec."Gen. Prod. Posting Group";
+                                                                        EXIT;
+                                                                      END;
+
+                                                                  IF GenProdPostingGrp.ValidateVatProdPostingGroup(GenProdPostingGrp,"Gen. Prod. Posting Group") THEN
+                                                                    VALIDATE("VAT Prod. Posting Group",GenProdPostingGrp."Def. VAT Prod. Posting Group");
+                                                                END;
+
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Produktbogf�ringsgruppe;
+                                                              ENU=Gen. Prod. Posting Group] }
+    { 92  ;   ;Picture             ;BLOB          ;CaptionML=[DAN=Billede;
+                                                              ENU=Picture];
+                                                   SubType=Bitmap }
+    { 93  ;   ;Transferred (Qty.)  ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Item Ledger Entry"."Invoiced Quantity" WHERE (Entry Type=CONST(Transfer),
+                                                                                                                  Item No.=FIELD(No.),
+                                                                                                                  Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                  Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                  Location Code=FIELD(Location Filter),
+                                                                                                                  Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                  Variant Code=FIELD(Variant Filter),
+                                                                                                                  Posting Date=FIELD(Date Filter),
+                                                                                                                  Lot No.=FIELD(Lot No. Filter),
+                                                                                                                  Serial No.=FIELD(Serial No. Filter)));
+                                                   CaptionML=[DAN=Overf�rt (antal);
+                                                              ENU=Transferred (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 94  ;   ;Transferred (LCY)   ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Value Entry"."Sales Amount (Actual)" WHERE (Item Ledger Entry Type=CONST(Transfer),
+                                                                                                                Item No.=FIELD(No.),
+                                                                                                                Global Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                Global Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Drop Shipment=FIELD(Drop Shipment Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Overf�rt (RV);
+                                                              ENU=Transferred (LCY)];
+                                                   Editable=No;
+                                                   AutoFormatType=1 }
+    { 95  ;   ;Country/Region of Origin Code;Code10;
+                                                   TableRelation=Country/Region;
+                                                   CaptionML=[DAN=Lande-/omr�dekode for oprindelse;
+                                                              ENU=Country/Region of Origin Code] }
+    { 96  ;   ;Automatic Ext. Texts;Boolean       ;CaptionML=[DAN=Automatisk udv. tekster;
+                                                              ENU=Automatic Ext. Texts] }
+    { 97  ;   ;No. Series          ;Code10        ;TableRelation="No. Series";
+                                                   CaptionML=[DAN=Nummerserie;
+                                                              ENU=No. Series];
+                                                   Editable=No }
+    { 98  ;   ;Tax Group Code      ;Code10        ;TableRelation="Tax Group";
+                                                   CaptionML=[DAN=Skattegruppekode;
+                                                              ENU=Tax Group Code] }
+    { 99  ;   ;VAT Prod. Posting Group;Code10     ;TableRelation="VAT Product Posting Group";
+                                                   OnValidate=BEGIN
+                                                                VALIDATE("Price/Profit Calculation");
+                                                              END;
+
+                                                   CaptionML=[DAN=Momsproduktbogf.gruppe;
+                                                              ENU=VAT Prod. Posting Group] }
+    { 100 ;   ;Reserve             ;Option        ;InitValue=Optional;
+                                                   CaptionML=[DAN=Reserver;
+                                                              ENU=Reserve];
+                                                   OptionCaptionML=[DAN=Aldrig,Eventuelt,Altid;
+                                                                    ENU=Never,Optional,Always];
+                                                   OptionString=Never,Optional,Always }
+    { 101 ;   ;Reserved Qty. on Inventory;Decimal ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                Source Type=CONST(32),
+                                                                                                                Source Subtype=CONST(0),
+                                                                                                                Reservation Status=CONST(Reservation),
+                                                                                                                Serial No.=FIELD(Serial No. Filter),
+                                                                                                                Lot No.=FIELD(Lot No. Filter),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter)));
+                                                   CaptionML=[DAN=Reserv. antal p� lager;
+                                                              ENU=Reserved Qty. on Inventory];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 102 ;   ;Reserved Qty. on Purch. Orders;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                Source Type=CONST(39),
+                                                                                                                Source Subtype=CONST(1),
+                                                                                                                Reservation Status=CONST(Reservation),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Expected Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal i k�bsordre;
+                                                              ENU=Reserved Qty. on Purch. Orders];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 103 ;   ;Reserved Qty. on Sales Orders;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                 Source Type=CONST(37),
+                                                                                                                 Source Subtype=CONST(1),
+                                                                                                                 Reservation Status=CONST(Reservation),
+                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                 Variant Code=FIELD(Variant Filter),
+                                                                                                                 Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal i salgsordre;
+                                                              ENU=Reserved Qty. on Sales Orders];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 105 ;   ;Global Dimension 1 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
+                                                   OnValidate=BEGIN
+                                                                ValidateShortcutDimCode(1,"Global Dimension 1 Code");
+                                                              END;
+
+                                                   CaptionML=[DAN=Global dimension 1-kode;
+                                                              ENU=Global Dimension 1 Code];
+                                                   CaptionClass='1,1,1' }
+    { 106 ;   ;Global Dimension 2 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(2));
+                                                   OnValidate=BEGIN
+                                                                ValidateShortcutDimCode(2,"Global Dimension 2 Code");
+                                                              END;
+
+                                                   CaptionML=[DAN=Global dimension 2-kode;
+                                                              ENU=Global Dimension 2 Code];
+                                                   CaptionClass='1,1,2' }
+    { 107 ;   ;Res. Qty. on Outbound Transfer;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                 Source Type=CONST(5741),
+                                                                                                                 Source Subtype=CONST(0),
+                                                                                                                 Reservation Status=CONST(Reservation),
+                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                 Variant Code=FIELD(Variant Filter),
+                                                                                                                 Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal i flytning ud;
+                                                              ENU=Res. Qty. on Outbound Transfer];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 108 ;   ;Res. Qty. on Inbound Transfer;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                Source Type=CONST(5741),
+                                                                                                                Source Subtype=CONST(1),
+                                                                                                                Reservation Status=CONST(Reservation),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Expected Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal i flytning ind;
+                                                              ENU=Res. Qty. on Inbound Transfer];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5400;   ;Low-Level Code      ;Integer       ;CaptionML=[DAN=Laveste-niveau-kode;
+                                                              ENU=Low-Level Code];
+                                                   Editable=No }
+    { 5401;   ;Lot Size            ;Decimal       ;CaptionML=[DAN=Lotst�rrelse;
+                                                              ENU=Lot Size];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 5402;   ;Serial Nos.         ;Code10        ;TableRelation="No. Series";
+                                                   OnValidate=BEGIN
+                                                                IF "Serial Nos." <> '' THEN
+                                                                  TESTFIELD("Item Tracking Code");
+                                                              END;
+
+                                                   CaptionML=[DAN=Serienr.;
+                                                              ENU=Serial Nos.] }
+    { 5403;   ;Last Unit Cost Calc. Date;Date     ;CaptionML=[DAN=Sidste kostprisberegn.dato;
+                                                              ENU=Last Unit Cost Calc. Date];
+                                                   Editable=No }
+    { 5404;   ;Rolled-up Material Cost;Decimal    ;CaptionML=[DAN=Akkum. materialekostpris;
+                                                              ENU=Rolled-up Material Cost];
+                                                   DecimalPlaces=2:5;
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 5405;   ;Rolled-up Capacity Cost;Decimal    ;CaptionML=[DAN=Akkum. kapacitetskostpris;
+                                                              ENU=Rolled-up Capacity Cost];
+                                                   DecimalPlaces=2:5;
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 5407;   ;Scrap %             ;Decimal       ;CaptionML=[DAN=Spildpct.;
+                                                              ENU=Scrap %];
+                                                   DecimalPlaces=0:2;
+                                                   MinValue=0;
+                                                   MaxValue=100 }
+    { 5409;   ;Inventory Value Zero;Boolean       ;CaptionML=[DAN=Lagerv�rdi - nul;
+                                                              ENU=Inventory Value Zero] }
+    { 5410;   ;Discrete Order Quantity;Integer    ;CaptionML=[DAN=Separat ordre (antal);
+                                                              ENU=Discrete Order Quantity];
+                                                   MinValue=0 }
+    { 5411;   ;Minimum Order Quantity;Decimal     ;CaptionML=[DAN=Min. ordrest�rrelse;
+                                                              ENU=Minimum Order Quantity];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 5412;   ;Maximum Order Quantity;Decimal     ;CaptionML=[DAN=Maks. ordrest�rrelse;
+                                                              ENU=Maximum Order Quantity];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 5413;   ;Safety Stock Quantity;Decimal      ;CaptionML=[DAN=Sikkerhedslager;
+                                                              ENU=Safety Stock Quantity];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 5414;   ;Order Multiple      ;Decimal       ;CaptionML=[DAN=Oprundingsfaktor;
+                                                              ENU=Order Multiple];
+                                                   DecimalPlaces=0:5;
+                                                   MinValue=0 }
+    { 5415;   ;Safety Lead Time    ;DateFormula   ;CaptionML=[DAN=Sikkerhedstid;
+                                                              ENU=Safety Lead Time] }
+    { 5417;   ;Flushing Method     ;Option        ;CaptionML=[DAN=Tr�kmetode;
+                                                              ENU=Flushing Method];
+                                                   OptionCaptionML=[DAN=Manuelt,Forl�ns,Bagl�ns,Pluk + Forl�ns,Pluk + Bagl�ns;
+                                                                    ENU=Manual,Forward,Backward,Pick + Forward,Pick + Backward];
+                                                   OptionString=Manual,Forward,Backward,Pick + Forward,Pick + Backward }
+    { 5419;   ;Replenishment System;Option        ;CaptionML=[DAN=Genbestillingssystem;
+                                                              ENU=Replenishment System];
+                                                   OptionCaptionML=[DAN="K�b,Prod.ordre, ";
+                                                                    ENU="Purchase,Prod. Order, "];
+                                                   OptionString=[Purchase,Prod. Order, ] }
+    { 5420;   ;Scheduled Receipt (Qty.);Decimal   ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=FILTER(Planned..Released),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Fastlagt tilgang (antal);
+                                                              ENU=Scheduled Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5421;   ;Scheduled Need (Qty.);Decimal      ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Component"."Remaining Qty. (Base)" WHERE (Status=FILTER(Planned..Released),
+                                                                                                                          Item No.=FIELD(No.),
+                                                                                                                          Variant Code=FIELD(Variant Filter),
+                                                                                                                          Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                          Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                          Location Code=FIELD(Location Filter),
+                                                                                                                          Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Planlagt behov (antal);
+                                                              ENU=Scheduled Need (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5422;   ;Rounding Precision  ;Decimal       ;InitValue=1;
+                                                   CaptionML=[DAN=Afrundingspr�cision;
+                                                              ENU=Rounding Precision];
+                                                   DecimalPlaces=0:5 }
+    { 5423;   ;Bin Filter          ;Code20        ;FieldClass=FlowFilter;
+                                                   TableRelation=Bin.Code WHERE (Location Code=FIELD(Location Filter));
+                                                   CaptionML=[DAN=Placeringsfilter;
+                                                              ENU=Bin Filter] }
+    { 5424;   ;Variant Filter      ;Code10        ;FieldClass=FlowFilter;
+                                                   TableRelation="Item Variant".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[DAN=Variantfilter;
+                                                              ENU=Variant Filter] }
+    { 5425;   ;Sales Unit of Measure;Code10       ;TableRelation="Item Unit of Measure".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[DAN=Salgsenhed;
+                                                              ENU=Sales Unit of Measure] }
+    { 5426;   ;Purch. Unit of Measure;Code10      ;TableRelation="Item Unit of Measure".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[DAN=K�bsenhed;
+                                                              ENU=Purch. Unit of Measure] }
+    { 5428;   ;Reorder Cycle       ;DateFormula   ;CaptionML=[DAN=Genbestillingscyklus;
+                                                              ENU=Reorder Cycle] }
+    { 5429;   ;Reserved Qty. on Prod. Order;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                Source Type=CONST(5406),
+                                                                                                                Source Subtype=FILTER(1..3),
+                                                                                                                Reservation Status=CONST(Reservation),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Expected Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserveret antal i prod.ordre;
+                                                              ENU=Reserved Qty. on Prod. Order];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5430;   ;Res. Qty. on Prod. Order Comp.;Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                 Source Type=CONST(5407),
+                                                                                                                 Source Subtype=FILTER(1..3),
+                                                                                                                 Reservation Status=CONST(Reservation),
+                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                 Variant Code=FIELD(Variant Filter),
+                                                                                                                 Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal i prod.o.komp.;
+                                                              ENU=Res. Qty. on Prod. Order Comp.];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5431;   ;Res. Qty. on Req. Line;Decimal     ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                Source Type=CONST(246),
+                                                                                                                Source Subtype=FILTER(0),
+                                                                                                                Reservation Status=CONST(Reservation),
+                                                                                                                Location Code=FIELD(Location Filter),
+                                                                                                                Variant Code=FIELD(Variant Filter),
+                                                                                                                Expected Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Reserv. antal p� disp.linje;
+                                                              ENU=Res. Qty. on Req. Line];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5440;   ;Reordering Policy   ;Option        ;OnValidate=BEGIN
+                                                                IF "Reordering Policy" <> "Reordering Policy"::"Lot-for-Lot" THEN
+                                                                  "Include Inventory" :=
+                                                                    ("Reordering Policy" <> "Reordering Policy"::" ") AND
+                                                                    ("Reordering Policy" <> "Reordering Policy"::Order);
+                                                              END;
+
+                                                   CaptionML=[DAN=Genbestillingsmetode;
+                                                              ENU=Reordering Policy];
+                                                   OptionCaptionML=[DAN=" ,Fast genbestil.antal,Maks. antal,Ordre,Lot-for-lot";
+                                                                    ENU=" ,Fixed Reorder Qty.,Maximum Qty.,Order,Lot-for-Lot"];
+                                                   OptionString=[ ,Fixed Reorder Qty.,Maximum Qty.,Order,Lot-for-Lot] }
+    { 5441;   ;Include Inventory   ;Boolean       ;CaptionML=[DAN=Medtag lager;
+                                                              ENU=Include Inventory] }
+    { 5442;   ;Manufacturing Policy;Option        ;CaptionML=[DAN=Produktionsmetode;
+                                                              ENU=Manufacturing Policy];
+                                                   OptionCaptionML=[DAN=Fremstil-til-lager,Fremstil-til-ordre;
+                                                                    ENU=Make-to-Stock,Make-to-Order];
+                                                   OptionString=Make-to-Stock,Make-to-Order }
+    { 5700;   ;Stockkeeping Unit Exists;Boolean   ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("Stockkeeping Unit" WHERE (Item No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Lagervare findes;
+                                                              ENU=Stockkeeping Unit Exists];
+                                                   Editable=No }
+    { 5701;   ;Manufacturer Code   ;Code10        ;TableRelation=Manufacturer;
+                                                   CaptionML=[DAN=Producentkode;
+                                                              ENU=Manufacturer Code] }
+    { 5702;   ;Item Category Code  ;Code10        ;TableRelation="Item Category";
+                                                   OnValidate=BEGIN
+                                                                IF "Item Category Code" <> xRec."Item Category Code" THEN BEGIN
+                                                                  IF ItemCategory.GET("Item Category Code") THEN BEGIN
+                                                                    IF "Gen. Prod. Posting Group" = '' THEN
+                                                                      VALIDATE("Gen. Prod. Posting Group",ItemCategory."Def. Gen. Prod. Posting Group");
+                                                                    IF "VAT Prod. Posting Group" = '' THEN
+                                                                      VALIDATE("VAT Prod. Posting Group",ItemCategory."Def. VAT Prod. Posting Group");
+                                                                    IF "Inventory Posting Group" = '' THEN
+                                                                      VALIDATE("Inventory Posting Group",ItemCategory."Def. Inventory Posting Group");
+                                                                    IF "Tax Group Code" = '' THEN
+                                                                      VALIDATE("Tax Group Code",ItemCategory."Def. Tax Group Code");
+                                                                    VALIDATE("Costing Method",ItemCategory."Def. Costing Method");
+                                                                  END;
+
+                                                                  IF NOT ProductGrp.GET("Item Category Code","Product Group Code") THEN
+                                                                    VALIDATE("Product Group Code",'')
+                                                                  ELSE
+                                                                    VALIDATE("Product Group Code");
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Varekategorikode;
+                                                              ENU=Item Category Code] }
+    { 5703;   ;Created From Nonstock Item;Boolean ;CaptionML=[DAN=Oprettet fra katalogvare;
+                                                              ENU=Created From Nonstock Item];
+                                                   Editable=No }
+    { 5704;   ;Product Group Code  ;Code10        ;TableRelation="Product Group".Code WHERE (Item Category Code=FIELD(Item Category Code));
+                                                   CaptionML=[DAN=Produktgruppekode;
+                                                              ENU=Product Group Code] }
+    { 5706;   ;Substitutes Exist   ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("Item Substitution" WHERE (Type=CONST(Item),
+                                                                                                No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Erstatning findes;
+                                                              ENU=Substitutes Exist];
+                                                   Editable=No }
+    { 5707;   ;Qty. in Transit     ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Transfer Line"."Qty. in Transit (Base)" WHERE (Derived From Line No.=CONST(0),
+                                                                                                                   Item No.=FIELD(No.),
+                                                                                                                   Transfer-to Code=FIELD(Location Filter),
+                                                                                                                   Variant Code=FIELD(Variant Filter),
+                                                                                                                   Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                   Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                   Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal i transit;
+                                                              ENU=Qty. in Transit];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5708;   ;Trans. Ord. Receipt (Qty.);Decimal ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Transfer Line"."Outstanding Qty. (Base)" WHERE (Derived From Line No.=CONST(0),
+                                                                                                                    Item No.=FIELD(No.),
+                                                                                                                    Transfer-to Code=FIELD(Location Filter),
+                                                                                                                    Variant Code=FIELD(Variant Filter),
+                                                                                                                    Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                    Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                    Receipt Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Overfly.ordremodt. (antal);
+                                                              ENU=Trans. Ord. Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5709;   ;Trans. Ord. Shipment (Qty.);Decimal;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Transfer Line"."Outstanding Qty. (Base)" WHERE (Derived From Line No.=CONST(0),
+                                                                                                                    Item No.=FIELD(No.),
+                                                                                                                    Transfer-from Code=FIELD(Location Filter),
+                                                                                                                    Variant Code=FIELD(Variant Filter),
+                                                                                                                    Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                    Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                    Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Overfly.ordrelev. (antal);
+                                                              ENU=Trans. Ord. Shipment (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5776;   ;Qty. Assigned to ship;Decimal      ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Warehouse Shipment Line"."Qty. Outstanding (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                              Location Code=FIELD(Location Filter),
+                                                                                                                              Variant Code=FIELD(Variant Filter),
+                                                                                                                              Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal tildelt til levering;
+                                                              ENU=Qty. Assigned to ship];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5777;   ;Qty. Picked         ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Warehouse Shipment Line"."Qty. Picked (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                         Location Code=FIELD(Location Filter),
+                                                                                                                         Variant Code=FIELD(Variant Filter),
+                                                                                                                         Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Plukket antal;
+                                                              ENU=Qty. Picked];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5900;   ;Service Item Group  ;Code10        ;TableRelation="Service Item Group".Code;
+                                                   OnValidate=VAR
+                                                                ResSkill@1000 : Record 5956;
+                                                              BEGIN
+                                                                IF xRec."Service Item Group" <> "Service Item Group" THEN BEGIN
+                                                                  IF NOT ResSkillMgt.ChangeRelationWithGroup(
+                                                                    ResSkill.Type::Item,
+                                                                    "No.",
+                                                                    ResSkill.Type::"Service Item Group",
+                                                                    "Service Item Group",
+                                                                    xRec."Service Item Group")
+                                                                  THEN
+                                                                    "Service Item Group" := xRec."Service Item Group";
+                                                                END ELSE
+                                                                  ResSkillMgt.RevalidateRelation(
+                                                                    ResSkill.Type::Item,
+                                                                    "No.",
+                                                                    ResSkill.Type::"Service Item Group",
+                                                                    "Service Item Group")
+                                                              END;
+
+                                                   CaptionML=[DAN=Serviceartikelgruppe;
+                                                              ENU=Service Item Group] }
+    { 5901;   ;Qty. on Service Order;Decimal      ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Service Line"."Outstanding Qty. (Base)" WHERE (Document Type=CONST(Order),
+                                                                                                                   Type=CONST(Item),
+                                                                                                                   No.=FIELD(No.),
+                                                                                                                   Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                   Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                   Location Code=FIELD(Location Filter),
+                                                                                                                   Variant Code=FIELD(Variant Filter),
+                                                                                                                   Posting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal p� serviceordre;
+                                                              ENU=Qty. on Service Order];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 5902;   ;Res. Qty. on Service Orders;Decimal;FieldClass=FlowField;
+                                                   CalcFormula=-Sum("Reservation Entry"."Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                 Source Type=CONST(5902),
+                                                                                                                 Source Subtype=CONST(1),
+                                                                                                                 Reservation Status=CONST(Reservation),
+                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                 Variant Code=FIELD(Variant Filter),
+                                                                                                                 Shipment Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal res. til serviceordre;
+                                                              ENU=Res. Qty. on Service Orders];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 6500;   ;Item Tracking Code  ;Code10        ;TableRelation="Item Tracking Code";
+                                                   OnValidate=BEGIN
+                                                                IF "Item Tracking Code" = xRec."Item Tracking Code" THEN
+                                                                  EXIT;
+
+                                                                IF NOT ItemTrackingCode.GET(Rec."Item Tracking Code") THEN
+                                                                  CLEAR(ItemTrackingCode);
+
+                                                                IF NOT ItemTrackingCode2.GET(xRec."Item Tracking Code") THEN
+                                                                  CLEAR(ItemTrackingCode2);
+
+                                                                IF (ItemTrackingCode."SN Specific Tracking" <> ItemTrackingCode2."SN Specific Tracking") OR
+                                                                   (ItemTrackingCode."Lot Specific Tracking" <> ItemTrackingCode2."Lot Specific Tracking")
+                                                                THEN
+                                                                  TestNoEntriesExist(FIELDCAPTION("Item Tracking Code"));
+
+                                                                IF "Costing Method" = "Costing Method"::Specific THEN BEGIN
+                                                                  TestNoEntriesExist(FIELDCAPTION("Item Tracking Code"));
+
+                                                                  TESTFIELD("Item Tracking Code");
+
+                                                                  ItemTrackingCode.GET("Item Tracking Code");
+                                                                  IF NOT ItemTrackingCode."SN Specific Tracking" THEN
+                                                                    ERROR(
+                                                                      Text018,
+                                                                      ItemTrackingCode.FIELDCAPTION("SN Specific Tracking"),
+                                                                      FORMAT(TRUE),ItemTrackingCode.TABLECAPTION,ItemTrackingCode.Code,
+                                                                      FIELDCAPTION("Costing Method"),"Costing Method");
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Varesporingskode;
+                                                              ENU=Item Tracking Code] }
+    { 6501;   ;Lot Nos.            ;Code10        ;TableRelation="No. Series";
+                                                   OnValidate=BEGIN
+                                                                IF "Lot Nos." <> '' THEN
+                                                                  TESTFIELD("Item Tracking Code");
+                                                              END;
+
+                                                   CaptionML=[DAN=Lotnr.;
+                                                              ENU=Lot Nos.] }
+    { 6502;   ;Expiration Calculation;DateFormula ;CaptionML=[DAN=Udl�bsberegning;
+                                                              ENU=Expiration Calculation] }
+    { 6503;   ;Lot No. Filter      ;Code20        ;FieldClass=FlowFilter;
+                                                   CaptionML=[DAN=Lotnr.filter;
+                                                              ENU=Lot No. Filter] }
+    { 6504;   ;Serial No. Filter   ;Code20        ;FieldClass=FlowFilter;
+                                                   CaptionML=[DAN=Serienr.filter;
+                                                              ENU=Serial No. Filter] }
+    { 7171;   ;No. of Substitutes  ;Integer       ;FieldClass=FlowField;
+                                                   CalcFormula=Count("Item Substitution" WHERE (Type=CONST(Item),
+                                                                                                No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Antal erstatninger;
+                                                              ENU=No. of Substitutes];
+                                                   Editable=No }
+    { 7301;   ;Special Equipment Code;Code10      ;TableRelation="Special Equipment";
+                                                   CaptionML=[DAN=Specialudstyrskode;
+                                                              ENU=Special Equipment Code] }
+    { 7302;   ;Put-away Template Code;Code10      ;TableRelation="Put-away Template Header";
+                                                   CaptionML=[DAN=L�g-p�-lager-skabelonkode;
+                                                              ENU=Put-away Template Code] }
+    { 7307;   ;Put-away Unit of Measure Code;Code10;
+                                                   TableRelation="Item Unit of Measure".Code WHERE (Item No.=FIELD(No.));
+                                                   CaptionML=[DAN=L�g-p�-lager-enhedskode;
+                                                              ENU=Put-away Unit of Measure Code] }
+    { 7380;   ;Phys Invt Counting Period Code;Code10;
+                                                   TableRelation="Phys. Invt. Counting Period";
+                                                   OnValidate=VAR
+                                                                PhysInvtCountPeriod@1000 : Record 7381;
+                                                                PhysInvtCountPeriodMgt@1001 : Codeunit 7380;
+                                                              BEGIN
+                                                                IF "Phys Invt Counting Period Code" <> '' THEN BEGIN
+                                                                  PhysInvtCountPeriod.GET("Phys Invt Counting Period Code");
+                                                                  PhysInvtCountPeriod.TESTFIELD("Count Frequency per Year");
+                                                                  IF "Phys Invt Counting Period Code" <> xRec."Phys Invt Counting Period Code" THEN BEGIN
+                                                                    IF CurrFieldNo <> 0 THEN
+                                                                      IF NOT CONFIRM(
+                                                                        Text7380,
+                                                                        FALSE,
+                                                                        FIELDCAPTION("Phys Invt Counting Period Code"),
+                                                                        FIELDCAPTION("Next Counting Period"))
+                                                                      THEN
+                                                                        ERROR(Text7381);
+
+                                                                    "Next Counting Period" :=
+                                                                      PhysInvtCountPeriodMgt.CalcPeriod(
+                                                                        "Last Counting Period Update",'',PhysInvtCountPeriod."Count Frequency per Year",
+                                                                        ("Last Counting Period Update" = 0D) OR
+                                                                        ("Phys Invt Counting Period Code" <> xRec."Phys Invt Counting Period Code"));
+                                                                  END;
+                                                                END ELSE BEGIN
+                                                                  IF CurrFieldNo <> 0 THEN
+                                                                    IF NOT CONFIRM(Text003,FALSE,FIELDCAPTION("Phys Invt Counting Period Code")) THEN
+                                                                      ERROR(Text7381);
+                                                                  "Next Counting Period" := '';
+                                                                  "Last Counting Period Update" := 0D;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Lageropg.-opt�llingsperiodekode;
+                                                              ENU=Phys Invt Counting Period Code] }
+    { 7381;   ;Last Counting Period Update;Date   ;CaptionML=[DAN=Sidste opt�l.periodeopdatering;
+                                                              ENU=Last Counting Period Update];
+                                                   Editable=No }
+    { 7382;   ;Next Counting Period;Text250       ;CaptionML=[DAN=N�ste opt�llingsperiode;
+                                                              ENU=Next Counting Period];
+                                                   Editable=No }
+    { 7383;   ;Last Phys. Invt. Date;Date         ;FieldClass=FlowField;
+                                                   CalcFormula=Max("Phys. Inventory Ledger Entry"."Posting Date" WHERE (Item No.=FIELD(No.),
+                                                                                                                        Phys Invt Counting Period Type=FILTER(' '|Item)));
+                                                   CaptionML=[DAN=Sidste lageropg�relsesdato;
+                                                              ENU=Last Phys. Invt. Date];
+                                                   Editable=No }
+    { 7384;   ;Use Cross-Docking   ;Boolean       ;InitValue=Yes;
+                                                   CaptionML=[DAN=Brug dir. afsendelse;
+                                                              ENU=Use Cross-Docking] }
+    { 7700;   ;Identifier Code     ;Code20        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Item Identifier".Code WHERE (Item No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Id-kode;
+                                                              ENU=Identifier Code];
+                                                   Editable=No }
+    { 61300;  ;On Chainbox Web     ;Option        ;OnValidate=VAR
+                                                                Item@1000000000 : Record 27;
+                                                                eShopMgt@1000000001 : Codeunit 61300;
+                                                              BEGIN
+                                                                Item := Rec;
+                                                                eShopMgt.ItemUpdate(Item);
+                                                              END;
+
+                                                   CaptionML=ENU=On Chainbox Web;
+                                                   OptionString=No,Item Only,Item and Variant-IDs,Variant-IDs Only;
+                                                   Description=FMIT1.01 }
+    { 99000750;;Routing No.        ;Code20        ;TableRelation="Routing Header";
+                                                   OnValidate=BEGIN
+                                                                PlanningAssignment.RoutingReplace(Rec,xRec."Routing No.");
+
+                                                                ItemCostMgt.UpdateUnitCost(Rec,'','',0,0,FALSE,FALSE,TRUE,FIELDNO("Routing No."));
+                                                              END;
+
+                                                   CaptionML=[DAN=Rutenr.;
+                                                              ENU=Routing No.] }
+    { 99000751;;Production BOM No. ;Code20        ;TableRelation="Production BOM Header";
+                                                   OnValidate=VAR
+                                                                MfgSetup@1000 : Record 99000765;
+                                                                ProdBOMHeader@1001 : Record 99000771;
+                                                                CalcLowLevel@1002 : Codeunit 99000793;
+                                                              BEGIN
+                                                                PlanningAssignment.BomReplace(Rec,xRec."Production BOM No.");
+
+                                                                ItemCostMgt.UpdateUnitCost(Rec,'','',0,0,FALSE,FALSE,TRUE,FIELDNO("Production BOM No."));
+
+                                                                IF "Production BOM No." <> '' THEN BEGIN
+                                                                  ProdBOMHeader.GET("Production BOM No.");
+                                                                  IF ProdBOMHeader.Status = ProdBOMHeader.Status::Certified THEN BEGIN
+                                                                    MfgSetup.GET;
+                                                                    IF MfgSetup."Dynamic Low-Level Code" THEN
+                                                                      CalcLowLevel.RUN(Rec);
+                                                                  END;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Produktionsstyklistenr.;
+                                                              ENU=Production BOM No.] }
+    { 99000752;;Single-Level Material Cost;Decimal;CaptionML=[DAN=Materialekostpris (enkeltniv.);
+                                                              ENU=Single-Level Material Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000753;;Single-Level Capacity Cost;Decimal;CaptionML=[DAN=Kapacitetskostpris (enkeltniv);
+                                                              ENU=Single-Level Capacity Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000754;;Single-Level Subcontrd. Cost;Decimal;
+                                                   CaptionML=[DAN=Underlev.kostpris (enkeltniv.);
+                                                              ENU=Single-Level Subcontrd. Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000755;;Single-Level Cap. Ovhd Cost;Decimal;
+                                                   CaptionML=[DAN=Ind. kap.kostpris (enkeltniv.);
+                                                              ENU=Single-Level Cap. Ovhd Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000756;;Single-Level Mfg. Ovhd Cost;Decimal;
+                                                   CaptionML=[DAN=Ind. prod.kostpris (enkeltniv);
+                                                              ENU=Single-Level Mfg. Ovhd Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000757;;Overhead Rate      ;Decimal       ;CaptionML=[DAN=IPO-bidrag;
+                                                              ENU=Overhead Rate];
+                                                   AutoFormatType=2 }
+    { 99000758;;Rolled-up Subcontracted Cost;Decimal;
+                                                   CaptionML=[DAN=Underlev.kostpris (akkum.);
+                                                              ENU=Rolled-up Subcontracted Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000759;;Rolled-up Mfg. Ovhd Cost;Decimal  ;CaptionML=[DAN=Ind. prod.kostpris (akkum.);
+                                                              ENU=Rolled-up Mfg. Ovhd Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000760;;Rolled-up Cap. Overhead Cost;Decimal;
+                                                   CaptionML=[DAN=Ind. kap.kostpris (akkum.);
+                                                              ENU=Rolled-up Cap. Overhead Cost];
+                                                   Editable=No;
+                                                   AutoFormatType=2 }
+    { 99000761;;Planning Issues (Qty.);Decimal    ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Planning Component"."Expected Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                          Due Date=FIELD(Date Filter),
+                                                                                                                          Location Code=FIELD(Location Filter),
+                                                                                                                          Variant Code=FIELD(Variant Filter),
+                                                                                                                          Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                          Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                          Planning Line Origin=CONST(" ")));
+                                                   CaptionML=[DAN=Planl�gning - Forsyning (ant.);
+                                                              ENU=Planning Issues (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000762;;Planning Receipt (Qty.);Decimal   ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Requisition Line"."Quantity (Base)" WHERE (Type=CONST(Item),
+                                                                                                               No.=FIELD(No.),
+                                                                                                               Due Date=FIELD(Date Filter),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter)));
+                                                   CaptionML=[DAN=Planl�gning - Behov (ant.);
+                                                              ENU=Planning Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000765;;Planned Order Receipt (Qty.);Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=CONST(Planned),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Planlagt ordretilgang (antal);
+                                                              ENU=Planned Order Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000766;;FP Order Receipt (Qty.);Decimal   ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=CONST(Firm Planned),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Fastlagt ordretilgang (antal);
+                                                              ENU=FP Order Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000767;;Rel. Order Receipt (Qty.);Decimal ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=CONST(Released),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Frigivet ordretilgang (antal);
+                                                              ENU=Rel. Order Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000768;;Planning Release (Qty.);Decimal   ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Requisition Line"."Quantity (Base)" WHERE (Type=CONST(Item),
+                                                                                                               No.=FIELD(No.),
+                                                                                                               Starting Date=FIELD(Date Filter),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter)));
+                                                   CaptionML=[DAN=Planl�gning - Frigivet (ant.);
+                                                              ENU=Planning Release (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000769;;Planned Order Release (Qty.);Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=CONST(Planned),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Starting Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Planl. ordrefrigivelse (antal);
+                                                              ENU=Planned Order Release (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000770;;Purch. Req. Receipt (Qty.);Decimal;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Requisition Line"."Quantity (Base)" WHERE (Type=CONST(Item),
+                                                                                                               No.=FIELD(No.),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                               Due Date=FIELD(Date Filter),
+                                                                                                               Planning Line Origin=CONST(" ")));
+                                                   CaptionML=[DAN=Indk�bskld.tilgang (antal);
+                                                              ENU=Purch. Req. Receipt (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000771;;Purch. Req. Release (Qty.);Decimal;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Requisition Line"."Quantity (Base)" WHERE (Type=CONST(Item),
+                                                                                                               No.=FIELD(No.),
+                                                                                                               Location Code=FIELD(Location Filter),
+                                                                                                               Variant Code=FIELD(Variant Filter),
+                                                                                                               Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                               Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                               Order Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Indk�bskld.frigivelse (antal);
+                                                              ENU=Purch. Req. Release (Qty.)];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000773;;Order Tracking Policy;Option      ;OnValidate=VAR
+                                                                ReservEntry@1000 : Record 337;
+                                                                ActionMessageEntry@1001 : Record 99000849;
+                                                              BEGIN
+                                                                IF xRec."Order Tracking Policy" = Rec."Order Tracking Policy" THEN
+                                                                  EXIT;
+                                                                IF "Order Tracking Policy" > xRec."Order Tracking Policy" THEN BEGIN
+                                                                  MESSAGE(Text99000000 +
+                                                                    Text99000001,
+                                                                    SELECTSTR(Rec."Order Tracking Policy",Text99000002));
+                                                                END ELSE BEGIN
+                                                                  ActionMessageEntry.SETCURRENTKEY("Reservation Entry");
+                                                                  ReservEntry.SETCURRENTKEY("Item No.","Variant Code","Location Code","Reservation Status");
+                                                                  ReservEntry.SETRANGE("Item No.","No.");
+                                                                  ReservEntry.SETRANGE("Reservation Status",ReservEntry."Reservation Status"::Tracking,ReservEntry."Reservation Status"::Surplus);
+                                                                  IF ReservEntry.FIND('-') THEN REPEAT
+                                                                    ActionMessageEntry.SETRANGE("Reservation Entry",ReservEntry."Entry No.");
+                                                                    ActionMessageEntry.DELETEALL;
+                                                                    IF "Order Tracking Policy" = "Order Tracking Policy"::None THEN
+                                                                      IF (ReservEntry."Lot No." <> '') OR (ReservEntry."Serial No." <> '') THEN BEGIN
+                                                                        ReservEntry."Reservation Status" := ReservEntry."Reservation Status"::Surplus;
+                                                                        ReservEntry.MODIFY;
+                                                                      END ELSE
+                                                                        ReservEntry.DELETE;
+                                                                  UNTIL ReservEntry.NEXT = 0;
+                                                                END;
+                                                              END;
+
+                                                   CaptionML=[DAN=Ordresporingsmetode;
+                                                              ENU=Order Tracking Policy];
+                                                   OptionCaptionML=[DAN=Ingen,Kun sporing,Sporing & aktionsmedd.;
+                                                                    ENU=None,Tracking Only,Tracking & Action Msg.];
+                                                   OptionString=None,Tracking Only,Tracking & Action Msg. }
+    { 99000774;;Prod. Forecast Quantity (Base);Decimal;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Sum("Production Forecast Entry"."Forecast Quantity (Base)" WHERE (Item No.=FIELD(No.),
+                                                                                                                                 Production Forecast Name=FIELD(Production Forecast Name),
+                                                                                                                                 Forecast Date=FIELD(Date Filter),
+                                                                                                                                 Location Code=FIELD(Location Filter),
+                                                                                                                                 Component Forecast=FIELD(Component Forecast)));
+                                                   CaptionML=[DAN=Prod.forecastantal (basis);
+                                                              ENU=Prod. Forecast Quantity (Base)];
+                                                   DecimalPlaces=0:5 }
+    { 99000775;;Production Forecast Name;Code10   ;FieldClass=FlowFilter;
+                                                   TableRelation="Production Forecast Name";
+                                                   CaptionML=[DAN=Produktionsforecastnavn;
+                                                              ENU=Production Forecast Name] }
+    { 99000776;;Component Forecast ;Boolean       ;FieldClass=FlowFilter;
+                                                   CaptionML=[DAN=Komponentforecast;
+                                                              ENU=Component Forecast] }
+    { 99000777;;Qty. on Prod. Order;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Line"."Remaining Qty. (Base)" WHERE (Status=FILTER(Planned..Released),
+                                                                                                                     Item No.=FIELD(No.),
+                                                                                                                     Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                     Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                     Location Code=FIELD(Location Filter),
+                                                                                                                     Variant Code=FIELD(Variant Filter),
+                                                                                                                     Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal p� produktionsordre;
+                                                              ENU=Qty. on Prod. Order];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000778;;Qty. on Component Lines;Decimal   ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Prod. Order Component"."Remaining Qty. (Base)" WHERE (Status=FILTER(Planned..Released),
+                                                                                                                          Item No.=FIELD(No.),
+                                                                                                                          Shortcut Dimension 1 Code=FIELD(Global Dimension 1 Filter),
+                                                                                                                          Shortcut Dimension 2 Code=FIELD(Global Dimension 2 Filter),
+                                                                                                                          Location Code=FIELD(Location Filter),
+                                                                                                                          Variant Code=FIELD(Variant Filter),
+                                                                                                                          Due Date=FIELD(Date Filter)));
+                                                   CaptionML=[DAN=Antal p� komponentlinje;
+                                                              ENU=Qty. on Component Lines];
+                                                   DecimalPlaces=0:5;
+                                                   Editable=No }
+    { 99000875;;Critical           ;Boolean       ;CaptionML=[DAN=Kritisk;
+                                                              ENU=Critical] }
+    { 99008500;;Common Item No.    ;Code20        ;CaptionML=[DAN=F�lles varenr.;
+                                                              ENU=Common Item No.] }
+  }
+  KEYS
+  {
+    {    ;No.                                     ;Clustered=Yes }
+    {    ;Search Description                       }
+    {    ;Inventory Posting Group                  }
+    {    ;Shelf No.                                }
+    {    ;Vendor No.                               }
+    {    ;Gen. Prod. Posting Group                 }
+    {    ;Low-Level Code                           }
+    {    ;Production BOM No.                      ;KeyGroups=Item(MFG) }
+    {    ;Routing No.                             ;KeyGroups=Item(MFG) }
+    {    ;Vendor Item No.,Vendor No.               }
+    {    ;Common Item No.                          }
+    {    ;Service Item Group                       }
+    {    ;Cost is Adjusted,Allow Online Adjustment }
+    {    ;Description                             ;KeyGroups=SearchCol }
+    {    ;Base Unit of Measure                    ;KeyGroups=SearchCol }
+  }
+  FIELDGROUPS
+  {
+    { 1   ;DropDown            ;No.,Description,Base Unit of Measure,Bill of Materials,Unit Price }
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes �n eller flere udest�ende forekomster af k�bs%3, der indeholder denne vare.;ENU=You cannot delete %1 %2 because there is at least one outstanding Purchase %3 that includes this item.';
+      Text001@1001 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes �n eller flere udest�ende forekomster af salgs%3, der indeholder denne vare.;ENU=You cannot delete %1 %2 because there is at least one outstanding Sales %3 that includes this item.';
+      Text002@1002 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der er en eller flere produktionsordrer, der indeholder denne vare.;ENU=You cannot delete %1 %2 because there are one or more outstanding production orders that include this item.';
+      Text003@1057 : TextConst 'DAN=Skal %1 �ndres?;ENU=Do you want to change %1?';
+      Text004@1064 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes �n eller flere godkendte produktionsstyklister, der indeholder denne vare.;ENU=You cannot delete %1 %2 because there are one or more certified Production BOM that include this item.';
+      Text006@1003 : TextConst 'DAN=Priser inkl. moms kan ikke beregnes, n�r %1 er %2.;ENU=Prices including VAT cannot be calculated when %1 is %2.';
+      Text007@1004 : TextConst 'DAN=Du kan ikke �ndre %1, fordi der er en eller flere poster p� varen.;ENU=You cannot change %1 because there are one or more ledger entries for this item.';
+      Text008@1005 : TextConst 'DAN=Du kan ikke �ndre %1, fordi der findes mindst �n udest�ende k�bs%2, som indeholder denne vare.;ENU=You cannot change %1 because there is at least one outstanding Purchase %2 that include this item.';
+      Text014@1006 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes �n eller flere produktionsordrekomponentlinjer, som indeholder denne vare, med et restantal, der ikke er 0.;ENU=You cannot delete %1 %2 because there are one or more production order component lines that include this item with a remaining quantity that is not 0.';
+      Text016@1008 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der er en eller flere udest�ende overflytningsordrer, som indeholder denne vare.;ENU=You cannot delete %1 %2 because there are one or more outstanding transfer orders that include this item.';
+      Text017@1009 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der er mindst �n %3 for en service, som indeholder denne vare.;ENU=You cannot delete %1 %2 because there is at least one outstanding Service %3 that includes this item.';
+      Text018@1010 : TextConst 'DAN=%1 skal v�re %2 i %3 %4, n�r %5 er %6.;ENU=%1 must be %2 in %3 %4 when %5 is %6.';
+      Text019@1011 : TextConst 'DAN=Du kan ikke �ndre %1, fordi der er en eller flere �bne poster p� denne vare.;ENU=You cannot change %1 because there are one or more open ledger entries for this item.';
+      Text020@1012 : TextConst 'DAN="Der kan v�re ordrer og �bne poster p� varen. ";ENU="There may be orders and open ledger entries for the item. "';
+      Text021@1013 : TextConst 'DAN=Hvis du �ndrer %1, vil det kun p�virke nye ordrer og poster.\\;ENU=If you change %1 it may affect new orders and entries.\\';
+      Text022@1014 : TextConst 'DAN=Skal %1 �ndres?;ENU=Do you want to change %1?';
+      GLSetup@1053 : Record 98;
+      InvtSetup@1015 : Record 313;
+      Text023@1066 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes mindst �n %3, der indeholder denne vare.;ENU=You cannot delete %1 %2 because there is at least one %3 that includes this item.';
+      Text024@1072 : TextConst 'DAN=Hvis du �ndrer %1, kan det p�virke eksisterende produktionsordrer.\;ENU=If you change %1 it may affect existing production orders.\';
+      Text7380@1058 : TextConst 'DAN=Hvis du �ndrer %1, beregnes %2.\Vil du stadig �ndre %1?;ENU=If you change the %1, the %2 is calculated.\Do you still want to change the %1?';
+      Text7381@1056 : TextConst 'DAN=Annulleret.;ENU=Cancelled.';
+      Text99000000@1017 : TextConst 'DAN=�ndringen p�virker ikke eksisterende poster.\;ENU=The change will not affect existing entries.\';
+      CommentLine@1018 : Record 97;
+      Text99000001@1019 : TextConst 'DAN=Hvis du vil generere %1 for eksisterende poster, skal du k�re en total omplanl�gning.;ENU=If you want to generate %1 for existing entries, you must run a regenerative planning.';
+      ItemVend@1020 : Record 99;
+      Text99000002@1021 : TextConst 'DAN=sporing, sporing og aktionsmeddelelser;ENU=tracking,tracking and action messages';
+      SalesPrice@1022 : Record 7002;
+      SalesLineDisc@1059 : Record 7004;
+      SalesPrepmtPct@1051 : Record 459;
+      PurchPrice@1060 : Record 7012;
+      PurchLineDisc@1061 : Record 7014;
+      PurchPrepmtPct@1076 : Record 460;
+      ItemTranslation@1023 : Record 30;
+      BOMComp@1024 : Record 90;
+      PurchOrderLine@1025 : Record 39;
+      SalesOrderLine@1026 : Record 37;
+      VATPostingSetup@1027 : Record 325;
+      ExtTextHeader@1028 : Record 279;
+      GenProdPostingGrp@1029 : Record 251;
+      ItemUnitOfMeasure@1030 : Record 5404;
+      ItemVariant@1031 : Record 5401;
+      ItemJnlLine@1007 : Record 83;
+      ProdOrderLine@1032 : Record 5406;
+      ProdOrderComp@1033 : Record 5407;
+      PlanningAssignment@1035 : Record 99000850;
+      SKU@1036 : Record 5700;
+      ItemTrackingCode@1037 : Record 6502;
+      ItemTrackingCode2@1038 : Record 6502;
+      ServInvLine@1039 : Record 5902;
+      ItemSub@1040 : Record 5715;
+      ItemCategory@1041 : Record 5722;
+      TransLine@1042 : Record 5741;
+      Vend@1016 : Record 23;
+      NonstockItem@1034 : Record 5718;
+      ProdBOMHeader@1062 : Record 99000771;
+      ProdBOMLine@1063 : Record 99000772;
+      ItemIdent@1065 : Record 7704;
+      RequisitionLine@1067 : Record 246;
+      ItemBudgetEntry@1075 : Record 7134;
+      ItemAnalysisViewEntry@1074 : Record 7154;
+      ItemAnalysisBudgViewEntry@1073 : Record 7156;
+      NoSeriesMgt@1043 : Codeunit 396;
+      MoveEntries@1044 : Codeunit 361;
+      DimMgt@1045 : Codeunit 408;
+      NonstockItemMgt@1046 : Codeunit 5703;
+      ItemCostMgt@1047 : Codeunit 5804;
+      ResSkillMgt@1071 : Codeunit 5931;
+      MobSalesMgt@1054 : Codeunit 8726;
+      HasInvtSetup@1049 : Boolean;
+      TroubleshSetup@1050 : Record 5945;
+      ServiceItem@1068 : Record 5940;
+      ServiceContractLine@1069 : Record 5964;
+      ServiceItemComponent@1070 : Record 5941;
+      ProductGrp@1048 : Record 5723;
+      GLSetupRead@1052 : Boolean;
+
+    PROCEDURE AssistEdit@2() : Boolean;
+    BEGIN
+      GetInvtSetup;
+      InvtSetup.TESTFIELD("Item Nos.");
+      IF NoSeriesMgt.SelectSeries(InvtSetup."Item Nos.",xRec."No. Series","No. Series") THEN BEGIN
+        NoSeriesMgt.SetSeries("No.");
+        EXIT(TRUE);
+      END;
+    END;
+
+    PROCEDURE FindItemVend@5(VAR ItemVend@1000 : Record 99;LocationCode@1002 : Code[10]);
+    VAR
+      GetPlanningParameters@1004 : Codeunit 99000855;
+    BEGIN
+      TESTFIELD("No.");
+      ItemVend.RESET;
+      ItemVend.SETRANGE("Item No.","No.");
+      ItemVend.SETRANGE("Vendor No.",ItemVend."Vendor No.");
+      ItemVend.SETRANGE("Variant Code",ItemVend."Variant Code");
+
+      IF NOT ItemVend.FIND('+') THEN BEGIN
+        ItemVend."Item No." := "No.";
+        ItemVend."Vendor Item No." := '';
+        GetPlanningParameters.AtSKU(SKU,"No.",ItemVend."Variant Code",LocationCode);
+        IF ItemVend."Vendor No." = '' THEN
+          ItemVend."Vendor No." := SKU."Vendor No.";
+        IF (ItemVend."Vendor Item No." = '') AND (ItemVend."Vendor No." = SKU."Vendor No.") THEN
+          ItemVend."Vendor Item No." := SKU."Vendor Item No.";
+        ItemVend."Lead Time Calculation" := SKU."Lead Time Calculation";
+      END;
+      IF FORMAT(ItemVend."Lead Time Calculation") = '' THEN
+        IF Vend.GET(ItemVend."Vendor No.") THEN
+          ItemVend."Lead Time Calculation" := Vend."Lead Time Calculation";
+      ItemVend.RESET;
+    END;
+
+    PROCEDURE ValidateShortcutDimCode@8(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    BEGIN
+      DimMgt.ValidateDimValueCode(FieldNumber,ShortcutDimCode);
+      DimMgt.SaveDefaultDim(DATABASE::Item,"No.",FieldNumber,ShortcutDimCode);
+      MODIFY;
+    END;
+
+    PROCEDURE TestNoEntriesExist@1006(CurrentFieldName@1000 : Text[100]);
+    VAR
+      ItemLedgEntry@1001 : Record 32;
+    BEGIN
+      ItemLedgEntry.SETCURRENTKEY("Item No.");
+      ItemLedgEntry.SETRANGE("Item No.","No.");
+      IF ItemLedgEntry.FIND('-') THEN
+        ERROR(
+          Text007,
+          CurrentFieldName);
+
+      PurchOrderLine.SETCURRENTKEY("Document Type",Type,"No.");
+      PurchOrderLine.SETFILTER(
+        "Document Type",'%1|%2',
+        PurchOrderLine."Document Type"::Order,
+        PurchOrderLine."Document Type"::"Return Order");
+      PurchOrderLine.SETRANGE(Type,PurchOrderLine.Type::Item);
+      PurchOrderLine.SETRANGE("No.","No.");
+      IF PurchOrderLine.FIND('-') THEN
+        ERROR(
+          Text008,
+          CurrentFieldName,
+          PurchOrderLine."Document Type");
+    END;
+
+    PROCEDURE TestNoOpenEntriesExist@4(CurrentFieldName@1000 : Text[100]);
+    VAR
+      ItemLedgEntry@1001 : Record 32;
+    BEGIN
+      ItemLedgEntry.SETCURRENTKEY("Item No.",Open);
+      ItemLedgEntry.SETRANGE("Item No.","No.");
+      ItemLedgEntry.SETRANGE(Open,TRUE);
+      IF ItemLedgEntry.FIND('-') THEN
+        ERROR(
+          Text019,
+          CurrentFieldName);
+    END;
+
+    PROCEDURE ItemSKUGet@11(VAR Item@1000 : Record 27;LocationCode@1001 : Code[10];VariantCode@1002 : Code[10]);
+    VAR
+      SKU@1003 : Record 5700;
+    BEGIN
+      IF Item.GET("No.") THEN BEGIN
+        IF SKU.GET(LocationCode,Item."No.",VariantCode) THEN
+          Item."Shelf No." := SKU."Shelf No.";
+      END;
+    END;
+
+    PROCEDURE GetInvtSetup@14();
+    BEGIN
+      IF NOT HasInvtSetup THEN BEGIN
+        InvtSetup.GET;
+        HasInvtSetup := TRUE;
+      END;
+    END;
+
+    PROCEDURE IsMfgItem@1() : Boolean;
+    BEGIN
+      EXIT("Replenishment System" = "Replenishment System"::"Prod. Order");
+    END;
+
+    LOCAL PROCEDURE GetGLSetup@6();
+    BEGIN
+      IF NOT GLSetupRead THEN
+        GLSetup.GET;
+      GLSetupRead := TRUE;
+    END;
+
+    PROCEDURE ProdOrderExist@7() : Boolean;
+    BEGIN
+      ProdOrderLine.SETCURRENTKEY(Status,"Item No.");
+      ProdOrderLine.SETFILTER(Status,'..%1',ProdOrderLine.Status::Released);
+      ProdOrderLine.SETRANGE("Item No.","No.");
+      IF NOT ProdOrderLine.ISEMPTY THEN
+        EXIT(TRUE);
+
+      EXIT(FALSE);
+    END;
+
+    PROCEDURE PlanningTransferShptQty@9() Sum : Decimal;
+    VAR
+      ReqLine@1000 : Record 246;
+    BEGIN
+      ReqLine.SETCURRENTKEY(Type,"No.","Variant Code","Transfer-from Code","Transfer Shipment Date");
+      ReqLine.SETRANGE("Replenishment System",ReqLine."Replenishment System"::Transfer);
+      ReqLine.SETRANGE(Type,ReqLine.Type::Item);
+      ReqLine.SETRANGE("No.","No.");
+      COPYFILTER("Variant Filter",ReqLine."Variant Code");
+      COPYFILTER("Location Filter",ReqLine."Transfer-from Code");
+      COPYFILTER("Date Filter",ReqLine."Transfer Shipment Date");
+      IF ReqLine.ISEMPTY THEN
+        EXIT;
+
+      IF ReqLine.FINDSET THEN
+        REPEAT
+          Sum += ReqLine."Quantity (Base)";
+        UNTIL ReqLine.NEXT = 0;
+    END;
+
+    PROCEDURE PlanningReleaseQty@3() Sum : Decimal;
+    VAR
+      ReqLine@1000 : Record 246;
+    BEGIN
+      ReqLine.SETCURRENTKEY(Type,"No.","Variant Code","Location Code");
+      ReqLine.SETRANGE(Type,ReqLine.Type::Item);
+      ReqLine.SETRANGE("No.","No.");
+      COPYFILTER("Variant Filter",ReqLine."Variant Code");
+      COPYFILTER("Location Filter",ReqLine."Location Code");
+      COPYFILTER("Date Filter",ReqLine."Starting Date");
+      COPYFILTER("Global Dimension 1 Filter",ReqLine."Shortcut Dimension 1 Code");
+      COPYFILTER("Global Dimension 2 Filter",ReqLine."Shortcut Dimension 2 Code");
+      IF ReqLine.ISEMPTY THEN
+        EXIT;
+
+      IF ReqLine.FINDSET THEN
+        REPEAT
+          Sum += ReqLine."Quantity (Base)";
+        UNTIL ReqLine.NEXT = 0;
+    END;
+
+    BEGIN
+    {
+      //>> FMIT1.01 (CB). Field added 61300 "On Chainbox Web"
+    }
+    END.
+  }
+}
+

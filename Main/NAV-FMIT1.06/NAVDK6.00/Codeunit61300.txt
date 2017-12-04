@@ -1,0 +1,163 @@
+OBJECT Codeunit 61300 eShop Management
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+          END;
+
+  }
+  CODE
+  {
+
+    PROCEDURE InsertNewEINVENTABLEFromItem@1000000000(VAR "eWeb Site Setup"@1000000002 : Record 61300;VAR EINVENTABLE@1000000000 : Record 61304;VAR Item@1000000001 : Record 27);
+    BEGIN
+      EINVENTABLE.VALIDATE("Web Site","eWeb Site Setup"."Web Site");
+      EINVENTABLE.VALIDATE("Item No.",Item."No.");
+      EINVENTABLE.VALIDATE(ITEMNUMBER,Item."No.");
+      EINVENTABLE.INSERT(TRUE);
+    END;
+
+    PROCEDURE InsertNewEINVENTABLEFromItemID@1000000001(VAR "eWeb Site Setup"@1000000002 : Record 61300;VAR EINVENTABLE@1000000000 : Record 61304;VAR "Item Identifier"@1000000001 : Record 7704);
+    BEGIN
+      EINVENTABLE.VALIDATE("Web Site","eWeb Site Setup"."Web Site");
+      EINVENTABLE.VALIDATE("Item No.","Item Identifier"."Item No.");
+      EINVENTABLE.VALIDATE(ITEMNUMBER,"Item Identifier".Code);
+      EINVENTABLE.INSERT(TRUE);
+    END;
+
+    PROCEDURE UpdateEINVENTABLEFromItem@1000000004(VAR EINVENTABLE@1000000002 : Record 61304;VAR Item@1000000000 : Record 27);
+    BEGIN
+      EINVENTABLE.VALIDATE(WEIGHT,Item."Net Weight");
+      UpdateEINVENTABLEInventory(EINVENTABLE);
+    END;
+
+    PROCEDURE UpdateEINVENTABLEFromItemID@1000000002(VAR EINVENTABLE@1000000002 : Record 61304;VAR "Item Identifier"@1000000001 : Record 7704);
+    VAR
+      Item@1000000000 : Record 27;
+    BEGIN
+      Item.GET("Item Identifier"."Item No.");
+      EINVENTABLE.VALIDATE(WEIGHT,Item."Net Weight");
+      EINVENTABLE.VALIDATE(Variant,"Item Identifier"."Variant Code");
+      EINVENTABLE.VALIDATE(UOM,"Item Identifier"."Unit of Measure Code");
+      UpdateEINVENTABLEInventory(EINVENTABLE);
+    END;
+
+    PROCEDURE CreateCustomerFromESALESTABLE@1000000003(VAR ESALESTABLE@1000000000 : Record 61307);
+    BEGIN
+      //Check if Contact already exists - then use this contact...
+    END;
+
+    PROCEDURE CreateContactFromESALESTABLE@1000000005(VAR ESALESTABLE@1000000001 : Record 61307);
+    BEGIN
+      //Check if Customer already exists - then use this Customer...
+      //Also use Customer-template to create Customer from Contact...
+    END;
+
+    PROCEDURE ItemUpdate@1000000006(VAR Item@1000000000 : Record 27);
+    VAR
+      EINVENTABLE@1000000001 : Record 61304;
+      "eWeb Site Setup"@1000000002 : Record 61300;
+    BEGIN
+      CASE Item."On Chainbox Web" OF
+        Item."On Chainbox Web"::No :
+          BEGIN
+            //Clean EINVENTABLE
+            EINVENTABLE.SETRANGE("Item No.",Item."No.");
+            IF EINVENTABLE.FINDSET THEN
+              EINVENTABLE.DELETEALL(TRUE);
+            //No update needed.
+          END;
+        Item."On Chainbox Web"::"Item Only" :
+          BEGIN
+            //Clean EINVENTABLE
+            EINVENTABLE.SETRANGE("Item No.",Item."No.");
+            EINVENTABLE.SETFILTER(ITEMNUMBER,'<> %1',Item."No.");
+            IF EINVENTABLE.FINDSET THEN
+              EINVENTABLE.DELETEALL(TRUE);
+            //Update EINVENTABLE
+            "eWeb Site Setup".FIND('-');
+            REPEAT
+              IF NOT EINVENTABLE.GET("eWeb Site Setup"."Web Site",Item."No.",Item."No.") THEN
+                InsertNewEINVENTABLEFromItem("eWeb Site Setup",EINVENTABLE,Item);
+              UpdateEINVENTABLEFromItem(EINVENTABLE,Item);
+              EINVENTABLE.MODIFY(TRUE);
+            UNTIL "eWeb Site Setup".NEXT = 0;
+          END;
+        Item."On Chainbox Web"::"Item and Variant-IDs" :
+          BEGIN
+            //No Cleaning needed - is cleaned from the EINVENTABLE data item.
+            //Update EINVENTABLE
+            "eWeb Site Setup".FIND('-');
+            REPEAT
+              IF NOT EINVENTABLE.GET("eWeb Site Setup"."Web Site",Item."No.",Item."No.") THEN
+                InsertNewEINVENTABLEFromItem("eWeb Site Setup",EINVENTABLE,Item);
+              UpdateEINVENTABLEFromItem(EINVENTABLE,Item);
+              EINVENTABLE.MODIFY(TRUE);
+              UpdateItemIDFromItem("eWeb Site Setup",Item);
+            UNTIL "eWeb Site Setup".NEXT = 0;
+          END;
+        Item."On Chainbox Web"::"Variant-IDs Only" :
+          BEGIN
+            //Clean EINVENTABLE
+            EINVENTABLE.SETRANGE("Item No.",Item."No.");
+            EINVENTABLE.SETRANGE(ITEMNUMBER,Item."No.");
+            IF EINVENTABLE.FINDSET THEN
+              EINVENTABLE.DELETEALL(TRUE);
+            //Update EINVENTABLE
+            "eWeb Site Setup".FIND('-');
+            REPEAT
+              UpdateItemIDFromItem("eWeb Site Setup",Item);
+            UNTIL "eWeb Site Setup".NEXT = 0;
+          END;
+      END;
+    END;
+
+    PROCEDURE UpdateItemIDFromItem@1000000007(VAR "eWeb Site Setup"@1000000000 : Record 61300;VAR Item@1000000001 : Record 27);
+    VAR
+      EINVENTABLE@1000000002 : Record 61304;
+      ItemIdentifier@1000000003 : Record 7704;
+      eShop@1000000004 : Codeunit 61300;
+    BEGIN
+      ItemIdentifier.SETCURRENTKEY("Item No.","Variant Code","Unit of Measure Code");
+      ItemIdentifier.SETRANGE("Item No.",Item."No.");
+      ItemIdentifier.SETFILTER("Variant Code",'<> %1','');
+      IF ItemIdentifier.FINDSET(TRUE) THEN
+        REPEAT
+          IF NOT EINVENTABLE.GET("eWeb Site Setup"."Web Site",ItemIdentifier."Item No.",ItemIdentifier.Code) THEN
+            eShop.InsertNewEINVENTABLEFromItemID("eWeb Site Setup",EINVENTABLE,ItemIdentifier);
+          eShop.UpdateEINVENTABLEFromItemID(EINVENTABLE,ItemIdentifier);
+          EINVENTABLE.MODIFY(TRUE);
+        UNTIL ItemIdentifier.NEXT = 0;
+    END;
+
+    PROCEDURE UpdateEINVENTABLEInventory@1000000008(VAR EINVENTABLE@1000000001 : Record 61304);
+    VAR
+      eWebSiteSetup@1000000002 : Record 61300;
+      Item@1000000000 : Record 27;
+    BEGIN
+      IF Item.GET(EINVENTABLE."Item No.") THEN BEGIN
+        eWebSiteSetup.GET(EINVENTABLE."Web Site");
+        IF eWebSiteSetup.Location <> '' THEN
+          Item.SETFILTER("Location Filter",eWebSiteSetup.Location);
+        IF EINVENTABLE.Variant <> '' THEN
+          Item.SETRANGE("Variant Filter",EINVENTABLE.Variant)
+        ELSE
+          Item.SETRANGE("Variant Filter",'');
+        Item.CALCFIELDS(Inventory);
+        EINVENTABLE.EINVENTORY := Item.Inventory + EINVENTABLE."Fixed Qty";
+      END ELSE BEGIN
+        EINVENTABLE.EINVENTORY := 0;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

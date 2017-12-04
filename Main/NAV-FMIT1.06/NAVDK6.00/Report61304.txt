@@ -1,0 +1,296 @@
+OBJECT Report 61304 Import Item Lang. from Excel
+{
+  OBJECT-PROPERTIES
+  {
+    Date=29-05-10;
+    Time=08:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Importer Vare Sprog fra Excel;
+               ENU=Import Item Lang. from Excel];
+    ProcessingOnly=Yes;
+    OnInitReport=VAR
+                   ChrLF@1000000000 : Char;
+                 BEGIN
+                   ShowWebSiteField := eWebSiteSetup.ShowWebSiteField;
+                   eWebSiteSetup.GetWebSiteSetup('');
+                   TmpExcelBuffer.DELETEALL;
+                   ChrLF := 10;
+                   LF := FORMAT(ChrLF);
+                 END;
+
+    OnPreReport=VAR
+                  i@1000000000 : Integer;
+                BEGIN
+                  ReadExcelSheet;
+                  AnalyzeData;
+                END;
+
+    OnPostReport=BEGIN
+                   TmpExcelBuffer.DELETEALL;
+                 END;
+
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table2000000026;
+        DataItemTableView=SORTING(Number);
+      }
+      SECTIONS
+      {
+        { PROPERTIES
+          {
+            SectionType=Body;
+            SectionWidth=12000;
+            SectionHeight=846;
+          }
+          CONTROLS
+          {
+          }
+           }
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9130;
+      Height=3960;
+      OnOpenForm=BEGIN
+                   RequestOptionsForm.eWebSiteTxtBox.VISIBLE(ShowWebSiteField);
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1000000000;TextBox;3630 ;550  ;5500 ;440  ;CaptionML=[DAN=Projektmappe - filnavn;
+                                                              ENU=Workbook File Name];
+                                                   SourceExpr=FileName }
+      { 1000000001;TextBox;3630 ;1100 ;5500 ;440  ;CaptionML=[DAN=Regneark;
+                                                              ENU=Worksheet Name];
+                                                   SourceExpr=SheetName;
+                                                   OnAssistEdit=VAR
+                                                                  ExcelBuf@1001 : Record 370;
+                                                                BEGIN
+                                                                  SheetName := ExcelBuf.SelectSheetsName(FileName);
+                                                                END;
+                                                                 }
+      { 1000000002;Label  ;220  ;550  ;3300 ;440  ;ParentControl=1000000000 }
+      { 1000000003;Label  ;220  ;1100 ;3300 ;440  ;ParentControl=1000000001 }
+      { 1000000004;Label  ;0    ;0    ;3300 ;440  ;LeaderDots=No;
+                                                   CaptionML=[DAN=Indl�s fra;
+                                                              ENU=Import from] }
+      { 1000000005;OptionButton;3410;2860;3740;440;CaptionML=ENU=Long Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Long Description }
+      { 1000000006;OptionButton;3410;2310;3740;440;CaptionML=ENU=Short Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Short Description }
+      { 1000000007;OptionButton;3410;1760;3740;440;CaptionML=ENU=Description;
+                                                   SourceExpr=eTranslationFilter.Type;
+                                                   OptionValue=Description }
+      { 1000000008;Label  ;0    ;1760 ;3300 ;440  ;ParentControl=1000000007;
+                                                   CaptionML=ENU=Import To }
+      { 1000000009;TextBox;3520 ;3520 ;1700 ;440  ;Name=eWebSiteTxtBox;
+                                                   SourceExpr=eWebSiteSetup."Web Site";
+                                                   TableRelation="eWeb Site Setup" }
+      { 1000000010;Label  ;110  ;3520 ;3300 ;440  ;ParentControl=1000000009 }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      TmpExcelBuffer@1000000000 : TEMPORARY Record 370;
+      eTranslationFilter@1000000007 : Record 61301;
+      eWebSiteSetup@1000000002 : Record 61300;
+      Window@1000000010 : Dialog;
+      FileName@1000000003 : Text[250];
+      SheetName@1000000001 : Text[250];
+      Text001@1000000004 : TextConst 'DAN=Data analyseres...\\;ENU=Analyzing Data...\\';
+      HeaderColNoArr@1000000005 : ARRAY [22] OF Text[80];
+      Text002@1000000006 : TextConst 'ENU=No header row no. found.';
+      LF@1000000009 : Text[2];
+      ShowWebSiteField@1000000008 : Boolean;
+
+    LOCAL PROCEDURE ReadExcelSheet@1();
+    BEGIN
+      TmpExcelBuffer.OpenBook(FileName,SheetName);
+      TmpExcelBuffer.ReadSheet;
+    END;
+
+    LOCAL PROCEDURE AnalyzeData@2();
+    VAR
+      eLanguage@1000000003 : Record 61303;
+      EINVENTABLETemp@1000000004 : TEMPORARY Record 61304;
+      eTranslationTemp@1000000006 : Record 61301;
+      ItemNoHeaderName@1000000005 : Text[80];
+      TestDate@1000000002 : Date;
+      HeaderRowNo@1003 : Integer;
+      OldRowNo@1006 : Integer;
+      TotalRecNo@1000000001 : Integer;
+      RecNo@1000000000 : Integer;
+    BEGIN
+      Window.OPEN(
+        Text001 +
+        '@1@@@@@@@@@@@@@@@@@@@@@@@@@\');
+      Window.UPDATE(1,0);
+      TotalRecNo := TmpExcelBuffer.COUNT;
+      RecNo := 0;
+      ItemNoHeaderName := EINVENTABLETemp.FIELDNAME(ITEMNUMBER);
+
+      CLEAR(HeaderColNoArr);
+      IF TmpExcelBuffer.FIND('-') THEN BEGIN
+        REPEAT
+          IF TmpExcelBuffer."Cell Value as Text" = ItemNoHeaderName THEN
+            HeaderRowNo := TmpExcelBuffer."Row No.";
+        UNTIL (TmpExcelBuffer.NEXT = 0) OR (HeaderRowNo > 0);
+      END;
+      IF HeaderRowNo = 0 THEN
+        ERROR(Text002);
+      TmpExcelBuffer.SETRANGE("Row No.",HeaderRowNo);
+      IF TmpExcelBuffer.FINDFIRST THEN BEGIN
+        REPEAT
+          CASE TmpExcelBuffer."Cell Value as Text" OF
+            ItemNoHeaderName :
+              BEGIN
+                HeaderColNoArr[TmpExcelBuffer."Column No."] := ItemNoHeaderName;
+              END;
+              ELSE BEGIN
+                IF eLanguage.FINDSET THEN
+                  REPEAT
+                    IF TmpExcelBuffer."Cell Value as Text" = eLanguage.Code THEN BEGIN
+                      HeaderColNoArr[TmpExcelBuffer."Column No."] := eLanguage.Code;
+                      eLanguage.FINDLAST;
+                    END;
+                  UNTIL eLanguage.NEXT = 0;
+              END;
+          END;
+        UNTIL TmpExcelBuffer.NEXT = 0;
+      END;
+      TmpExcelBuffer.SETRANGE("Row No.");
+
+      IF TmpExcelBuffer.FIND('-') THEN BEGIN
+        REPEAT
+          RecNo := RecNo + 1;
+          Window.UPDATE(1,ROUND(RecNo / TotalRecNo * 10000,1));
+          IF TmpExcelBuffer."Row No." > HeaderRowNo THEN BEGIN
+            IF TmpExcelBuffer."Row No." > OldRowNo THEN
+              UpdateTranslation(EINVENTABLETemp,eTranslationTemp);
+            CASE HeaderColNoArr[TmpExcelBuffer."Column No."] OF
+              ItemNoHeaderName :
+                BEGIN
+                  EINVENTABLETemp."Web Site" := eWebSiteSetup."Web Site";
+                  EINVENTABLETemp.ITEMNUMBER := TmpExcelBuffer."Cell Value as Text";
+                  EINVENTABLETemp.INSERT;
+                END;
+              ELSE BEGIN
+                IF eLanguage.GET(eWebSiteSetup."Web Site",HeaderColNoArr[TmpExcelBuffer."Column No."]) THEN BEGIN
+                  eTranslationTemp."Table No." := eTranslationTemp."Table No."::eItem;
+                  eTranslationTemp."Web Site" := eWebSiteSetup."Web Site";
+                  eTranslationTemp."Language Code" := eLanguage.Code;
+                  eTranslationTemp.Type := eTranslationFilter.Type;
+                  eTranslationTemp."Line No." := TmpExcelBuffer."Row No.";
+                  eTranslationTemp.Text := TmpExcelBuffer."Cell Value as Text";
+                  eTranslationTemp.INSERT;
+                END;
+              END;
+            END;
+            OldRowNo := TmpExcelBuffer."Row No.";
+          END;
+        UNTIL TmpExcelBuffer.NEXT = 0;
+        UpdateTranslation(EINVENTABLETemp,eTranslationTemp);
+      END;
+
+      Window.CLOSE;
+    END;
+
+    PROCEDURE UpdateTranslation@1000000000(VAR EINVENTABLE@1000000000 : Record 61304;VAR eTranslation@1000000001 : Record 61301);
+    VAR
+      EINVENTABLE2@1000000003 : Record 61304;
+      eTranslation2@1000000002 : Record 61301;
+      eTranslationSplitTmp@1000000004 : TEMPORARY Record 61301;
+    BEGIN
+      EINVENTABLE2.SETRANGE("Web Site",EINVENTABLE."Web Site");
+      EINVENTABLE2.SETRANGE(ITEMNUMBER,EINVENTABLE.ITEMNUMBER);
+      IF EINVENTABLE2.FINDFIRST THEN BEGIN
+        IF eTranslation.FINDFIRST THEN
+          REPEAT
+            eTranslation.Code := EINVENTABLE.ITEMNUMBER;
+            eTranslation.MODIFY;
+          UNTIL eTranslation.NEXT = 0;
+        IF eTranslation.FINDFIRST THEN
+          REPEAT
+            //Delete existing translation
+            eTranslation2.SETRANGE("Table No.",eTranslation."Table No.");
+            eTranslation2.SETRANGE("Web Site",eTranslation."Web Site");
+            eTranslation2.SETRANGE(Code,eTranslation.Code);
+            eTranslation2.SETRANGE("Language Code",eTranslation."Language Code");
+            eTranslation2.SETRANGE(Type,eTranslation.Type);
+            eTranslation2.DELETEALL;
+            //Split if LF
+            SplitTranslationOnLF(eTranslation,eTranslationSplitTmp);
+            //Update translation
+            IF eTranslationSplitTmp.FINDFIRST THEN
+              REPEAT
+                eTranslation2 := eTranslationSplitTmp;
+                eTranslation2.INSERT;
+              UNTIL eTranslationSplitTmp.NEXT = 0;
+          UNTIL eTranslation.NEXT = 0;
+      END;
+
+      CLEAR(EINVENTABLE);
+      EINVENTABLE.DELETEALL;
+      CLEAR(eTranslation);
+      eTranslation.DELETEALL;
+    END;
+
+    PROCEDURE SplitTranslationOnLF@1000000008(VAR eTranslation@1000000000 : Record 61301;VAR eTranslationSplit@1000000001 : Record 61301);
+    VAR
+      TextTmp@1000000002 : Text[250];
+      NextLineNo@1000000003 : Integer;
+    BEGIN
+      eTranslationSplit.DELETEALL;
+      TextTmp := eTranslation.Text;
+      IF TextTmp <> '' THEN BEGIN
+        IF STRPOS(TextTmp,LF) > 0 THEN BEGIN
+          IF eTranslationSplit.FINDLAST THEN
+            NextLineNo := eTranslationSplit."Line No." + 10000
+          ELSE
+            NextLineNo := 10000;
+          REPEAT
+            eTranslationSplit := eTranslation;
+            eTranslationSplit."Line No." := NextLineNo;
+            NextLineNo += 10000;
+            IF STRPOS(TextTmp,LF) > 1 THEN
+              eTranslationSplit.Text := COPYSTR(TextTmp,1,STRPOS(TextTmp,LF) - 1)
+            ELSE
+              eTranslationSplit.Text := '';
+            TextTmp := COPYSTR(TextTmp,STRPOS(TextTmp,LF) + 1);
+            eTranslationSplit.INSERT;
+          UNTIL STRPOS(TextTmp,LF) = 0;
+        END;
+      END;
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

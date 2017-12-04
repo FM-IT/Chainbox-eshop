@@ -1,0 +1,122 @@
+OBJECT Form 61300 Web Site eSetup Card
+{
+  OBJECT-PROPERTIES
+  {
+    Date=26-09-09;
+    Time=20:00:00;
+    Version List=FMIT1.04;
+  }
+  PROPERTIES
+  {
+    Width=9790;
+    Height=8030;
+    CaptionML=[DAN=Web Side Ops�tning;
+               ENU=Web Site Setup];
+    SourceTable=Table61300;
+    OnOpenForm=VAR
+                 eWebSiteSetup@1000000000 : Record 61300;
+               BEGIN
+                 IF eWebSiteSetup.ISEMPTY THEN BEGIN
+                   eWebSiteSetup."Web Site" := 'Chainbox';
+                   eWebSiteSetup.INSERT(TRUE);
+                   RESET;
+                   Rec := eWebSiteSetup;
+                 END;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TabControl;220;220 ;9350 ;6930 ;HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 PageNamesML=DAN=Generelt }
+    { 1106000001;CheckBox;3850;1540 ;440  ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Use Reservation" }
+    { 1106000002;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1106000001 }
+    { 1106000003;TextBox;3850 ;2090 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr=Location }
+    { 1106000004;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1106000003 }
+    { 1106000006;TextBox;3850 ;990  ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Web Site" }
+    { 1106000007;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1106000006 }
+    { 1000000001;CheckBox;3850;3190 ;440  ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Use Item ID's" }
+    { 1000000002;Label  ;440  ;3190 ;3300 ;440  ;ParentControl=1000000001 }
+    { 1000000003;CheckBox;3850;3740 ;440  ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Auto Save to Sales Archive" }
+    { 1000000004;Label  ;440  ;3740 ;3300 ;440  ;ParentControl=1000000003 }
+    { 1000000005;TextBox;3850 ;4290 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Std. Contact Company" }
+    { 1000000006;Label  ;440  ;4290 ;3300 ;440  ;ParentControl=1000000005 }
+    { 1000000007;TextBox;3850 ;4840 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Std. Contact User" }
+    { 1000000008;Label  ;440  ;4840 ;3300 ;440  ;ParentControl=1000000007 }
+    { 1000000009;TextBox;3850 ;5390 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Std. Customer" }
+    { 1000000010;Label  ;440  ;5390 ;3300 ;440  ;ParentControl=1000000009 }
+    { 1000000011;TextBox;3850 ;5940 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Std. Language Item Cards" }
+    { 1000000012;Label  ;440  ;5940 ;3300 ;440  ;ParentControl=1000000011 }
+    { 1000000013;CheckBox;3850;2640 ;440  ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Assign Location to Orders" }
+    { 1000000014;Label  ;440  ;2640 ;3300 ;440  ;ParentControl=1000000013 }
+    { 1000000015;CheckBox;3850;6490 ;440  ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Use Prices From Web" }
+    { 1000000016;Label  ;440  ;6490 ;3300 ;440  ;ParentControl=1000000015 }
+    { 1106000005;CommandButton;7370;7260;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1106000008;MenuButton;4950;7260;2200;550  ;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=&Web Side;
+                                                            ENU=&Web Site];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1106000009;
+                                                     PushAction=LookupTable;
+                                                     ShortCutKey=F5;
+                                                     CaptionML=[DAN=Oversigt;
+                                                                ENU=List] }
+                                                   { ID=1106000010;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Sprog;
+                                                                ENU=Languages];
+                                                     RunObject=Form 61303;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Web Site=FIELD(Web Site) }
+                                                   { ID=1000000000;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Standard Tekst;
+                                                                ENU=Standard Text];
+                                                     RunObject=Form 61302;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormView=SORTING(Web Site,Code);
+                                                     RunFormLink=Web Site=FIELD(Web Site) }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

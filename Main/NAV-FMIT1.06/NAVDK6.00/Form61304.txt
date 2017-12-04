@@ -1,0 +1,164 @@
+OBJECT Form 61304 eItem Card
+{
+  OBJECT-PROPERTIES
+  {
+    Date=18-09-09;
+    Time=18:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    Width=16170;
+    Height=8360;
+    CaptionML=[DAN=Vare;
+               ENU=Item];
+    InsertAllowed=No;
+    DeleteAllowed=No;
+    SourceTable=Table61304;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1000000000;TabControl;220;220 ;15730;7260 ;HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 PageNamesML=DAN=Generelt }
+    { 1000000001;TextBox;3850 ;990  ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Web Site" }
+    { 1000000002;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1000000001 }
+    { 1000000003;TextBox;3850 ;1540 ;5500 ;440  ;Editable=No;
+                                                 ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=ITEMNUMBER }
+    { 1000000004;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1000000003 }
+    { 1000000005;TextBox;3850 ;2090 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=PRICEGROUP }
+    { 1000000006;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1000000005 }
+    { 1000000007;TextBox;3850 ;2640 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=WEIGHT }
+    { 1000000008;Label  ;440  ;2640 ;3300 ;440  ;ParentControl=1000000007 }
+    { 1000000009;TextBox;3850 ;3190 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=EINVENTORY }
+    { 1000000010;Label  ;440  ;3190 ;3300 ;440  ;ParentControl=1000000009 }
+    { 1000000011;TextBox;3850 ;3740 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CAMPAIGN }
+    { 1000000012;Label  ;440  ;3740 ;3300 ;440  ;ParentControl=1000000011 }
+    { 1000000013;TextBox;3850 ;4290 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CAMPAIGNSTART }
+    { 1000000014;Label  ;440  ;4290 ;3300 ;440  ;ParentControl=1000000013 }
+    { 1000000015;TextBox;3850 ;4840 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=CAMPAIGNEND }
+    { 1000000016;Label  ;440  ;4840 ;3300 ;440  ;ParentControl=1000000015 }
+    { 1000000017;TextBox;3850 ;5390 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=DELIVERYDATE }
+    { 1000000018;Label  ;440  ;5390 ;3300 ;440  ;ParentControl=1000000017 }
+    { 1000000019;TextBox;3850 ;6050 ;5500 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=IMAGEFILE }
+    { 1000000020;Label  ;440  ;6050 ;3300 ;440  ;ParentControl=1000000019 }
+    { 1000000021;TextBox;12870;990  ;2750 ;440  ;Editable=No;
+                                                 ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Item No." }
+    { 1000000022;Label  ;9460 ;990  ;3300 ;440  ;ParentControl=1000000021 }
+    { 1000000023;TextBox;12870;1540 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Reserved Qty" }
+    { 1000000024;Label  ;9460 ;1540 ;3300 ;440  ;ParentControl=1000000023 }
+    { 1000000025;TextBox;12870;2090 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="Fixed Qty" }
+    { 1000000026;Label  ;9460 ;2090 ;3300 ;440  ;ParentControl=1000000025 }
+    { 1000000027;TextBox;12870;2640 ;1700 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr="In eCategory" }
+    { 1000000028;Label  ;9460 ;2640 ;3300 ;440  ;ParentControl=1000000027 }
+    { 1000000029;TextBox;12870;3190 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=Variant }
+    { 1000000030;Label  ;9460 ;3190 ;3300 ;440  ;ParentControl=1000000029 }
+    { 1000000032;TextBox;12870;3740 ;2750 ;440  ;ParentControl=1000000000;
+                                                 InPage=0;
+                                                 SourceExpr=UOM }
+    { 1000000033;Label  ;9460 ;3740 ;3300 ;440  ;ParentControl=1000000032 }
+    { 1000000031;CommandButton;13750;7590;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1000000034;MenuButton;8910;7590;2200;550  ;CaptionML=[DAN=Vare;
+                                                            ENU=Item];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000035;
+                                                     ShortCutKey=F5;
+                                                     CaptionML=[DAN=Oversigt;
+                                                                ENU=List];
+                                                     OnPush=VAR
+                                                              eItemList@1000000000 : Form 61305;
+                                                            BEGIN
+                                                              eItemList.SETRECORD(Rec);
+                                                              eItemList.SETTABLEVIEW(Rec);
+                                                              eItemList.LOOKUPMODE(TRUE);
+                                                              IF eItemList.RUNMODAL = ACTION::LookupOK THEN BEGIN
+                                                                eItemList.GETRECORD(Rec);
+                                                              END;
+                                                            END;
+                                                             }
+                                                   { ID=1000000036;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Kategorier;
+                                                                ENU=Categories];
+                                                     RunObject=Form 61310;
+                                                     RunFormView=SORTING(ITEMNUMBER,Web Site,CATEGORY);
+                                                     RunFormLink=Web Site=FIELD(Web Site),
+                                                                 ITEMNUMBER=FIELD(ITEMNUMBER) }
+                                                   { ID=1000000037;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=Overs�ttelser;
+                                                                ENU=Translations];
+                                                     RunObject=Form 61311;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Table No.=FILTER(eItem),
+                                                                 Web Site=FIELD(Web Site),
+                                                                 Code=FIELD(Item No.) }
+                                                 }
+                                                  }
+    { 1000000038;MenuButton;11330;7590;2200;550 ;CaptionML=[DAN=Funktioner;
+                                                            ENU=Functions];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000042;
+                                                     CaptionML=[DAN=Opdater Lager;
+                                                                ENU=Update Inventory];
+                                                     OnPush=BEGIN
+                                                              UpdateInventory;
+                                                            END;
+                                                             }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

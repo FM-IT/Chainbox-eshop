@@ -1,0 +1,51 @@
+OBJECT Table 61303 eLanguage
+{
+  OBJECT-PROPERTIES
+  {
+    Date=16-06-09;
+    Time=20:00:00;
+    Version List=FMIT1.01;
+  }
+  PROPERTIES
+  {
+    OnDelete=VAR
+               eTranslation@1000000000 : Record 61301;
+             BEGIN
+               // Delete translations
+               eTranslation.SETRANGE("Web Site","Web Site");
+               eTranslation.SETRANGE("Language Code",Code);
+               eTranslation.DELETEALL;
+             END;
+
+    CaptionML=[DAN=Sprog;
+               ENU=Language];
+    LookupFormID=Form61303;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup"."Web Site";
+                                                   CaptionML=ENU=Web Site }
+    { 2   ;   ;Code                ;Code10        ;TableRelation=Language;
+                                                   CaptionML=[DAN=Kode;
+                                                              ENU=Code];
+                                                   NotBlank=Yes }
+    { 3   ;   ;Name                ;Text50        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Language.Name WHERE (Code=FIELD(Code)));
+                                                   CaptionML=[DAN=Navn;
+                                                              ENU=Name] }
+  }
+  KEYS
+  {
+    {    ;Web Site,Code                           ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

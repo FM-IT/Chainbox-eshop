@@ -1,0 +1,106 @@
+OBJECT Form 61306 eCategory
+{
+  OBJECT-PROPERTIES
+  {
+    Date=18-09-09;
+    Time=18:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    Width=16500;
+    Height=9900;
+    CaptionML=[DAN=Kategori;
+               ENU=Category];
+    SourceTable=Table61305;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TabControl;220;220 ;16060;5280 ;HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 PageNamesML=DAN=Generelt }
+    { 1000000000;TextBox;3850 ;990  ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Web Site" }
+    { 1000000001;Label  ;440  ;990  ;3300 ;440  ;ParentControl=1000000000 }
+    { 1000000002;TextBox;3850 ;2090 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr=CATEGORY }
+    { 1000000003;Label  ;440  ;2090 ;3300 ;440  ;ParentControl=1000000002 }
+    { 1000000004;TextBox;3850 ;1540 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr=UPPERCATEGORY }
+    { 1000000005;Label  ;440  ;1540 ;3300 ;440  ;ParentControl=1000000004 }
+    { 1000000006;TextBox;3850 ;2750 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr=LASTCHANGED }
+    { 1000000007;Label  ;440  ;2750 ;3300 ;440  ;ParentControl=1000000006 }
+    { 1106000002;TextBox;3850 ;3410 ;5500 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr=Description }
+    { 1106000003;Label  ;440  ;3410 ;3300 ;440  ;ParentControl=1106000002 }
+    { 1106000004;TextBox;3850 ;3960 ;2750 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Search Description" }
+    { 1106000005;Label  ;440  ;3960 ;3300 ;440  ;ParentControl=1106000004 }
+    { 1106000006;TextBox;3850 ;4510 ;5500 ;440  ;ParentControl=1106000000;
+                                                 InPage=0;
+                                                 SourceExpr="Description 2" }
+    { 1106000011;Label  ;440  ;4510 ;3300 ;440  ;ParentControl=1106000006 }
+    { 1106000007;CommandButton;14080;9130;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1106000008;SubForm;220  ;5610 ;16060;3300 ;HorzGlue=Both;
+                                                 VertGlue=Both;
+                                                 Border=No;
+                                                 SubFormID=Form61307;
+                                                 SubFormView=SORTING(Web Site,CATEGORY,ITEMNUMBER);
+                                                 SubFormLink=Web Site=FIELD(Web Site),
+                                                             CATEGORY=FIELD(CATEGORY) }
+    { 1106000009;MenuButton;11660;9130;2200;550 ;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 CaptionML=[DAN=&eKategori;
+                                                            ENU=&eCategory];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1106000010;
+                                                     PushAction=LookupTable;
+                                                     ShortCutKey=F5;
+                                                     CaptionML=[DAN=Oversigt;
+                                                                ENU=List] }
+                                                   { ID=1106000013;
+                                                     PushAction=RunObject;
+                                                     CaptionML=[DAN=&Oversigt Sorteret;
+                                                                ENU=&List Sorted];
+                                                     RunObject=Form 61308 }
+                                                   { ID=1106000001;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=Translations;
+                                                     RunObject=Form 61311;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Table No.=FILTER(eCategory),
+                                                                 Web Site=FIELD(Web Site),
+                                                                 Code=FIELD(CATEGORY) }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

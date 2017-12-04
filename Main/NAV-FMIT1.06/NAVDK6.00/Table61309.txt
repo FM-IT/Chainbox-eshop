@@ -1,0 +1,45 @@
+OBJECT Table 61309 Order Text
+{
+  OBJECT-PROPERTIES
+  {
+    Date=21-09-09;
+    Time=22:04:20;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Ordre Tekst;
+               ENU=Order Text];
+    LookupFormID=Form61316;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site];
+                                                   NotBlank=Yes;
+                                                   Editable=No }
+    { 2   ;   ;Text Type           ;Option        ;OptionString=Comment,Validation,Order Line Text }
+    { 3   ;   ;ESALESNUMBER        ;Code10        ;CaptionML=ENU=eSales Order Journal;
+                                                   Editable=No }
+    { 4   ;   ;LINENUMBER          ;Integer       ;CaptionML=ENU=eSales Order Journal Line No.;
+                                                   Editable=No }
+    { 5   ;   ;Text Line No.       ;Integer       ;CaptionML=ENU=Text Line No. }
+    { 6   ;   ;Text                ;Text80        ;CaptionML=ENU=Text }
+  }
+  KEYS
+  {
+    {    ;Web Site,Text Type,ESALESNUMBER,LINENUMBER,Text Line No.;
+                                                   Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

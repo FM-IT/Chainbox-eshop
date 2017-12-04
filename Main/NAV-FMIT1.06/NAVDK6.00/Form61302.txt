@@ -1,0 +1,86 @@
+OBJECT Form 61302 eStandard Text
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=9790;
+    Height=6710;
+    CaptionML=[DAN=Standard Tekst;
+               ENU=Standard Text];
+    TableBoxID=1106000000;
+    SourceTable=Table61302;
+    OnOpenForm=BEGIN
+                 InitFrm;
+               END;
+
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;9350 ;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000001;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1106000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000001;
+                                                 InColumnHeading=Yes }
+    { 1106000003;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=Code }
+    { 1106000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000003;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;4400 ;0    ;HorzGlue=Both;
+                                                 ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=Description }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000007;CommandButton;110;5940;2200;550;HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000008;CommandButton;2530;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000009;CommandButton;7370;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+    { 1106000010;MenuButton;4950;5940;2200;550  ;CaptionML=[DAN=eStandard Tekst;
+                                                            ENU=eStandard Text];
+                                                 Menu=MENUITEMS
+                                                 {
+                                                   { ID=1000000000;
+                                                     PushAction=RunObject;
+                                                     CaptionML=ENU=eTranslations;
+                                                     RunObject=Form 61311;
+                                                     RunFormLinkType=OnUpdate;
+                                                     RunFormLink=Table No.=FILTER(Standard Text),
+                                                                 Web Site=FIELD(Web Site),
+                                                                 Code=FIELD(Code) }
+                                                 }
+                                                  }
+  }
+  CODE
+  {
+
+    PROCEDURE InitFrm@1000000000();
+    VAR
+      eWebSiteSetup@1000000000 : Record 61300;
+    BEGIN
+      CurrForm."Web Site".VISIBLE(eWebSiteSetup.ShowWebSiteField);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

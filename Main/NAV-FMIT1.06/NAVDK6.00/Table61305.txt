@@ -1,0 +1,117 @@
+OBJECT Table 61305 ECATEGORY
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03-06-10;
+    Time=20:00:00;
+    Version List=FMIT1.04;
+  }
+  PROPERTIES
+  {
+    OnInsert=VAR
+               eWebSiteSetup@1000000001 : Record 61300;
+               ECATEGORY@1000000000 : Record 61305;
+             BEGIN
+               IF "Web Site" = '' THEN BEGIN
+                 eWebSiteSetup.GetWebSiteSetup("Web Site");
+                 "Web Site" := eWebSiteSetup."Web Site";
+                 TESTFIELD("Web Site");
+               END;
+               CheckForDuplicate;
+               ECATEGORY.SETCURRENTKEY(ROWNUMBER);
+               IF ECATEGORY.FIND('+') THEN
+                 ROWNUMBER := ECATEGORY.ROWNUMBER + 1
+               ELSE
+                 ROWNUMBER := 1;
+
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnModify=BEGIN
+               LASTCHANGED := CURRENTDATETIME;
+             END;
+
+    OnDelete=VAR
+               eTranslation@1000000000 : Record 61301;
+               EINVENCATEGORY@1000000001 : Record 61306;
+             BEGIN
+               // Delete category-item link
+               EINVENCATEGORY.SETCURRENTKEY("Web Site",CATEGORY,ITEMNUMBER);
+               EINVENCATEGORY.SETRANGE("Web Site","Web Site");
+               EINVENCATEGORY.SETRANGE(CATEGORY,CATEGORY);
+               EINVENCATEGORY.DELETEALL;
+
+               // Delete translations
+               eTranslation.SETRANGE("Table No.",eTranslation."Table No."::eCategory);
+               eTranslation.SETRANGE("Web Site","Web Site");
+               eTranslation.SETRANGE(Code,CATEGORY);
+               eTranslation.DELETEALL;
+             END;
+
+    OnRename=VAR
+               ECATEGORY@1000000000 : Record 61305;
+             BEGIN
+               ECATEGORY.SETRANGE("Web Site","Web Site");
+               ECATEGORY.SETRANGE(CATEGORY,CATEGORY);
+               ECATEGORY.SETFILTER(UPPERCATEGORY,'<> %1',xRec.UPPERCATEGORY);
+               IF ECATEGORY.FIND('-') THEN
+                 ERROR(STRSUBSTNO(Text001,TABLECAPTION,CATEGORY));
+             END;
+
+    CaptionML=[DAN=Kategori;
+               ENU=Category];
+    LookupFormID=Form61309;
+  }
+  FIELDS
+  {
+    { 1   ;   ;DATASET             ;Text3          }
+    { 2   ;   ;ROWNUMBER           ;Integer        }
+    { 3   ;   ;LASTCHANGED         ;DateTime       }
+    { 4   ;   ;CATEGORY            ;Code10        ;NotBlank=Yes }
+    { 5   ;   ;UPPERCATEGORY       ;Code10        ;TableRelation=ECATEGORY.CATEGORY }
+    { 6   ;   ;Web Site            ;Code10        ;TableRelation="eWeb Site Setup";
+                                                   CaptionML=[DAN=Web Side;
+                                                              ENU=Web Site] }
+    { 7   ;   ;Indentation         ;Integer       ;CaptionML=[DAN=Indrykning;
+                                                              ENU=Indentation];
+                                                   MinValue=0 }
+    { 8   ;   ;Description         ;Text30        ;OnValidate=BEGIN
+                                                                IF ("Search Description" = UPPERCASE(xRec.Description)) OR ("Search Description" = '') THEN
+                                                                  "Search Description" := Description;
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskrivelse;
+                                                              ENU=Description] }
+    { 9   ;   ;Search Description  ;Code30        ;CaptionML=[DAN=S�gebeskrivelse;
+                                                              ENU=Search Description] }
+    { 10  ;   ;Description 2       ;Text30        ;CaptionML=[DAN=Beskrivelse 2;
+                                                              ENU=Description 2] }
+  }
+  KEYS
+  {
+    {    ;Web Site,UPPERCATEGORY,CATEGORY         ;Clustered=Yes }
+    {    ;ROWNUMBER                                }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    VAR
+      Text001@1000000001 : TextConst 'DAN=%1 %2 eksisterer allerede.;ENU=%1 %2 already exists.';
+
+    PROCEDURE CheckForDuplicate@1000000000();
+    VAR
+      ECATEGORY@1000000001 : Record 61305;
+    BEGIN
+      ECATEGORY.SETRANGE("Web Site","Web Site");
+      ECATEGORY.SETRANGE(CATEGORY,CATEGORY);
+      IF ECATEGORY.FIND('-') THEN
+        ERROR(STRSUBSTNO(Text001,TABLECAPTION,CATEGORY));
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

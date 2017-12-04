@@ -1,0 +1,321 @@
+OBJECT Report 61305 Item Prices To CSV
+{
+  OBJECT-PROPERTIES
+  {
+    Date=13-09-11;
+    Time=11:19:51;
+    Modified=Yes;
+    Version List=FMIT1.00;
+  }
+  PROPERTIES
+  {
+    ProcessingOnly=Yes;
+    OnInitReport=BEGIN
+                   CSVFileName := 'C:\SalesPrices.csv';
+                   FieldStartDelimiter := '"';
+                   FieldEndDelimiter := '"';
+                   FieldSeparator := ',';
+                 END;
+
+    OnPreReport=VAR
+                  LineTmp@1000000000 : Text[1024];
+                BEGIN
+                  CSVFile.WRITEMODE(TRUE);
+                  CSVFile.TEXTMODE(TRUE);
+                  CSVFile.QUERYREPLACE(TRUE);
+
+                  CSVFile.CREATE(CSVFileName);
+
+                  IF ExportFileHeader THEN BEGIN
+                    AddValue2Line(LineTmp,'ItemNo');
+                    AddValue2Line(LineTmp,'CurrencyCode');
+                    AddValue2Line(LineTmp,'Date');
+                    AddValue2Line(LineTmp,'UOM');
+                    AddValue2Line(LineTmp,'Quantity');
+                    AddValue2Line(LineTmp,'Price');
+                    AddValue2Line(LineTmp,'LineDisc');
+                    AddValue2Line(LineTmp,'LineAmount');
+                    AddValue2Line(LineTmp,'PriceIncludesVAT');
+                    AddValue2Line(LineTmp,'AllowInvoiceDiscount');
+                    AddValue2Line(LineTmp,'AllowLineDiscount');
+                    WriteLine2File(LineTmp);
+                  END;
+                END;
+
+    OnPostReport=BEGIN
+                   CSVFile.CLOSE;
+                 END;
+
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table18;
+        ReqFilterFields=No.;
+      }
+      SECTIONS
+      {
+      }
+       }
+    { PROPERTIES
+      {
+        DataItemIndent=1;
+        DataItemTable=Table27;
+        OnAfterGetRecord=BEGIN
+                           WriteSalesDiscAndPrice(Customer."No.",Customer."Currency Code",TODAY,2,Item."No.",Item."Sales Unit of Measure",1);
+                         END;
+
+        ReqFilterFields=No.;
+      }
+      SECTIONS
+      {
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9020;
+      Height=3410;
+      SaveValues=Yes;
+    }
+    CONTROLS
+    {
+      { 1000000000;TextBox;3410 ;550  ;1700 ;440  ;CaptionML=ENU=Field Start Delimiter;
+                                                   SourceExpr=FieldStartDelimiter }
+      { 1000000001;Label  ;0    ;550  ;3300 ;440  ;ParentControl=1000000000 }
+      { 1000000002;TextBox;3410 ;1100 ;1700 ;440  ;CaptionML=ENU=Field End Delimiter;
+                                                   SourceExpr=FieldEndDelimiter }
+      { 1000000003;Label  ;0    ;1100 ;3300 ;440  ;ParentControl=1000000002 }
+      { 1000000004;TextBox;3410 ;1650 ;1700 ;440  ;CaptionML=ENU=Field Separator;
+                                                   SourceExpr=FieldSeparator }
+      { 1000000005;Label  ;0    ;1650 ;3300 ;440  ;ParentControl=1000000004 }
+      { 1000000006;CheckBox;3410;2200 ;440  ;440  ;ShowCaption=No;
+                                                   CaptionML=ENU=Export File Header;
+                                                   SourceExpr=ExportFileHeader }
+      { 1000000007;Label  ;0    ;2200 ;3300 ;440  ;ParentControl=1000000006 }
+      { 1000000008;TextBox;3410 ;0    ;5390 ;440  ;CaptionML=ENU=File Name;
+                                                   SourceExpr=CSVFileName }
+      { 1000000009;Label  ;0    ;0    ;3300 ;440  ;ParentControl=1000000008 }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      CSVFile@1000000000 : File;
+      CSVFileName@1000000005 : Text[1024];
+      FieldStartDelimiter@1000000001 : Text[1];
+      FieldEndDelimiter@1000000002 : Text[1];
+      FieldSeparator@1000000003 : Text[1];
+      ExportFileHeader@1000000004 : Boolean;
+
+    PROCEDURE WriteSalesDiscAndPrice@1000000022(CustNo@1000000003 : Text[30];CurrCode@1000000007 : Code[20];DateReq@1000000011 : Date;Type@1000000010 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';No@1000000008 : Code[20];UOM@1000000014 : Code[20];Qty@1000000001 : Decimal);
+    VAR
+      Contact@1000000016 : Record 5050;
+      Customer@1000000017 : Record 18;
+      TmpSalesHeader@1000000012 : TEMPORARY Record 36;
+      TmpSalesLine@1000000013 : TEMPORARY Record 37;
+      Item@1000000002 : Record 27;
+      Currency@1000000004 : Record 4;
+      SalesPriceCalcMgt@1000000000 : Codeunit 7000;
+      LineTmp@1000000015 : Text[1024];
+      DateTxt@1000000005 : Text[30];
+      DocNameSpace@1000000006 : Text[200];
+      CampaignNo@1000000009 : Code[20];
+    BEGIN
+      FillSalesHeader(TmpSalesHeader,CustNo,CurrCode,DateReq);
+      FillSalesLine(TmpSalesHeader,TmpSalesLine,Type,No,UOM,Qty);
+      SalesPriceCalcMgt.FindSalesLinePrice(TmpSalesHeader,TmpSalesLine,0);
+      SalesPriceCalcMgt.FindSalesLineLineDisc(TmpSalesHeader,TmpSalesLine);
+      UpdateSalesLine(TmpSalesLine);
+
+      AddValue2Line(LineTmp,TmpSalesLine."No.");
+      AddValue2Line(LineTmp,TmpSalesHeader."Currency Code");
+      AddValue2Line(LineTmp,FORMAT(DateReq));
+      AddValue2Line(LineTmp,TmpSalesLine."Unit of Measure");
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine.Quantity));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine."Unit Price"));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine."Line Discount %"));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine."Line Amount"));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesHeader."Prices Including VAT"));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine."Allow Invoice Disc."));
+      AddValue2Line(LineTmp,FORMAT(TmpSalesLine."Allow Line Disc."));
+
+      WriteLine2File(LineTmp);
+    END;
+
+    LOCAL PROCEDURE FillSalesHeader@1000000028(VAR TmpSalesHeader@1000000000 : TEMPORARY Record 36;CustNo@1000000001 : Code[10];CurrCode@1000000004 : Code[20];DateReq@1000000005 : Date);
+    VAR
+      Cust@1000000002 : Record 18;
+      Bill2Cust@1000000003 : Record 18;
+    BEGIN
+      IF CustNo <> '' THEN
+        Cust.GET(CustNo);
+
+      TmpSalesHeader."Order Date" := DateReq;
+      TmpSalesHeader."Posting Date" := DateReq;
+      TmpSalesHeader."Shipment Date" := DateReq;
+
+      TmpSalesHeader."Sell-to Customer No." := Cust."No.";
+      //TmpSalesHeader."Sell-to Contact" := Contact."No.";
+      TmpSalesHeader."Sell-to Customer Template Code" := '';
+      TmpSalesHeader."Sell-to Customer Name" := Cust.Name;
+      TmpSalesHeader."Sell-to Customer Name 2" := Cust."Name 2";
+      TmpSalesHeader."Sell-to Address" := Cust.Address;
+      TmpSalesHeader."Sell-to Address 2" := Cust."Address 2";
+      TmpSalesHeader."Sell-to City" := Cust.City;
+      TmpSalesHeader."Sell-to Post Code" := Cust."Post Code";
+      TmpSalesHeader."Sell-to County" := Cust.County;
+      TmpSalesHeader."Sell-to Country/Region Code" := Cust."Country/Region Code";
+      TmpSalesHeader."Gen. Bus. Posting Group" := Cust."Gen. Bus. Posting Group";
+      TmpSalesHeader."VAT Bus. Posting Group" := Cust."VAT Bus. Posting Group";
+      TmpSalesHeader."Tax Area Code" := Cust."Tax Area Code";
+      TmpSalesHeader."Tax Liable" := Cust."Tax Liable";
+      TmpSalesHeader."VAT Registration No." := Cust."VAT Registration No.";
+      TmpSalesHeader."Shipping Advice" := Cust."Shipping Advice";
+
+      IF Cust."Bill-to Customer No." <> '' THEN
+        Bill2Cust.GET(Cust."Bill-to Customer No.")
+      ELSE
+        Bill2Cust.GET(Cust."No.");
+
+      TmpSalesHeader."Bill-to Customer No." := Bill2Cust."No.";
+      TmpSalesHeader."Bill-to Name" := Bill2Cust.Name;
+      TmpSalesHeader."Bill-to Name 2" := Bill2Cust."Name 2";
+      TmpSalesHeader."Bill-to Address" := Bill2Cust.Address;
+      TmpSalesHeader."Bill-to Address 2" := Bill2Cust."Address 2";
+      TmpSalesHeader."Bill-to City" := Bill2Cust.City;
+      TmpSalesHeader."Bill-to Post Code" := Bill2Cust."Post Code";
+      TmpSalesHeader."Bill-to County" := Bill2Cust.County;
+      TmpSalesHeader."Bill-to Country/Region Code" := Bill2Cust."Country/Region Code";
+      TmpSalesHeader."Payment Terms Code" := Bill2Cust."Payment Terms Code";
+      TmpSalesHeader."Gen. Bus. Posting Group" := Bill2Cust."Gen. Bus. Posting Group";
+      TmpSalesHeader."VAT Bus. Posting Group" := Bill2Cust."VAT Bus. Posting Group";
+      TmpSalesHeader."Customer Posting Group" := Bill2Cust."Customer Posting Group";
+
+      IF CurrCode <> '' THEN
+        TmpSalesHeader.VALIDATE("Currency Code", CurrCode)
+      ELSE
+        TmpSalesHeader.VALIDATE("Currency Code", Bill2Cust."Currency Code");
+
+      TmpSalesHeader."Customer Price Group" := Bill2Cust."Customer Price Group";
+      TmpSalesHeader."Prices Including VAT" := Bill2Cust."Prices Including VAT";
+      TmpSalesHeader."Allow Line Disc." := Bill2Cust."Allow Line Disc.";
+      TmpSalesHeader."Invoice Disc. Code" := Bill2Cust."Invoice Disc. Code";
+      TmpSalesHeader."Customer Disc. Group" := Bill2Cust."Customer Disc. Group";
+      TmpSalesHeader."Language Code" := Bill2Cust."Language Code";
+      TmpSalesHeader."Salesperson Code" := Bill2Cust."Salesperson Code";
+      TmpSalesHeader."Combine Shipments" := Bill2Cust."Combine Shipments";
+      TmpSalesHeader.Reserve := Bill2Cust.Reserve;
+      TmpSalesHeader."VAT Registration No." := Bill2Cust."VAT Registration No.";
+    END;
+
+    LOCAL PROCEDURE FillSalesLine@1000000032(VAR TmpSalesHeader@1000000002 : TEMPORARY Record 36;VAR TmpSalesLine@1000000000 : TEMPORARY Record 37;ItemType@1000000001 : ' ,G/L Account,Item,Resource,Fixed Asset,Charge (Item)';ItemNo@1000000003 : Code[20];UOM@1000000005 : Code[20];Qty@1000000006 : Decimal);
+    VAR
+      Item@1000000004 : Record 27;
+    BEGIN
+      TmpSalesLine."Document Type" := TmpSalesHeader."Document Type";
+      TmpSalesLine."Document No." := TmpSalesHeader."No.";
+
+      TmpSalesLine.SuspendStatusCheck(TRUE);
+
+      TmpSalesLine."Sell-to Customer No." := TmpSalesHeader."Sell-to Customer No.";
+      TmpSalesLine."Currency Code" := TmpSalesHeader."Currency Code";
+
+      TmpSalesLine.Type := ItemType;
+      TmpSalesLine."No." := ItemNo;
+      TmpSalesLine."Unit of Measure Code" := UOM;
+      TmpSalesLine.Quantity := Qty;
+
+      //TmpSalesLine."Job No." := TmpSalesHeader."Job No.";
+      TmpSalesLine."Location Code" := TmpSalesHeader."Location Code";
+      TmpSalesLine."Customer Price Group" := TmpSalesHeader."Customer Price Group";
+      TmpSalesLine."Customer Disc. Group" := TmpSalesHeader."Customer Disc. Group";
+      TmpSalesLine."Allow Line Disc." := TmpSalesHeader."Allow Line Disc.";
+      TmpSalesLine."Transaction Type" := TmpSalesHeader."Transaction Type";
+      TmpSalesLine."Transport Method" := TmpSalesHeader."Transport Method";
+      TmpSalesLine."Bill-to Customer No." := TmpSalesHeader."Bill-to Customer No.";
+      TmpSalesLine."Gen. Bus. Posting Group" := TmpSalesHeader."Gen. Bus. Posting Group";
+      TmpSalesLine."VAT Bus. Posting Group" := TmpSalesHeader."VAT Bus. Posting Group";
+      TmpSalesLine."Exit Point" := TmpSalesHeader."Exit Point";
+      TmpSalesLine.Area := TmpSalesHeader.Area;
+      TmpSalesLine."Transaction Specification" := TmpSalesHeader."Transaction Specification";
+      TmpSalesLine."Tax Area Code" := TmpSalesHeader."Tax Area Code";
+      TmpSalesLine."Tax Liable" := TmpSalesHeader."Tax Liable";
+      TmpSalesLine."Responsibility Center" := TmpSalesHeader."Responsibility Center";
+      TmpSalesLine."Shipping Agent Code" := TmpSalesHeader."Shipping Agent Code";
+      TmpSalesLine."Shipping Agent Service Code" := TmpSalesHeader."Shipping Agent Service Code";
+      TmpSalesLine."Outbound Whse. Handling Time" := TmpSalesHeader."Outbound Whse. Handling Time";
+      TmpSalesLine."Shipping Time" := TmpSalesHeader."Shipping Time";
+      TmpSalesLine."Promised Delivery Date" := TmpSalesHeader."Promised Delivery Date";
+      TmpSalesLine."Requested Delivery Date" := TmpSalesHeader."Requested Delivery Date";
+      TmpSalesLine.UpdateDates;
+
+      Item.GET(TmpSalesLine."No.");
+      TmpSalesLine."Posting Group" := Item."Inventory Posting Group";
+      TmpSalesLine.Description := Item.Description;
+      TmpSalesLine."Description 2" := Item."Description 2";
+
+      TmpSalesLine."Allow Invoice Disc." := Item."Allow Invoice Disc.";
+      TmpSalesLine."Units per Parcel" := Item."Units per Parcel";
+      TmpSalesLine."Gen. Prod. Posting Group" := Item."Gen. Prod. Posting Group";
+      TmpSalesLine."VAT Prod. Posting Group" := Item."VAT Prod. Posting Group";
+      TmpSalesLine."Tax Group Code" := Item."Tax Group Code";
+      TmpSalesLine."Item Category Code" := Item."Item Category Code";
+      TmpSalesLine."Product Group Code" := Item."Product Group Code";
+      TmpSalesLine.Nonstock := Item."Created From Nonstock Item";
+      TmpSalesLine."Profit %" := Item."Profit %";
+      TmpSalesLine."Allow Item Charge Assignment" := TRUE;
+      IF TmpSalesLine."Unit of Measure Code" = '' THEN
+        TmpSalesLine."Unit of Measure Code" := Item."Sales Unit of Measure";
+    END;
+
+    LOCAL PROCEDURE UpdateSalesLine@1000000050(VAR TmpSalesLine@1000000000 : TEMPORARY Record 37);
+    BEGIN
+      TmpSalesLine."Line Discount Amount" :=
+        ROUND(
+          ROUND(TmpSalesLine.Quantity * TmpSalesLine."Unit Price",0.01) *
+          TmpSalesLine."Line Discount %" / 100,0.01);
+
+      TmpSalesLine."Line Amount" :=
+        ROUND(TmpSalesLine.Quantity * TmpSalesLine."Unit Price",0.01) - TmpSalesLine."Line Discount Amount";
+      TmpSalesLine."VAT Difference" := 0;
+    END;
+
+    PROCEDURE AddValue2Line@1000000007(VAR Line@1000000000 : Text[1024];Value@1000000001 : Text[1024]);
+    VAR
+      ConvertedValue@1000000002 : Text[1024];
+    BEGIN
+      ConvertedValue := CONVERTSTR(Value,FieldStartDelimiter + FieldSeparator + FieldEndDelimiter,'___');
+
+      IF Line = '' THEN
+        Line := FieldStartDelimiter + ConvertedValue + FieldEndDelimiter
+      ELSE
+        Line += FieldSeparator + FieldStartDelimiter + ConvertedValue + FieldEndDelimiter;
+    END;
+
+    PROCEDURE WriteLine2File@1000000002(VAR LineTmp@1000000012 : Text[1024]);
+    BEGIN
+      CSVFile.WRITE(LineTmp);
+      LineTmp := '';
+    END;
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+

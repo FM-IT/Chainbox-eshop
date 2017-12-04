@@ -1,0 +1,63 @@
+OBJECT Form 61301 Web Site eSetup List
+{
+  OBJECT-PROPERTIES
+  {
+    Date=30-08-09;
+    Time=10:00:00;
+    Version List=FMIT1.02;
+  }
+  PROPERTIES
+  {
+    Width=9790;
+    Height=6710;
+    Editable=No;
+    CaptionML=[DAN=Web Side Ops�tning Liste;
+               ENU=Web Site Setup List];
+    TableBoxID=1106000000;
+    SourceTable=Table61300;
+  }
+  CONTROLS
+  {
+    { 1106000000;TableBox;220 ;220  ;9350 ;5500 ;HorzGlue=Both;
+                                                 VertGlue=Both }
+    { 1106000001;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr="Web Site" }
+    { 1106000002;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000001;
+                                                 InColumnHeading=Yes }
+    { 1106000003;CheckBox;0   ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 ShowCaption=No;
+                                                 SourceExpr="Use Reservation" }
+    { 1106000004;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000003;
+                                                 InColumnHeading=Yes }
+    { 1106000005;TextBox;0    ;0    ;1700 ;0    ;ParentControl=1106000000;
+                                                 InColumn=Yes;
+                                                 SourceExpr=Location }
+    { 1106000006;Label  ;0    ;0    ;0    ;0    ;ParentControl=1106000005;
+                                                 InColumnHeading=Yes }
+    { 1106000007;CommandButton;2530;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Default=Yes;
+                                                 PushAction=LookupOK;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000008;CommandButton;4950;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 Cancel=Yes;
+                                                 PushAction=LookupCancel;
+                                                 InvalidActionAppearance=Hide }
+    { 1106000009;CommandButton;7370;5940;2200;550;
+                                                 HorzGlue=Right;
+                                                 VertGlue=Bottom;
+                                                 PushAction=FormHelp }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
+

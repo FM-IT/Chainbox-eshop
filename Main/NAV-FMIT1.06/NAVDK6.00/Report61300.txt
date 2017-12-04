@@ -1,0 +1,146 @@
+OBJECT Report 61300 eItem Update
+{
+  OBJECT-PROPERTIES
+  {
+    Date=29-05-10;
+    Time=08:00:00;
+    Version List=FMIT1.03;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Opdater Vare Lager;
+               ENU=Update Item Inventory];
+    ProcessingOnly=Yes;
+  }
+  DATAITEMS
+  {
+    { PROPERTIES
+      {
+        DataItemTable=Table61300;
+        DataItemTableView=SORTING(Web Site);
+      }
+      SECTIONS
+      {
+      }
+       }
+    { PROPERTIES
+      {
+        DataItemIndent=1;
+        DataItemTable=Table61304;
+        DataItemTableView=SORTING(Web Site,Item No.,ITEMNUMBER);
+        OnPreDataItem=BEGIN
+                        IF NOT ((UpdateType = UpdateType::Inventory) OR (UpdateType = UpdateType::General)) THEN
+                          CurrReport.BREAK;
+                      END;
+
+        OnAfterGetRecord=VAR
+                           Item@1000000000 : Record 27;
+                           ItemIdentifier@1000000002 : Record 7704;
+                           EINVENTABLE2@1000000001 : Record 61304;
+                         BEGIN
+                           CASE UpdateType OF
+                             UpdateType::Inventory :
+                               BEGIN
+                                 EINVENTABLE2 := EINVENTABLE;
+                                 EINVENTABLE2.UpdateInventory;
+                                 EINVENTABLE2.MODIFY(TRUE);
+                               END;
+                             UpdateType::General :
+                               BEGIN
+                                 IF NOT EINVENTABLE.IsItemIdentifier THEN BEGIN
+                                   IF NOT Item.GET(EINVENTABLE.ITEMNUMBER) THEN BEGIN
+                                     EINVENTABLE2 := EINVENTABLE;
+                                     EINVENTABLE2.DELETE(TRUE);
+                                   END;
+                                 END ELSE BEGIN
+                                   IF ItemIdentifier.GET(EINVENTABLE.ITEMNUMBER) THEN BEGIN
+                                     IF ((ItemIdentifier."Item No." <> EINVENTABLE."Item No.") OR
+                                        (ItemIdentifier."Variant Code" <> EINVENTABLE.Variant) OR
+                                        (ItemIdentifier."Unit of Measure Code" <> EINVENTABLE.UOM)) THEN BEGIN
+                                       EINVENTABLE2 := EINVENTABLE;
+                                       EINVENTABLE2.DELETE(TRUE);
+                                     END;
+                                   END ELSE BEGIN
+                                     EINVENTABLE2 := EINVENTABLE;
+                                     EINVENTABLE2.DELETE(TRUE);
+                                   END;
+                                 END;
+                               END;
+                           END;
+                         END;
+
+        DataItemLink=Web Site=FIELD(Web Site);
+      }
+      SECTIONS
+      {
+      }
+       }
+    { PROPERTIES
+      {
+        DataItemIndent=1;
+        DataItemTable=Table27;
+        DataItemTableView=SORTING(No.);
+        OnPreDataItem=BEGIN
+                        IF NOT (UpdateType = UpdateType::General) THEN
+                          CurrReport.BREAK;
+                      END;
+
+        OnAfterGetRecord=VAR
+                           EINVENTABLE@1000000000 : Record 61304;
+                           eShop@1000000001 : Codeunit 61300;
+                         BEGIN
+                           eShop.ItemUpdate(Item);
+                         END;
+
+        ReqFilterFields=No.;
+      }
+      SECTIONS
+      {
+      }
+       }
+  }
+  REQUESTFORM
+  {
+    PROPERTIES
+    {
+      Width=9020;
+      Height=3410;
+    }
+    CONTROLS
+    {
+      { 1000000000;OptionButton;3410;0;3740 ;440  ;CaptionML=[DAN=Lager;
+                                                              ENU=Inventory];
+                                                   SourceExpr=UpdateType;
+                                                   OptionValue=Inventory }
+      { 1000000001;Label  ;0    ;0    ;3300 ;440  ;ParentControl=1000000000;
+                                                   CaptionML=[DAN=Opdater;
+                                                              ENU=Update] }
+      { 1000000002;OptionButton;3410;550;3740;440 ;CaptionML=[DAN=Generelt;
+                                                              ENU=General];
+                                                   SourceExpr=UpdateType;
+                                                   OptionValue=General }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+    }
+    CONTROLS
+    {
+    }
+  }
+  CODE
+  {
+    VAR
+      eWebSiteSetup@1000000001 : Record 61300;
+      UpdateType@1000000000 : 'Inventory,General';
+
+    BEGIN
+    END.
+  }
+  RDLDATA
+  {
+  }
+}
+
